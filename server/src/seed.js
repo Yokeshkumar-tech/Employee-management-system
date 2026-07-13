@@ -9,6 +9,8 @@ import LeaveRequest from './models/LeaveRequest.js';
 import CheckIn from './models/CheckIn.js';
 import Notification from './models/Notification.js';
 import ChatMessage from './models/ChatMessage.js';
+import PayrollRecord from './models/PayrollRecord.js';
+import RecruitmentRole from './models/RecruitmentRole.js';
 
 dotenv.config();
 
@@ -19,10 +21,8 @@ const usersData = [
 ];
 
 const employeesData = [
-  { name: 'Alicia Stone', role: 'Product Designer', department: 'Design', status: 'Active' },
-  { name: 'Daniel Kim', role: 'Engineering Lead', department: 'Engineering', status: 'Active' },
-  { name: 'Nadia Flores', role: 'HR Partner', department: 'People Ops', status: 'Pending' },
-  { name: 'Sanjay Rao', role: 'Finance Controller', department: 'Finance', status: 'Active' }
+  { name: 'Ava Chen', role: 'Super Admin', department: 'Administration', status: 'Active', email: 'admin@ems.com' },
+  { name: 'Mina Patel', role: 'HR Partner', department: 'Human Resources', status: 'Active', email: 'hr@ems.com' }
 ];
 
 const leaveData = [
@@ -47,6 +47,20 @@ const chatMessagesData = [
   { sender: 'Ravi', text: 'Mentioned the payroll review', time: '10:05' }
 ];
 
+const payrollRecordsData = [
+  { label: 'Net salary', value: '$4,820', type: 'summary', status: 'Processed' },
+  { label: 'Bonus', value: '$480', type: 'summary', status: 'Processed' },
+  { label: 'Deductions', value: '$170', type: 'summary', status: 'Processed' },
+  { label: 'June payslip', value: '2026-06-25', date: '2026-06-25', type: 'payslip', status: 'Processed' },
+  { label: 'May payslip', value: '2026-05-27', date: '2026-05-27', type: 'payslip', status: 'Processed' }
+];
+
+const recruitmentRolesData = [
+  { title: 'Senior Frontend Engineer', stage: 'Screening', metricLabel: 'Applicants', metricValue: '38' },
+  { title: 'People Operations Manager', stage: 'HR Round', metricLabel: 'Interviews', metricValue: '12' },
+  { title: 'Payroll Analyst', stage: 'Offer', metricLabel: 'Offers', metricValue: '4' }
+];
+
 async function seedData() {
   try {
     await connectDB();
@@ -59,16 +73,19 @@ async function seedData() {
       LeaveRequest.deleteMany(),
       CheckIn.deleteMany(),
       Notification.deleteMany(),
-      ChatMessage.deleteMany()
+      ChatMessage.deleteMany(),
+      PayrollRecord.deleteMany(),
+      RecruitmentRole.deleteMany()
     ]);
 
     console.log('Inserting seed data...');
     const insertedUsers = await User.insertMany(usersData);
     
     // Assign some users to employees
-    const empsWithUserId = employeesData.map((emp, idx) => ({
+    const userByEmail = Object.fromEntries(insertedUsers.map((user) => [user.email, user]));
+    const empsWithUserId = employeesData.map(({ email, ...emp }) => ({
       ...emp,
-      userId: insertedUsers[idx % insertedUsers.length]._id
+      ...(email && userByEmail[email] ? { userId: userByEmail[email]._id } : {})
     }));
     await Employee.insertMany(empsWithUserId);
 
@@ -76,6 +93,8 @@ async function seedData() {
     await Project.insertMany(projectsData);
     await Notification.insertMany(notificationsData);
     await ChatMessage.insertMany(chatMessagesData);
+    await PayrollRecord.insertMany(payrollRecordsData);
+    await RecruitmentRole.insertMany(recruitmentRolesData);
 
     console.log('Seed completed successfully!');
     process.exit(0);
@@ -86,3 +105,4 @@ async function seedData() {
 }
 
 seedData();
+

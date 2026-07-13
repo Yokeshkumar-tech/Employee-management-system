@@ -19,6 +19,8 @@ import LeaveRequest from './models/LeaveRequest.js';
 import CheckIn from './models/CheckIn.js';
 import Notification from './models/Notification.js';
 import ChatMessage from './models/ChatMessage.js';
+import PayrollRecord from './models/PayrollRecord.js';
+import RecruitmentRole from './models/RecruitmentRole.js';
 
 dotenv.config();
 
@@ -126,6 +128,14 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '30d' });
 };
 
+const sampleEmployeeNames = ['Alicia Stone', 'Daniel Kim', 'Nadia Flores', 'Sanjay Rao', 'Leo Brooks'];
+const sampleEmployeeNameSet = new Set(sampleEmployeeNames.map((name) => name.toLowerCase()));
+
+function isSampleEmployee(employee) {
+  return sampleEmployeeNameSet.has(String(employee.name || '').toLowerCase());
+}
+
+
 // REST Routes
 app.get('/api/health', (_req, res) => res.json({ ok: true, message: 'Employee Management API is running' }));
 
@@ -150,7 +160,33 @@ app.get('/api/dashboard', async (req, res) => {
 app.get('/api/employees', async (_req, res) => {
   try {
     const employees = await Employee.find().sort({ createdAt: -1 });
-    res.json(employees.map(e => ({ ...e.toObject(), id: e._id })));
+    res.json(employees.filter((employee) => !isSampleEmployee(employee)).map(e => ({ ...e.toObject(), id: e._id })));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.get('/api/employees/export', protect, async (_req, res) => {
+  try {
+    const employees = (await Employee.find().sort({ createdAt: -1 }).lean()).filter((employee) => !isSampleEmployee(employee));
+    const headers = ['Name', 'Role', 'Department', 'Status', 'Created At'];
+    const escapeCsvValue = (value) => {
+      const text = value === null || value === undefined ? '' : String(value);
+      return `"${text.replace(/"/g, '""')}"`;
+    };
+    const rows = employees.map((employee) => [
+      employee.name,
+      employee.role,
+      employee.department,
+      employee.status,
+      employee.createdAt ? new Date(employee.createdAt).toISOString() : ''
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map(escapeCsvValue).join(','))
+      .join('\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="employees.csv"');
+    res.send(csv);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -167,6 +203,97 @@ app.post('/api/employees', protect, async (req, res) => {
     await addNotification(`New employee added: ${name}`);
     io.emit('employee_added', newEmployee); // Real-time
     res.status(201).json(newEmployee);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/employees/:id/move', protect, async (req, res) => {
+  try {
+    const { department, role } = req.body || {};
+    if (!department || !role) return res.status(400).json({ message: 'Department and role are required' });
+
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: 'Employee not found' });
+
+    const oldDept = employee.department;
+    const oldRole = employee.role;
+    employee.department = department;
+    employee.role = role;
+    await employee.save();
+
+    await addNotification(`Employee ${employee.name} moved from ${oldDept} (${oldRole}) to ${department} (${role})`);
+    io.emit('employee_moved', employee);
+    res.json(employee);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Approval Routes (HR & Admin only)
+app.get('/api/approvals', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
+      return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
+    }
+    const pendings = await Employee.find({ status: 'Pending' }).populate('userId', 'email');
+    res.json(pendings.map(e => ({
+      id: e._id,
+      name: e.name,
+      role: e.role,
+      department: e.department,
+      status: e.status,
+      email: e.userId?.email || 'N/A',
+      createdAt: e.createdAt
+    })));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/approvals/:id/approve', protect, async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.user.id);
+    if (!adminUser || (adminUser.role !== 'hr' && adminUser.role !== 'super_admin')) {
+      return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
+    }
+    const { department, role } = req.body || {};
+    if (!department || !role) {
+      return res.status(400).json({ message: 'Department and Role are required for approval.' });
+    }
+
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: 'Employee join request not found.' });
+
+    employee.status = 'Active';
+    employee.department = department;
+    employee.role = role;
+    await employee.save();
+
+    await addNotification(`Join request approved: ${employee.name} assigned to ${department} (${role})`);
+    io.emit('approval_updated', employee);
+    res.json({ message: 'Employee approved successfully', employee });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/approvals/:id/reject', protect, async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.user.id);
+    if (!adminUser || (adminUser.role !== 'hr' && adminUser.role !== 'super_admin')) {
+      return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
+    }
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: 'Employee join request not found.' });
+
+    employee.status = 'Rejected';
+    await employee.save();
+
+    await addNotification(`Join request rejected: ${employee.name}`);
+    io.emit('approval_updated', employee);
+    res.json({ message: 'Employee request rejected', employee });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -276,8 +403,44 @@ app.post('/api/leave/approve', protect, async (req, res) => {
   }
 });
 
-app.get('/api/payroll', (_req, res) => res.json(payrollData));
-app.get('/api/recruitment', (_req, res) => res.json(recruitmentData));
+app.get('/api/payroll', async (_req, res) => {
+  try {
+    const records = await PayrollRecord.find().sort({ createdAt: 1 });
+    if (!records.length) return res.json(payrollData);
+
+    const firstStatus = records.find((record) => record.status)?.status || 'Processed';
+    res.json({
+      status: firstStatus,
+      items: records
+        .filter((record) => record.type === 'summary')
+        .map((record) => ({ label: record.label, value: record.value })),
+      payslips: records
+        .filter((record) => record.type === 'payslip')
+        .map((record) => ({ name: record.label, date: record.date || record.value }))
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.get('/api/recruitment', async (_req, res) => {
+  try {
+    const roles = await RecruitmentRole.find().sort({ createdAt: 1 });
+    if (!roles.length) return res.json(recruitmentData);
+
+    const pipeline = roles
+      .filter((role) => role.metricLabel)
+      .map((role) => ({ label: role.metricLabel, value: role.metricValue || '0' }));
+
+    res.json({
+      openRoles: roles.length,
+      positions: roles.map((role) => ({ title: role.title, stage: role.stage })),
+      pipeline: pipeline.length ? pipeline : recruitmentData.pipeline
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 app.get('/api/projects', async (_req, res) => {
   try {
@@ -327,13 +490,40 @@ app.get('/api/chat/messages', async (_req, res) => {
 // Authentication Routes
 app.post('/api/auth/login', async (req, res) => {
   try {
-    const { email, password } = req.body || {};
+    const { email, password, role } = req.body || {};
     const normalizedEmail = email?.trim().toLowerCase();
     
     const matchedUser = await User.findOne({ email: normalizedEmail });
     if (matchedUser) {
       const isMatch = await bcrypt.compare(password, matchedUser.password);
       if (isMatch || matchedUser.password === password) { // Fallback for unhashed during dev if any
+        if (role && matchedUser.role !== role) {
+          return res.status(403).json({ message: 'Selected role does not match this account.' });
+        }
+        if (matchedUser.role === 'employee') {
+          let emp = await Employee.findOne({ userId: matchedUser._id });
+          if (!emp) {
+            emp = await Employee.create({
+              userId: matchedUser._id,
+              name: matchedUser.name,
+              role: 'Employee',
+              department: 'General',
+              status: 'Active'
+            });
+          } else if (emp.name !== matchedUser.name) {
+            emp.name = matchedUser.name;
+            emp.role = emp.role || 'Employee';
+            emp.department = emp.department || 'General';
+            emp.status = 'Active';
+            await emp.save();
+          }
+          if (emp && emp.status === 'Pending') {
+            return res.status(403).json({ message: 'Your registration is pending HR/Admin approval.', status: 'Pending' });
+          }
+          if (emp && emp.status === 'Rejected') {
+            return res.status(403).json({ message: 'Your registration request has been rejected. Please contact HR.', status: 'Rejected' });
+          }
+        }
         return res.json({ 
           user: { id: matchedUser._id, name: matchedUser.name, email: matchedUser.email, role: matchedUser.role, token: generateToken(matchedUser._id) } 
         });
@@ -361,8 +551,17 @@ app.post('/api/auth/register', async (req, res) => {
     await newUser.save();
 
     const empRole = newUser.role === 'super_admin' ? 'Super Admin' : (newUser.role === 'hr' ? 'HR Partner' : 'Employee');
-    const newEmp = new Employee({ userId: newUser._id, name: newUser.name, role: empRole, department: 'General', status: 'Active' });
+    const initialStatus = newUser.role === 'employee' ? 'Pending' : 'Active';
+    const newEmp = new Employee({ userId: newUser._id, name: newUser.name, role: empRole, department: 'General', status: initialStatus });
     await newEmp.save();
+
+    if (newUser.role === 'employee') {
+      await addNotification(`New employee registration pending approval: ${name}`);
+      return res.status(202).json({
+        message: 'Registration successful. Pending HR approval.',
+        status: 'Pending'
+      });
+    }
 
     res.status(201).json({ 
       user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role, token: generateToken(newUser._id) } 
@@ -389,8 +588,42 @@ app.post('/api/auth/google', async (req, res) => {
       await matchedUser.save();
 
       const empRole = matchedUser.role === 'super_admin' ? 'Super Admin' : (matchedUser.role === 'hr' ? 'HR Partner' : 'Employee');
-      const newEmp = new Employee({ userId: matchedUser._id, name: matchedUser.name, role: empRole, department: 'General', status: 'Active' });
+      const initialStatus = matchedUser.role === 'employee' ? 'Pending' : 'Active';
+      const newEmp = new Employee({ userId: matchedUser._id, name: matchedUser.name, role: empRole, department: 'General', status: initialStatus });
       await newEmp.save();
+
+      if (matchedUser.role === 'employee') {
+        await addNotification(`New employee registration pending approval: ${newEmp.name}`);
+        return res.status(202).json({
+          message: 'Google signup successful. Pending HR approval.',
+          status: 'Pending'
+        });
+      }
+    } else {
+      if (matchedUser.role === 'employee') {
+        let emp = await Employee.findOne({ userId: matchedUser._id });
+        if (!emp) {
+          emp = await Employee.create({
+            userId: matchedUser._id,
+            name: matchedUser.name,
+            role: 'Employee',
+            department: 'General',
+            status: 'Active'
+          });
+        } else if (emp.name !== matchedUser.name) {
+          emp.name = matchedUser.name;
+          emp.role = emp.role || 'Employee';
+          emp.department = emp.department || 'General';
+          emp.status = 'Active';
+          await emp.save();
+        }
+        if (emp && emp.status === 'Pending') {
+          return res.status(403).json({ message: 'Your registration is pending HR/Admin approval.', status: 'Pending' });
+        }
+        if (emp && emp.status === 'Rejected') {
+          return res.status(403).json({ message: 'Your registration request has been rejected. Please contact HR.', status: 'Rejected' });
+        }
+      }
     }
 
     res.json({ 
@@ -404,3 +637,10 @@ app.post('/api/auth/google', async (req, res) => {
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+
+
+
+
+
+
+
