@@ -7,58 +7,58 @@ import './App.css'
 const NAV_ICONS = {
   '/dashboard': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+      <rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" />
     </svg>
   ),
   '/employees': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/>
-      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-      <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
     </svg>
   ),
   '/attendance': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="10"/>
-      <polyline points="12 6 12 12 16 14"/>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
     </svg>
   ),
   '/leave': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-      <line x1="16" y1="2" x2="16" y2="6"/>
-      <line x1="8" y1="2" x2="8" y2="6"/>
-      <line x1="3" y1="10" x2="21" y2="10"/>
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
     </svg>
   ),
   '/payroll': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="12" y1="1" x2="12" y2="23"/>
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+      <line x1="12" y1="1" x2="12" y2="23" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
     </svg>
   ),
   '/recruitment': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <circle cx="11" cy="11" r="8" />
+      <line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   ),
   '/projects': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
   ),
   '/chat': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
     </svg>
   ),
   '/settings': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3"/>
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
   ),
   '/approvals': (
@@ -72,15 +72,15 @@ const NAV_ICONS = {
 /*  Floating Particles  */
 function FloatingParticles() {
   const dots = [
-    { left: '10%',  size: 5,  dur: 18, delay: 0,    color: 'rgba(99,102,241,0.5)'  },
-    { left: '25%',  size: 3,  dur: 22, delay: 4,    color: 'rgba(168,85,247,0.4)'  },
-    { left: '40%',  size: 6,  dur: 16, delay: 8,    color: 'rgba(56,189,248,0.4)'  },
-    { left: '55%',  size: 4,  dur: 20, delay: 2,    color: 'rgba(52,211,153,0.4)'  },
-    { left: '70%',  size: 5,  dur: 24, delay: 6,    color: 'rgba(251,191,36,0.35)' },
-    { left: '82%',  size: 3,  dur: 17, delay: 10,   color: 'rgba(251,113,133,0.4)' },
-    { left: '92%',  size: 4,  dur: 21, delay: 3,    color: 'rgba(99,102,241,0.4)'  },
-    { left: '18%',  size: 3,  dur: 19, delay: 14,   color: 'rgba(168,85,247,0.35)' },
-    { left: '63%',  size: 6,  dur: 26, delay: 7,    color: 'rgba(56,189,248,0.3)'  },
+    { left: '10%', size: 5, dur: 18, delay: 0, color: 'rgba(99,102,241,0.5)' },
+    { left: '25%', size: 3, dur: 22, delay: 4, color: 'rgba(168,85,247,0.4)' },
+    { left: '40%', size: 6, dur: 16, delay: 8, color: 'rgba(56,189,248,0.4)' },
+    { left: '55%', size: 4, dur: 20, delay: 2, color: 'rgba(52,211,153,0.4)' },
+    { left: '70%', size: 5, dur: 24, delay: 6, color: 'rgba(251,191,36,0.35)' },
+    { left: '82%', size: 3, dur: 17, delay: 10, color: 'rgba(251,113,133,0.4)' },
+    { left: '92%', size: 4, dur: 21, delay: 3, color: 'rgba(99,102,241,0.4)' },
+    { left: '18%', size: 3, dur: 19, delay: 14, color: 'rgba(168,85,247,0.35)' },
+    { left: '63%', size: 6, dur: 26, delay: 7, color: 'rgba(56,189,248,0.3)' },
   ]
   return (
     <div className="feather-particles" aria-hidden="true">
@@ -304,10 +304,10 @@ function AppLayout({ user, onLogout, children }) {
           {user.isGoogle && (
             <span className="google-signed-in-badge">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
               </svg>
               Google Account
             </span>
@@ -349,63 +349,63 @@ function LandingPage() {
       <div className="hero-illustration">
         <svg viewBox="0 0 500 500" className="illustration-svg">
           {/* Background elements */}
-          <circle cx="100" cy="80" r="40" fill="#a8e6cf" opacity="0.3"/>
-          <circle cx="420" cy="100" r="50" fill="#ffd89b" opacity="0.3"/>
-          
+          <circle cx="100" cy="80" r="40" fill="#a8e6cf" opacity="0.3" />
+          <circle cx="420" cy="100" r="50" fill="#ffd89b" opacity="0.3" />
+
           {/* Chart/Graph */}
-          <rect x="40" y="80" width="140" height="100" rx="15" fill="#7fd3c1" opacity="0.8"/>
-          <polyline points="60,150 90,100 130,120 160,80" stroke="white" strokeWidth="3" fill="none"/>
-          <circle cx="60" cy="150" r="4" fill="white"/>
-          <circle cx="90" cy="100" r="4" fill="white"/>
-          <circle cx="130" cy="120" r="4" fill="white"/>
-          <circle cx="160" cy="80" r="4" fill="white"/>
-          
+          <rect x="40" y="80" width="140" height="100" rx="15" fill="#7fd3c1" opacity="0.8" />
+          <polyline points="60,150 90,100 130,120 160,80" stroke="white" strokeWidth="3" fill="none" />
+          <circle cx="60" cy="150" r="4" fill="white" />
+          <circle cx="90" cy="100" r="4" fill="white" />
+          <circle cx="130" cy="120" r="4" fill="white" />
+          <circle cx="160" cy="80" r="4" fill="white" />
+
           {/* Hanging lights */}
-          <line x1="100" y1="0" x2="100" y2="50" stroke="#7fd3c1" strokeWidth="4"/>
-          <circle cx="100" cy="65" r="20" fill="#7fd3c1"/>
-          <line x1="340" y1="0" x2="340" y2="50" stroke="#7fd3c1" strokeWidth="4"/>
-          <circle cx="340" cy="65" r="20" fill="#7fd3c1"/>
-          
+          <line x1="100" y1="0" x2="100" y2="50" stroke="#7fd3c1" strokeWidth="4" />
+          <circle cx="100" cy="65" r="20" fill="#7fd3c1" />
+          <line x1="340" y1="0" x2="340" y2="50" stroke="#7fd3c1" strokeWidth="4" />
+          <circle cx="340" cy="65" r="20" fill="#7fd3c1" />
+
           {/* Clock */}
-          <circle cx="400" cy="140" r="35" fill="none" stroke="#ffc107" strokeWidth="3"/>
-          <line x1="400" y1="140" x2="400" y2="115" stroke="#ffc107" strokeWidth="2"/>
-          <line x1="400" y1="140" x2="415" y2="140" stroke="#ffc107" strokeWidth="2"/>
-          <circle cx="400" cy="140" r="4" fill="#ffc107"/>
-          
+          <circle cx="400" cy="140" r="35" fill="none" stroke="#ffc107" strokeWidth="3" />
+          <line x1="400" y1="140" x2="400" y2="115" stroke="#ffc107" strokeWidth="2" />
+          <line x1="400" y1="140" x2="415" y2="140" stroke="#ffc107" strokeWidth="2" />
+          <circle cx="400" cy="140" r="4" fill="#ffc107" />
+
           {/* Person 1 - Left (celebrating) */}
-          <circle cx="120" cy="220" r="18" fill="#1e40af"/>
-          <path d="M 120 240 L 110 290 M 120 240 L 130 290" stroke="#1e40af" strokeWidth="8" strokeLinecap="round"/>
-          <rect x="100" y="240" width="40" height="40" fill="#f0f0f0" rx="4"/>
-          <circle cx="100" cy="258" r="6" fill="#1e40af"/>
-          <line x1="105" y1="253" x2="95" y2="240" stroke="#1e40af" strokeWidth="6" strokeLinecap="round"/>
-          
+          <circle cx="120" cy="220" r="18" fill="#1e40af" />
+          <path d="M 120 240 L 110 290 M 120 240 L 130 290" stroke="#1e40af" strokeWidth="8" strokeLinecap="round" />
+          <rect x="100" y="240" width="40" height="40" fill="#f0f0f0" rx="4" />
+          <circle cx="100" cy="258" r="6" fill="#1e40af" />
+          <line x1="105" y1="253" x2="95" y2="240" stroke="#1e40af" strokeWidth="6" strokeLinecap="round" />
+
           {/* Person 2 - Middle (jumping) */}
-          <circle cx="250" cy="200" r="20" fill="#f59e0b"/>
-          <rect x="230" y="225" width="40" height="50" fill="#fbbf24" rx="4"/>
-          <path d="M 230 275 L 225 320 M 270 275 L 275 320" stroke="#1e3a8a" strokeWidth="8" strokeLinecap="round"/>
-          <path d="M 210 240 L 180 220 M 290 240 L 320 220" stroke="#f59e0b" strokeWidth="8" strokeLinecap="round"/>
-          
+          <circle cx="250" cy="200" r="20" fill="#f59e0b" />
+          <rect x="230" y="225" width="40" height="50" fill="#fbbf24" rx="4" />
+          <path d="M 230 275 L 225 320 M 270 275 L 275 320" stroke="#1e3a8a" strokeWidth="8" strokeLinecap="round" />
+          <path d="M 210 240 L 180 220 M 290 240 L 320 220" stroke="#f59e0b" strokeWidth="8" strokeLinecap="round" />
+
           {/* Person 3 - Right (celebrating) */}
-          <circle cx="360" cy="230" r="18" fill="#f59e0b"/>
-          <rect x="340" y="255" width="40" height="45" fill="#1e40af" rx="4"/>
-          <path d="M 340 300 L 335 345 M 380 300 L 385 345" stroke="#1e40af" strokeWidth="8" strokeLinecap="round"/>
-          <path d="M 320 270 L 290 250" stroke="#f59e0b" strokeWidth="8" strokeLinecap="round"/>
-          <path d="M 380 270 L 410 250" stroke="#f59e0b" strokeWidth="8" strokeLinecap="round"/>
-          
+          <circle cx="360" cy="230" r="18" fill="#f59e0b" />
+          <rect x="340" y="255" width="40" height="45" fill="#1e40af" rx="4" />
+          <path d="M 340 300 L 335 345 M 380 300 L 385 345" stroke="#1e40af" strokeWidth="8" strokeLinecap="round" />
+          <path d="M 320 270 L 290 250" stroke="#f59e0b" strokeWidth="8" strokeLinecap="round" />
+          <path d="M 380 270 L 410 250" stroke="#f59e0b" strokeWidth="8" strokeLinecap="round" />
+
           {/* Yellow platform */}
-          <ellipse cx="250" cy="380" rx="180" ry="40" fill="#fbbf24"/>
-          <path d="M 70 380 Q 100 360 250 360 Q 400 360 430 380" fill="#fcd34d"/>
-          
+          <ellipse cx="250" cy="380" rx="180" ry="40" fill="#fbbf24" />
+          <path d="M 70 380 Q 100 360 250 360 Q 400 360 430 380" fill="#fcd34d" />
+
           {/* Background decorative elements */}
-          <line x1="50" y1="350" x2="120" y2="320" stroke="#7fd3c1" strokeWidth="2" opacity="0.5"/>
-          <line x1="380" y1="360" x2="450" y2="330" stroke="#7fd3c1" strokeWidth="2" opacity="0.5"/>
+          <line x1="50" y1="350" x2="120" y2="320" stroke="#7fd3c1" strokeWidth="2" opacity="0.5" />
+          <line x1="380" y1="360" x2="450" y2="330" stroke="#7fd3c1" strokeWidth="2" opacity="0.5" />
         </svg>
       </div>
 
       <div className="hero-content">
         <h1 className="hero-main-title">Employee <span>Management</span> System</h1>
         <div className="hero-tagline">Do You Need It?</div>
-        
+
         <div className="feature-list">
           <div className="feature-item"> Live notifications</div>
           <div className="feature-item"> Workforce analytics</div>
@@ -441,7 +441,7 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
   const [customName, setCustomName] = useState('')
   const [customRole, setCustomRole] = useState('employee')
   const [selectedUser, setSelectedUser] = useState(null)
-  
+
   if (!isOpen) return null
 
   const handleSelect = (user) => {
@@ -476,8 +476,8 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
             <div className="google-spinner"></div>
             <p className="google-loading-title">Signing in with Google</p>
             <p className="google-loading-subtitle">
-              {selectedUser 
-                ? (selectedUser.role === 'super_admin' ? '••••••••@ems.com' : selectedUser.email) 
+              {selectedUser
+                ? (selectedUser.role === 'super_admin' ? '••••••••@ems.com' : selectedUser.email)
                 : (customEmail === 'admin@ems.com' ? '••••••••@ems.com' : customEmail)}
             </p>
           </div>
@@ -485,19 +485,19 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
           <div className="google-custom-view">
             <div className="google-logo-header">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
               </svg>
               <h2>Sign in with Google</h2>
               <p>Use your Google Account</p>
             </div>
-            
+
             <form onSubmit={handleCustomSubmit} className="google-custom-form">
               <div className="google-input-group">
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={customEmail}
                   onChange={(e) => setCustomEmail(e.target.value)}
                   placeholder="Email or phone"
@@ -507,8 +507,8 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
               </div>
 
               <div className="google-input-group">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={customName}
                   onChange={(e) => setCustomName(e.target.value)}
                   placeholder="Full name (optional)"
@@ -516,7 +516,7 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
               </div>
 
               <div className="google-input-group">
-                <select 
+                <select
                   value={customRole}
                   onChange={(e) => setCustomRole(e.target.value)}
                   className="google-select-role"
@@ -542,10 +542,10 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
           <div className="google-account-chooser">
             <div className="google-logo-header">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
               </svg>
               <h2>Choose an account</h2>
               <p>to continue to Enterprise HRMS</p>
@@ -553,9 +553,9 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
 
             <div className="google-accounts-list">
               {demoUsers.map((item) => (
-                <button 
-                  key={item.email} 
-                  type="button" 
+                <button
+                  key={item.email}
+                  type="button"
                   className="google-account-item"
                   onClick={() => handleSelect(item)}
                 >
@@ -569,8 +569,8 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
                 </button>
               ))}
 
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="google-account-item google-use-other"
                 onClick={() => setView('custom')}
               >
@@ -584,7 +584,7 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
                 </div>
               </button>
             </div>
-            
+
             <div className="google-footer-actions">
               <button type="button" className="google-text-button" onClick={onClose}>
                 Cancel
@@ -602,16 +602,16 @@ function LoginPage({ form, setForm, authMode, setAuthMode, onSubmit, onGoogleLog
     <div className="login-container">
       <div className="auth-card-new">
         <div className="auth-tabs">
-          <button 
-            type="button" 
-            className={`tab-button ${authMode === 'login' ? 'active' : ''}`} 
+          <button
+            type="button"
+            className={`tab-button ${authMode === 'login' ? 'active' : ''}`}
             onClick={() => setAuthMode('login')}
           >
             Login
           </button>
-          <button 
-            type="button" 
-            className={`tab-button ${authMode === 'register' ? 'active' : ''}`} 
+          <button
+            type="button"
+            className={`tab-button ${authMode === 'register' ? 'active' : ''}`}
             onClick={() => {
               setAuthMode('register')
               if (form.role === 'super_admin') setForm({ ...form, role: 'employee' })
@@ -623,10 +623,10 @@ function LoginPage({ form, setForm, authMode, setAuthMode, onSubmit, onGoogleLog
 
         <button type="button" className="google-login-button" onClick={onGoogleLogin}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
           </svg>
           Continue with Google
         </button>
@@ -642,33 +642,33 @@ function LoginPage({ form, setForm, authMode, setAuthMode, onSubmit, onGoogleLog
         <form onSubmit={onSubmit} className="auth-form-new">
           {authMode === 'register' && (
             <div className="form-group">
-              <input 
+              <input
                 type="text"
-                value={form.name} 
-                onChange={(event) => setForm({ ...form, name: event.target.value })} 
-                placeholder="Full name" 
-                required 
+                value={form.name}
+                onChange={(event) => setForm({ ...form, name: event.target.value })}
+                placeholder="Full name"
+                required
               />
             </div>
           )}
-          
+
           <div className="form-group">
-            <input 
-              type="email" 
-              value={form.email} 
-              onChange={(event) => setForm({ ...form, email: event.target.value })} 
-              placeholder="Work email" 
-              required 
+            <input
+              type="email"
+              value={form.email}
+              onChange={(event) => setForm({ ...form, email: event.target.value })}
+              placeholder="Work email"
+              required
             />
           </div>
 
           <div className="form-group">
-            <input 
-              type="password" 
-              value={form.password} 
-              onChange={(event) => setForm({ ...form, password: event.target.value })} 
-              placeholder="Password" 
-              required 
+            <input
+              type="password"
+              value={form.password}
+              onChange={(event) => setForm({ ...form, password: event.target.value })}
+              placeholder="Password"
+              required
             />
           </div>
 
@@ -706,7 +706,7 @@ function SectionHeading({ title, subtitle, action }) {
   )
 }
 
-function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
+function DashboardPage({ user, dashboardData, liveActivity, socketConnected, employees, attendance, API_BASE, notifications }) {
   const isAdmin = user.role === 'super_admin'
 
   /*  Shared state  */
@@ -718,20 +718,112 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
   const [auditFilter, setAuditFilter] = useState('all')
   const [hoveredGauge, setHoveredGauge] = useState(null)
 
+  // Real-time fluctuating metrics
+  const [liveResources, setLiveResources] = useState([
+    { label: 'CPU Usage', value: 38, color: '#6366f1' },
+    { label: 'Memory', value: 61, color: '#8b5cf6' },
+    { label: 'DB Connections', value: 24, color: '#10b981' },
+    { label: 'Bandwidth', value: 45, color: '#f59e0b' },
+  ]);
+
+  useEffect(() => {
+    if (adminTab !== 'system') return;
+    const interval = setInterval(() => {
+      setLiveResources(prev => prev.map(res => {
+        const diff = Math.floor(Math.random() * 5) - 2; // -2 to +2
+        const newVal = Math.max(10, Math.min(95, res.value + diff));
+        return { ...res, value: newVal };
+      }));
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [adminTab]);
+
+  // Simulation state
+  const [simulating, setSimulating] = useState(''); // '', 'db', 'cache'
+  const [simSuccess, setSimSuccess] = useState('');
+
+  const handleSimulateAction = (type) => {
+    setSimulating(type);
+    setSimSuccess('');
+    setTimeout(() => {
+      setSimulating('');
+      if (type === 'db') {
+        setSimSuccess('✓ Database index optimization simulation complete (MongoDB query times reduced by 15%)');
+      } else {
+        setSimSuccess('✓ Redis session token temporary cache successfully pruned and compacted (0.4MB reclaimed)');
+      }
+      setTimeout(() => setSimSuccess(''), 5000);
+    }, 2000);
+  };
+
+  // Broadcast state
+  const [broadcastMsg, setBroadcastMsg] = useState('');
+  const [broadcastLoading, setBroadcastLoading] = useState(false);
+  const [broadcastSuccess, setBroadcastSuccess] = useState(false);
+
+  const handleBroadcastSubmit = async (e) => {
+    e.preventDefault();
+    if (!broadcastMsg.trim() || !API_BASE) return;
+    setBroadcastLoading(true);
+    setBroadcastSuccess(false);
+    try {
+      const response = await fetch(`${API_BASE}/api/admin/broadcast`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ message: broadcastMsg })
+      });
+      if (response.ok) {
+        setBroadcastMsg('');
+        setBroadcastSuccess(true);
+        setTimeout(() => setBroadcastSuccess(false), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBroadcastLoading(false);
+    }
+  };
+
+  // HR Scratchpad states
+  const [hrMemo, setHrMemo] = useState(() => {
+    return window.localStorage.getItem('ems-hr-memo') || '';
+  });
+
+  const [hrTasks, setHrTasks] = useState(() => {
+    const saved = window.localStorage.getItem('ems-hr-tasks');
+    return saved ? JSON.parse(saved) : [
+      { id: 1, text: 'Review Leo Brooks regularization request', done: false },
+      { id: 2, text: 'Confirm July payroll calculations', done: false },
+      { id: 3, text: 'Post the new Lead Developer job role in Recruitment', done: false },
+      { id: 4, text: 'Sync with Engineering leads on current projects', done: false },
+    ];
+  });
+
+  const handleMemoChange = (e) => {
+    setHrMemo(e.target.value);
+    window.localStorage.setItem('ems-hr-memo', e.target.value);
+  };
+
+  const handleTaskToggle = (id) => {
+    const updated = hrTasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
+    setHrTasks(updated);
+    window.localStorage.setItem('ems-hr-tasks', JSON.stringify(updated));
+  };
+
   /*  Stats cards  */
   const cards = isAdmin
     ? [
-        { label: 'Total Employees', value: dashboardData.totalEmployees, detail: 'across all departments', icon: 'EMP', grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
-        { label: 'Attendance Rate', value: dashboardData.attendance, detail: 'system-wide today', icon: 'ATT', grad: 'linear-gradient(135deg,#0ea5e9,#6366f1)' },
-        { label: 'Pending Leave', value: dashboardData.pendingLeaves, detail: 'awaiting approval', icon: 'LV', grad: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
-        { label: 'Payroll Batches', value: dashboardData.payrollStatus, detail: 'ready for processing', icon: 'PAY', grad: 'linear-gradient(135deg,#10b981,#059669)' },
-      ]
+      { label: 'Total Employees', value: dashboardData.totalEmployees, detail: 'across all departments', icon: 'EMP', grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+      { label: 'Attendance Rate', value: dashboardData.attendance, detail: 'system-wide today', icon: 'ATT', grad: 'linear-gradient(135deg,#0ea5e9,#6366f1)' },
+      { label: 'Pending Leave', value: dashboardData.pendingLeaves, detail: 'awaiting approval', icon: 'LV', grad: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+      { label: 'Payroll Batches', value: dashboardData.payrollStatus, detail: 'ready for processing', icon: 'PAY', grad: 'linear-gradient(135deg,#10b981,#059669)' },
+    ]
     : [
-        { label: 'Employees', value: dashboardData.totalEmployees, detail: 'across 12 departments', icon: 'EMP', grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
-        { label: 'Attendance', value: dashboardData.attendance, detail: 'today live rate', icon: 'ATT', grad: 'linear-gradient(135deg,#38bdf8,#6366f1)' },
-        { label: 'Pending Leave', value: dashboardData.pendingLeaves, detail: 'awaiting approval', icon: 'LV', grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
-        { label: 'Payroll', value: dashboardData.payrollStatus, detail: 'ready for release', icon: 'PAY', grad: 'linear-gradient(135deg,#34d399,#059669)' },
-      ]
+      { label: 'Employees', value: dashboardData.totalEmployees, detail: 'across 12 departments', icon: 'EMP', grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+      { label: 'Attendance', value: dashboardData.attendance, detail: 'today live rate', icon: 'ATT', grad: 'linear-gradient(135deg,#38bdf8,#6366f1)' },
+      { label: 'Pending Leave', value: dashboardData.pendingLeaves, detail: 'awaiting approval', icon: 'LV', grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
+      { label: 'Payroll', value: dashboardData.payrollStatus, detail: 'ready for release', icon: 'PAY', grad: 'linear-gradient(135deg,#34d399,#059669)' },
+    ]
 
   /*  Admin: System Health Gauges  */
   const systemHealth = [
@@ -820,8 +912,8 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
     const dash = (display / 100) * circ
     return (
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={7} />
-        <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={7}
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={7} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={7}
           strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"
           style={{ transition: 'stroke-dasharray 0.8s ease' }} />
       </svg>
@@ -839,44 +931,44 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
           display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '24px',
         }}>
           {/* Decorative blobs */}
-          <div style={{ position:'absolute', top:-60, right:-60, width:220, height:220, background:'rgba(99,102,241,0.15)', borderRadius:'50%' }} />
-          <div style={{ position:'absolute', bottom:-50, right:160, width:140, height:140, background:'rgba(139,92,246,0.1)', borderRadius:'50%' }} />
-          <div style={{ position:'absolute', top:'50%', left:'35%', transform:'translateY(-50%)', width:1, height:'60%', background:'rgba(255,255,255,0.06)' }} />
+          <div style={{ position: 'absolute', top: -60, right: -60, width: 220, height: 220, background: 'rgba(99,102,241,0.15)', borderRadius: '50%' }} />
+          <div style={{ position: 'absolute', bottom: -50, right: 160, width: 140, height: 140, background: 'rgba(139,92,246,0.1)', borderRadius: '50%' }} />
+          <div style={{ position: 'absolute', top: '50%', left: '35%', transform: 'translateY(-50%)', width: 1, height: '60%', background: 'rgba(255,255,255,0.06)' }} />
 
-          <div style={{ zIndex:1 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'8px' }}>
-              <span style={{ fontSize:'0.72rem', fontWeight:800, letterSpacing:'0.12em', textTransform:'uppercase', color:'#a5b4fc', background:'rgba(99,102,241,0.2)', padding:'3px 10px', borderRadius:'20px', border:'1px solid rgba(99,102,241,0.3)' }}>
-              Super Admin Console
+          <div style={{ zIndex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#a5b4fc', background: 'rgba(99,102,241,0.2)', padding: '3px 10px', borderRadius: '20px', border: '1px solid rgba(99,102,241,0.3)' }}>
+                Super Admin Console
               </span>
               {socketConnected && (
-                <span style={{ fontSize:'0.7rem', color:'#4ade80', fontWeight:600, display:'flex', alignItems:'center', gap:'4px' }}>
-                  <span style={{ width:6, height:6, background:'#4ade80', borderRadius:'50%', display:'inline-block', animation:'pulse 1.5s infinite' }} />
+                <span style={{ fontSize: '0.7rem', color: '#4ade80', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
                   Live
                 </span>
               )}
             </div>
-            <h2 style={{ fontSize:'2rem', fontWeight:800, margin:'0 0 6px', letterSpacing:'-0.02em' }}>
-              Welcome, {user.name} 
+            <h2 style={{ fontSize: '2rem', fontWeight: 800, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+              Welcome, {user.name}
             </h2>
-            <p style={{ opacity:0.72, fontSize:'0.92rem', margin:0 }}>
+            <p style={{ opacity: 0.72, fontSize: '0.92rem', margin: 0 }}>
               Full system control  Manage users, payroll, access controls, and enterprise operations.
             </p>
           </div>
 
           {/* Tabs */}
-          <div style={{ display:'flex', flexDirection:'column', gap:'8px', zIndex:1 }}>
-            {['overview','system','audit'].map(tab => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', zIndex: 1 }}>
+            {['overview', 'system', 'audit'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setAdminTab(tab)}
                 style={{
-                  padding:'8px 20px', borderRadius:'10px', border:'none', cursor:'pointer',
-                  fontWeight:700, fontSize:'0.8rem', letterSpacing:'0.04em', textTransform:'capitalize',
+                  padding: '8px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                  fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.04em', textTransform: 'capitalize',
                   background: adminTab === tab ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
                   color: adminTab === tab ? '#fff' : 'rgba(255,255,255,0.55)',
-                  backdropFilter:'blur(8px)',
+                  backdropFilter: 'blur(8px)',
                   border: adminTab === tab ? '1px solid rgba(255,255,255,0.2)' : '1px solid transparent',
-                  transition:'all 0.2s',
+                  transition: 'all 0.2s',
                 }}
               >
                 {tab === 'overview' ? 'Overview' : tab === 'system' ? 'System' : 'Audit Log'}
@@ -886,7 +978,7 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
         </div>
 
         {/* -- STATS ROW -- */}
-        <section className="stats-grid dashboard-stats" style={{ marginBottom:'24px' }}>
+        <section className="stats-grid dashboard-stats" style={{ marginBottom: '24px' }}>
           {cards.map((card) => (
             <article key={card.label} className="stat-card">
               <div className="stat-icon" style={{ background: card.grad }}>{card.icon}</div>
@@ -901,57 +993,57 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
         {adminTab === 'overview' && (
           <>
             {/* Quick Actions */}
-            <article className="panel-card admin-quick-actions" style={{ marginBottom:'24px' }}>
+            <article className="panel-card admin-quick-actions" style={{ marginBottom: '24px' }}>
               <div className="panel-header">
                 <h3>Admin Quick Actions</h3>
-                <span className="pill" style={{ background:'#f1f5f9', color:'#6366f1' }}>Admin only</span>
+                <span className="pill" style={{ background: '#f1f5f9', color: '#6366f1' }}>Admin only</span>
               </div>
-              <div className="admin-actions-grid" style={{ display:'grid', gridTemplateColumns:'repeat(6,1fr)', gap:'12px', marginTop:'4px' }}>
+              <div className="admin-actions-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '12px', marginTop: '4px' }}>
                 {adminActions.map((action) => (
                   <a key={action.label} href={action.href} style={{
-                    display:'flex', flexDirection:'column', alignItems:'center', gap:'8px',
-                    padding:'18px 10px', borderRadius:'14px', background: action.bg,
-                    textDecoration:'none', transition:'transform 0.2s, box-shadow 0.2s',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px',
+                    padding: '18px 10px', borderRadius: '14px', background: action.bg,
+                    textDecoration: 'none', transition: 'transform 0.2s, box-shadow 0.2s',
                   }}
-                  onMouseEnter={e => { e.currentTarget.style.transform='translateY(-4px)'; e.currentTarget.style.boxShadow='0 10px 24px rgba(0,0,0,0.10)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none'; }}>
-                    <span style={{ fontSize:'1.6rem' }}>{action.icon}</span>
-                    <span style={{ fontSize:'0.73rem', fontWeight:700, color: action.color, textAlign:'center', lineHeight:1.3 }}>{action.label}</span>
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 10px 24px rgba(0,0,0,0.10)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}>
+                    <span style={{ fontSize: '1.6rem' }}>{action.icon}</span>
+                    <span style={{ fontSize: '0.73rem', fontWeight: 700, color: action.color, textAlign: 'center', lineHeight: 1.3 }}>{action.label}</span>
                   </a>
                 ))}
               </div>
             </article>
 
             {/* System Health + Department Capacity */}
-            <section className="content-grid" style={{ marginBottom:'24px' }}>
+            <section className="content-grid" style={{ marginBottom: '24px' }}>
               {/* System Health Gauges */}
               <article className="panel-card">
                 <div className="panel-header">
                   <h3>System Health</h3>
-                  <span className="pill" style={{ background:'#ecfdf5', color:'#10b981' }}>All systems operational</span>
+                  <span className="pill" style={{ background: '#ecfdf5', color: '#10b981' }}>All systems operational</span>
                 </div>
-                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'18px', marginTop:'14px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '18px', marginTop: '14px' }}>
                   {systemHealth.map((gauge, idx) => (
                     <div key={idx}
                       onMouseEnter={() => setHoveredGauge(idx)}
                       onMouseLeave={() => setHoveredGauge(null)}
                       style={{
-                        display:'flex', alignItems:'center', gap:'14px', padding:'12px 14px',
-                        borderRadius:'12px', background: hoveredGauge === idx ? '#f8fafc' : 'transparent',
+                        display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 14px',
+                        borderRadius: '12px', background: hoveredGauge === idx ? '#f8fafc' : 'transparent',
                         border: hoveredGauge === idx ? '1px solid #e2e8f0' : '1px solid transparent',
-                        cursor:'default', transition:'all 0.2s',
+                        cursor: 'default', transition: 'all 0.2s',
                       }}>
-                      <div style={{ position:'relative', flexShrink:0 }}>
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
                         <Gauge value={gauge.value} color={gauge.color} invert={gauge.invert} />
-                        <div style={{ position:'absolute', inset:0, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                          <span style={{ fontSize:'0.72rem', fontWeight:800, color: gauge.color }}>
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, color: gauge.color }}>
                             {gauge.value}%
                           </span>
                         </div>
                       </div>
                       <div>
-                        <div style={{ fontSize:'0.82rem', fontWeight:700, color:'#1e293b' }}>{gauge.icon} {gauge.label}</div>
-                        <div style={{ fontSize:'0.72rem', color:'#94a3b8', marginTop:'3px' }}>{gauge.detail}</div>
+                        <div style={{ fontSize: '0.82rem', fontWeight: 700, color: '#1e293b' }}>{gauge.icon} {gauge.label}</div>
+                        <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '3px' }}>{gauge.detail}</div>
                       </div>
                     </div>
                   ))}
@@ -962,19 +1054,19 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
               <article className="panel-card">
                 <div className="panel-header">
                   <h3>Department Capacity</h3>
-                  <span className="pill" style={{ background:'#ecfdf5', color:'#10b981' }}>{dashboardData.totalEmployees || 7} total</span>
+                  <span className="pill" style={{ background: '#ecfdf5', color: '#10b981' }}>{dashboardData.totalEmployees || 7} total</span>
                 </div>
                 <div className="dept-list">
                   {departments.map((dept, index) => (
                     <div key={index} className="dept-item">
-                      <div style={{ flex:1 }}>
-                        <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'4px' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                           <span className="dept-name">{dept.name}</span>
-                          <span style={{ fontSize:'0.73rem', color:'#94a3b8', fontWeight:600 }}>{dept.count} {dept.count === 1 ? 'member' : 'members'}</span>
+                          <span style={{ fontSize: '0.73rem', color: '#94a3b8', fontWeight: 600 }}>{dept.count} {dept.count === 1 ? 'member' : 'members'}</span>
                         </div>
-                        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div className="dept-bar-container">
-                            <div className="dept-bar-value" style={{ width:`${dept.pct}%`, background: dept.color }} />
+                            <div className="dept-bar-value" style={{ width: `${dept.pct}%`, background: dept.color }} />
                           </div>
                           <span className="dept-percent-text">{dept.pct}%</span>
                         </div>
@@ -986,36 +1078,36 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
             </section>
 
             {/* Role Access Matrix + Live Activity */}
-            <section className="content-grid" style={{ marginBottom:'24px' }}>
+            <section className="content-grid" style={{ marginBottom: '24px' }}>
               {/* Role Access Matrix */}
               <article className="panel-card">
                 <div className="panel-header">
                   <h3>Role Access Matrix</h3>
-                  <span className="pill" style={{ background:'#fef3c7', color:'#d97706' }}>Admin view</span>
+                  <span className="pill" style={{ background: '#fef3c7', color: '#d97706' }}>Admin view</span>
                 </div>
-                <table style={{ width:'100%', borderCollapse:'collapse', marginTop:'8px', fontSize:'0.82rem' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '8px', fontSize: '0.82rem' }}>
                   <thead>
                     <tr>
-                      <th style={{ textAlign:'left', padding:'8px 10px', color:'#94a3b8', fontWeight:700, fontSize:'0.72rem', letterSpacing:'0.07em', textTransform:'uppercase', borderBottom:'2px solid #f1f5f9' }}>Feature</th>
-                      {['Admin','HR','Employee'].map(r => (
-                        <th key={r} style={{ textAlign:'center', padding:'8px 12px', color:'#94a3b8', fontWeight:700, fontSize:'0.72rem', letterSpacing:'0.07em', textTransform:'uppercase', borderBottom:'2px solid #f1f5f9' }}>{r}</th>
+                      <th style={{ textAlign: 'left', padding: '8px 10px', color: '#94a3b8', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.07em', textTransform: 'uppercase', borderBottom: '2px solid #f1f5f9' }}>Feature</th>
+                      {['Admin', 'HR', 'Employee'].map(r => (
+                        <th key={r} style={{ textAlign: 'center', padding: '8px 12px', color: '#94a3b8', fontWeight: 700, fontSize: '0.72rem', letterSpacing: '0.07em', textTransform: 'uppercase', borderBottom: '2px solid #f1f5f9' }}>{r}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {roleMatrix.map((row, i) => (
                       <tr key={i} style={{ background: i % 2 === 0 ? '#fafafe' : 'transparent' }}>
-                        <td style={{ padding:'9px 10px', color:'#475569', fontWeight:600 }}>{row.feature}</td>
+                        <td style={{ padding: '9px 10px', color: '#475569', fontWeight: 600 }}>{row.feature}</td>
                         {[row.admin, row.hr, row.employee].map((has, j) => (
-                          <td key={j} style={{ textAlign:'center', padding:'9px 12px' }}>
+                          <td key={j} style={{ textAlign: 'center', padding: '9px 12px' }}>
                             <span style={{
-                              display:'inline-flex', alignItems:'center', justifyContent:'center',
-                              width:22, height:22, borderRadius:'50%',
+                              display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                              width: 22, height: 22, borderRadius: '50%',
                               background: has ? '#dcfce7' : '#fee2e2',
                               color: has ? '#16a34a' : '#dc2626',
-                              fontSize:'0.7rem', fontWeight:900,
+                              fontSize: '0.7rem', fontWeight: 900,
                             }}>
-                              {has ? '' : '-'}
+                              {has ? '✓' : '-'}
                             </span>
                           </td>
                         ))}
@@ -1033,9 +1125,9 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
                 </div>
                 <ul className="list">
                   {liveActivity.map((item, index) => (
-                    <li key={`${item}-${index}`} style={{ padding:'10px 12px', borderBottom:'1px solid #f1f5f9', display:'flex', gap:'8px', fontSize:'0.85rem' }}>
-                      <span style={{ color:'#6366f1', fontWeight:'bold' }}></span>
-                      <span style={{ color:'#475569' }}>{item}</span>
+                    <li key={`${item}-${index}`} style={{ padding: '10px 12px', borderBottom: '1px solid #f1f5f9', display: 'flex', gap: '8px', fontSize: '0.85rem' }}>
+                      <span style={{ color: '#6366f1', fontWeight: 'bold' }}>•</span>
+                      <span style={{ color: '#475569' }}>{item}</span>
                     </li>
                   ))}
                 </ul>
@@ -1047,31 +1139,31 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
         {/* -- TAB: SYSTEM -- */}
         {adminTab === 'system' && (
           <>
-            <section className="content-grid" style={{ marginBottom:'24px' }}>
+            <section className="content-grid" style={{ marginBottom: '24px' }}>
               {/* Detailed System Health */}
               <article className="panel-card">
                 <div className="panel-header">
                   <h3>Infrastructure Status</h3>
-                  <span className="pill" style={{ background:'#ecfdf5', color:'#10b981' }}> All systems operational</span>
+                  <span className="pill" style={{ background: '#ecfdf5', color: '#10b981' }}> All systems operational</span>
                 </div>
-                <div style={{ display:'flex', flexDirection:'column', gap:'14px', marginTop:'14px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '14px' }}>
                   {[
-                    { name: 'Express API Server', status:'operational', uptime:'99.7%', resp:'42ms', color:'#10b981' },
-                    { name: 'MongoDB Atlas', status:'operational', uptime:'99.9%', resp:'12ms', color:'#10b981' },
-                    { name: 'Socket.io Realtime', status:'operational', uptime:'98.2%', resp:'8ms', color:'#10b981' },
-                    { name: 'Auth Service (JWT)', status:'operational', uptime:'100%', resp:'3ms', color:'#10b981' },
-                    { name: 'File Storage', status:'degraded', uptime:'94.1%', resp:'380ms', color:'#f59e0b' },
-                    { name: 'Email Notifications', status:'offline', uptime:'0%', resp:'N/A', color:'#ef4444' },
+                    { name: 'Express API Server', status: 'operational', uptime: '99.7%', resp: '42ms', color: '#10b981' },
+                    { name: 'MongoDB Atlas', status: 'operational', uptime: '99.9%', resp: '12ms', color: '#10b981' },
+                    { name: 'Socket.io Realtime', status: 'operational', uptime: '98.2%', resp: '8ms', color: '#10b981' },
+                    { name: 'Auth Service (JWT)', status: 'operational', uptime: '100%', resp: '3ms', color: '#10b981' },
+                    { name: 'File Storage', status: 'degraded', uptime: '94.1%', resp: '380ms', color: '#f59e0b' },
+                    { name: 'Email Notifications', status: 'offline', uptime: '0%', resp: 'N/A', color: '#ef4444' },
                   ].map((svc, i) => (
-                    <div key={i} style={{ display:'flex', alignItems:'center', gap:'14px', padding:'12px 14px', borderRadius:'12px', background:'#f8fafc', border:'1px solid #f1f5f9' }}>
-                      <span style={{ width:10, height:10, borderRadius:'50%', background: svc.color, boxShadow:`0 0 8px ${svc.color}`, flexShrink:0 }} />
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:'0.85rem', fontWeight:700, color:'#1e293b' }}>{svc.name}</div>
-                        <div style={{ fontSize:'0.72rem', color:'#94a3b8', textTransform:'capitalize' }}>{svc.status}</div>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 14px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                      <span style={{ width: 10, height: 10, borderRadius: '50%', background: svc.color, boxShadow: `0 0 8px ${svc.color}`, flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>{svc.name}</div>
+                        <div style={{ fontSize: '0.72rem', color: '#94a3b8', textTransform: 'capitalize' }}>{svc.status}</div>
                       </div>
-                      <div style={{ textAlign:'right' }}>
-                        <div style={{ fontSize:'0.8rem', fontWeight:700, color: svc.color }}>{svc.uptime}</div>
-                        <div style={{ fontSize:'0.7rem', color:'#94a3b8' }}>Resp: {svc.resp}</div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: 700, color: svc.color }}>{svc.uptime}</div>
+                        <div style={{ fontSize: '0.7rem', color: '#94a3b8' }}>Resp: {svc.resp}</div>
                       </div>
                     </div>
                   ))}
@@ -1082,98 +1174,189 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
               <article className="panel-card">
                 <div className="panel-header">
                   <h3>Active Sessions</h3>
-                  <span className="pill" style={{ background:'#eef2ff', color:'#6366f1' }}>Live</span>
+                  <span className="pill" style={{ background: '#eef2ff', color: '#6366f1' }}>Live</span>
                 </div>
-                <div style={{ display:'flex', flexDirection:'column', gap:'12px', marginTop:'14px' }}>
-                  {[
-                    { name:'Ava Chen', role:'Super Admin', ip:'192.168.1.12', time:'Just now', device:'Chrome/Windows', color:'#6366f1' },
-                    { name:'Mina Patel', role:'HR', ip:'192.168.1.23', time:'2m ago', device:'Safari/Mac', color:'#8b5cf6' },
-                    { name:'Leo Brooks', role:'Employee', ip:'10.0.0.45', time:'5m ago', device:'Firefox/Linux', color:'#10b981' },
-                  ].map((sess, i) => (
-                    <div key={i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px', borderRadius:'12px', background:'#f8fafc', border:'1px solid #f1f5f9' }}>
-                      <div style={{ width:34, height:34, borderRadius:'50%', background:`linear-gradient(135deg,${sess.color},${sess.color}88)`, display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontWeight:800, fontSize:'0.8rem', flexShrink:0 }}>
-                        {sess.name[0]}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '14px' }}>
+                  {(() => {
+                    const activeCheckIns = Object.values(attendance?.checkIns || {}).filter(c => c.checkedIn);
+                    const realSessions = activeCheckIns.map(c => ({
+                      name: c.name || 'Leo Brooks',
+                      role: 'Employee',
+                      ip: '192.168.1.' + Math.floor(Math.random() * 200 + 2),
+                      time: c.breakStartedAt ? 'On Break' : 'Active Now',
+                      device: 'Chrome/Desktop',
+                      color: c.breakStartedAt ? '#f59e0b' : '#10b981',
+                      focus: c.currentFocus
+                    }));
+
+                    const defaultSessions = [
+                      { name: 'Ava Chen', role: 'Super Admin', ip: '192.168.1.12', time: 'Just now', device: 'Chrome/Windows', color: '#6366f1' },
+                      { name: 'Mina Patel', role: 'HR', ip: '192.168.1.23', time: '2m ago', device: 'Safari/Mac', color: '#8b5cf6' },
+                    ];
+
+                    const sessionsToRender = [...realSessions, ...defaultSessions].slice(0, 4);
+
+                    return sessionsToRender.map((sess, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px', borderRadius: '12px', background: '#f8fafc', border: '1px solid #f1f5f9' }}>
+                        <div style={{ width: 34, height: 34, borderRadius: '50%', background: `linear-gradient(135deg,${sess.color},${sess.color}88)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800, fontSize: '0.8rem', flexShrink: 0 }}>
+                          {sess.name[0]}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>{sess.name}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#94a3b8' }}>
+                            {sess.device} • {sess.ip}
+                            {sess.focus && (
+                              <span style={{ display: 'block', fontStyle: 'italic', color: '#6366f1', marginTop: '2px', fontWeight: 500 }}>
+                                💻 {sess.focus}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: '#eef2ff', color: sess.color }}>{sess.role}</span>
+                          <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '3px' }}>{sess.time}</div>
+                        </div>
                       </div>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontSize:'0.85rem', fontWeight:700, color:'#1e293b' }}>{sess.name}</div>
-                        <div style={{ fontSize:'0.72rem', color:'#94a3b8' }}>{sess.device}  {sess.ip}</div>
-                      </div>
-                      <div style={{ textAlign:'right' }}>
-                        <span style={{ fontSize:'0.72rem', fontWeight:700, padding:'2px 8px', borderRadius:'6px', background:'#eef2ff', color: sess.color }}>{sess.role}</span>
-                        <div style={{ fontSize:'0.7rem', color:'#94a3b8', marginTop:'3px' }}>{sess.time}</div>
-                      </div>
-                    </div>
-                  ))}
+                    ));
+                  })()}
                 </div>
 
-                <div style={{ marginTop:'20px', paddingTop:'16px', borderTop:'1px solid #f1f5f9' }}>
-                  <div style={{ fontSize:'0.75rem', fontWeight:700, color:'#94a3b8', marginBottom:'12px', textTransform:'uppercase', letterSpacing:'0.08em' }}>Resource Usage</div>
-                  {[
-                    { label:'CPU Usage', value:38, color:'#6366f1' },
-                    { label:'Memory', value:61, color:'#8b5cf6' },
-                    { label:'DB Connections', value:24, color:'#10b981' },
-                    { label:'Bandwidth', value:45, color:'#f59e0b' },
-                  ].map((res, i) => (
-                    <div key={i} style={{ marginBottom:'10px' }}>
-                      <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'4px' }}>
-                        <span style={{ fontSize:'0.78rem', color:'#475569', fontWeight:600 }}>{res.label}</span>
-                        <span style={{ fontSize:'0.78rem', fontWeight:800, color: res.color }}>{res.value}%</span>
+                <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #f1f5f9' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Resource Usage</div>
+                  {liveResources.map((res, i) => (
+                    <div key={i} style={{ marginBottom: '10px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '0.78rem', color: '#475569', fontWeight: 600 }}>{res.label}</span>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 800, color: res.color }}>{res.value}%</span>
                       </div>
-                      <div style={{ height:6, borderRadius:99, background:'#f1f5f9', overflow:'hidden' }}>
-                        <div style={{ height:'100%', width:`${res.value}%`, borderRadius:99, background: res.color, transition:'width 0.8s ease' }} />
+                      <div style={{ height: 6, borderRadius: 99, background: '#f1f5f9', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: `${res.value}%`, borderRadius: 99, background: res.color, transition: 'width 0.8s ease' }} />
                       </div>
                     </div>
                   ))}
                 </div>
               </article>
             </section>
+
+            {/* System Control Center (Full Width) */}
+            <article className="panel-card" style={{ gridColumn: '1 / -1', marginTop: '12px', marginBottom: '24px' }}>
+              <div className="panel-header">
+                <h3>Super Admin System Control Panel</h3>
+                <span className="pill" style={{ background: '#fbcfe8', color: '#be185d', fontWeight: 'bold' }}>Live Console</span>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', marginTop: '16px' }}>
+                {/* Broadcast Announcement */}
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                  <h4 style={{ margin: '0 0 12px 0', fontSize: '0.9rem', color: '#1e293b' }}>Broadcast Live System Announcement</h4>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '0.78rem', color: '#64748b' }}>
+                    Sends a real-time notification alert instantly to all online employee dashboard headers.
+                  </p>
+                  <form onSubmit={handleBroadcastSubmit} style={{ display: 'flex', gap: '8px' }}>
+                    <input 
+                      type="text" 
+                      value={broadcastMsg}
+                      onChange={(e) => setBroadcastMsg(e.target.value)}
+                      placeholder="e.g. Server maintenance scheduled for 11:00 PM tonight..."
+                      required
+                      style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                    />
+                    <button 
+                      type="submit" 
+                      className="primary-button" 
+                      disabled={broadcastLoading}
+                      style={{ marginTop: 0, padding: '10px 16px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                    >
+                      {broadcastLoading ? 'Sending...' : 'Broadcast Alert'}
+                    </button>
+                  </form>
+                  {broadcastSuccess && (
+                    <span style={{ display: 'block', marginTop: '6px', fontSize: '0.75rem', color: '#16a34a', fontWeight: 'bold' }}>
+                      ✓ Announcement broadcasted to all connected clients!
+                    </span>
+                  )}
+                </div>
+
+                {/* Simulated Cache / Database Controls */}
+                <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <h4 style={{ margin: '0', fontSize: '0.9rem', color: '#1e293b' }}>System Operations Simulation</h4>
+                  
+                  {simSuccess && (
+                    <div style={{ padding: '8px 12px', background: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600 }}>
+                      {simSuccess}
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button 
+                      type="button" 
+                      className="submit-button"
+                      disabled={simulating !== ''}
+                      onClick={() => handleSimulateAction('db')}
+                      style={{ flex: 1, marginTop: 0, padding: '10px', fontSize: '0.75rem', background: '#6366f1', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer' }}
+                    >
+                      {simulating === 'db' ? 'Optimizing DB Indexes...' : 'Optimize DB Indexes'}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="submit-button"
+                      disabled={simulating !== ''}
+                      onClick={() => handleSimulateAction('cache')}
+                      style={{ flex: 1, marginTop: 0, padding: '10px', fontSize: '0.75rem', background: '#f59e0b', border: 'none', color: '#fff', borderRadius: '8px', cursor: 'pointer' }}
+                    >
+                      {simulating === 'cache' ? 'Pruning Session Cache...' : 'Prune Session Cache'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
           </>
         )}
 
         {/* -- TAB: AUDIT LOG -- */}
         {adminTab === 'audit' && (
-          <article className="panel-card" style={{ marginBottom:'24px' }}>
+          <article className="panel-card" style={{ marginBottom: '24px' }}>
             <div className="panel-header">
               <h3>Audit Log</h3>
-              <div style={{ display:'flex', gap:'8px' }}>
-                {['all','approval','leave','payroll','auth','project'].map(f => (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {['all', 'approval', 'leave', 'payroll', 'auth', 'project'].map(f => (
                   <button key={f} onClick={() => setAuditFilter(f)} style={{
-                    padding:'4px 12px', borderRadius:'20px', border:'none', cursor:'pointer',
-                    fontSize:'0.72rem', fontWeight:700, textTransform:'capitalize',
+                    padding: '4px 12px', borderRadius: '20px', border: 'none', cursor: 'pointer',
+                    fontSize: '0.72rem', fontWeight: 700, textTransform: 'capitalize',
                     background: auditFilter === f ? '#6366f1' : '#f1f5f9',
                     color: auditFilter === f ? '#fff' : '#64748b',
-                    transition:'all 0.2s',
+                    transition: 'all 0.2s',
                   }}>{f}</button>
                 ))}
               </div>
             </div>
-            <div style={{ display:'flex', flexDirection:'column', gap:'10px', marginTop:'14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '14px' }}>
               {filteredAudit.map((entry, i) => (
                 <div key={i} style={{
-                  display:'flex', alignItems:'center', gap:'14px', padding:'12px 16px',
-                  borderRadius:'12px', background:'#fafafe', border:'1px solid #f1f5f9',
-                  transition:'all 0.2s',
+                  display: 'flex', alignItems: 'center', gap: '14px', padding: '12px 16px',
+                  borderRadius: '12px', background: '#fafafe', border: '1px solid #f1f5f9',
+                  transition: 'all 0.2s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background='#f0f4ff'}
-                onMouseLeave={e => e.currentTarget.style.background='#fafafe'}
+                  onMouseEnter={e => e.currentTarget.style.background = '#f0f4ff'}
+                  onMouseLeave={e => e.currentTarget.style.background = '#fafafe'}
                 >
-                  <div style={{ width:36, height:36, borderRadius:'50%', background:'#eef2ff', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1rem', flexShrink:0 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', flexShrink: 0 }}>
                     {entry.icon}
                   </div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:'0.85rem', fontWeight:700, color:'#1e293b' }}>{entry.action}</div>
-                    <div style={{ fontSize:'0.73rem', color:'#94a3b8', marginTop:'2px' }}>
-                      By <strong style={{ color:'#475569' }}>{entry.actor}</strong>  Target: {entry.target}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>{entry.action}</div>
+                    <div style={{ fontSize: '0.73rem', color: '#94a3b8', marginTop: '2px' }}>
+                      By <strong style={{ color: '#475569' }}>{entry.actor}</strong>  Target: {entry.target}
                     </div>
                   </div>
-                  <div style={{ textAlign:'right', flexShrink:0 }}>
-                    <span style={{ fontSize:'0.72rem', fontWeight:700, padding:'2px 8px', borderRadius:'6px', background:'#eef2ff', color:'#6366f1', textTransform:'capitalize' }}>{entry.type}</span>
-                    <div style={{ fontSize:'0.7rem', color:'#94a3b8', marginTop:'3px' }}>{entry.time} today</div>
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', background: '#eef2ff', color: '#6366f1', textTransform: 'capitalize' }}>{entry.type}</span>
+                    <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '3px' }}>{entry.time} today</div>
                   </div>
                 </div>
               ))}
               {filteredAudit.length === 0 && (
-                <div style={{ textAlign:'center', padding:'40px', color:'#94a3b8', fontSize:'0.88rem' }}>
+                <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8', fontSize: '0.88rem' }}>
                   No audit entries for this filter.
                 </div>
               )}
@@ -1188,6 +1371,39 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
   return (
     <>
       <SectionHeading title={`Welcome back, ${user.name}`} subtitle="A unified view of growth, operations, and collaboration." action={socketConnected ? 'Live sync on' : 'Connecting...'} />
+
+      {/* Broadcast Announcement Banner */}
+      {(() => {
+        const latestBroadcast = notifications?.find(n => n.text?.startsWith('[Broadcast]')) || notifications?.[0];
+        if (!latestBroadcast) return null;
+        
+        return (
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
+            border: '1.5px solid rgba(99, 102, 241, 0.3)',
+            borderRadius: '16px',
+            padding: '16px 20px',
+            marginBottom: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            boxShadow: '0 8px 30px rgba(99, 102, 241, 0.08)'
+          }}>
+            <span style={{ fontSize: '1.4rem', flexShrink: 0 }}>📢</span>
+            <div style={{ flex: 1 }}>
+              <strong style={{ color: '#4338ca', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '2px' }}>
+                System Broadcast Announcement
+              </strong>
+              <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 600 }}>
+                {latestBroadcast.text?.replace('[Broadcast] ', '') || latestBroadcast.text}
+              </span>
+            </div>
+            <span style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: 500, alignSelf: 'flex-start' }}>
+              {latestBroadcast.time || 'Live'}
+            </span>
+          </div>
+        );
+      })()}
 
       <section className="stats-grid">
         {cards.map((card) => (
@@ -1269,9 +1485,9 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
                 ))}
               </svg>
               {hoveredPoint && (
-                <div className="svg-chart-tooltip" style={{ left:`${(hoveredPoint.x / svgW) * 100}%`, top:`${(hoveredPoint.y / svgH) * 100}%` }}>
+                <div className="svg-chart-tooltip" style={{ left: `${(hoveredPoint.x / svgW) * 100}%`, top: `${(hoveredPoint.y / svgH) * 100}%` }}>
                   <strong>{hoveredPoint.label}: {hoveredPoint.val}% SLA</strong><br />
-                   {hoveredPoint.projects} projects completed
+                  {hoveredPoint.projects} projects completed
                 </div>
               )}
             </div>
@@ -1318,6 +1534,51 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
                 </div>
               </div>
             ))}
+          </div>
+        </article>
+      </section>
+
+      {/* Persisted HR Reminders Note-Pad */}
+      <section className="content-grid" style={{ marginTop: '24px', marginBottom: '24px' }}>
+        <article className="panel-card" style={{ gridColumn: '1 / -1' }}>
+          <div className="panel-header">
+            <h3>HR Workspace Scratchpad & Reminders</h3>
+            <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca', fontWeight: 'bold' }}>Persisted locally</span>
+          </div>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', marginTop: '16px' }}>
+            {/* Memo Note-pad */}
+            <div>
+              <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#1e293b' }}>Interactive Memo Pad</h4>
+              <textarea 
+                value={hrMemo}
+                onChange={handleMemoChange}
+                placeholder="Jot down general notes, phone numbers, interview schedules, or reminders here..."
+                rows="6"
+                style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #cbd5e1', fontSize: '0.85rem', lineHeight: 1.5, resize: 'none' }}
+              />
+              <span style={{ fontSize: '0.72rem', color: '#94a3b8', display: 'block', marginTop: '4px' }}>
+                ✍️ Auto-saves instantly to your local browser storage.
+              </span>
+            </div>
+
+            {/* Quick Reminders Checklist */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <h4 style={{ margin: '0 0 4px 0', fontSize: '0.9rem', color: '#1e293b' }}>Task Reminders Checklist</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {hrTasks.map(t => (
+                  <label key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: t.done ? '#94a3b8' : '#334155', cursor: 'pointer', textDecoration: t.done ? 'line-through' : 'none' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={t.done} 
+                      onChange={() => handleTaskToggle(t.id)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    {t.text}
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
         </article>
       </section>
@@ -1480,10 +1741,10 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
     { time: '04:30 PM', event: 'Submit weekly report', type: 'task' },
   ]
   const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' }
-  const priorityBg   = { high: '#fee2e2', medium: '#fef3c7', low: '#dcfce7' }
-  const typeColor    = { meeting: '#6366f1', review: '#8b5cf6', training: '#06b6d4', task: '#f59e0b' }
-  const typeBg       = { meeting: '#eef2ff', review: '#f5f3ff', training: '#ecfeff', task: '#fefce8' }
-  const statusColor  = { active: '#22c55e', idle: '#f59e0b', offline: '#94a3b8' }
+  const priorityBg = { high: '#fee2e2', medium: '#fef3c7', low: '#dcfce7' }
+  const typeColor = { meeting: '#6366f1', review: '#8b5cf6', training: '#06b6d4', task: '#f59e0b' }
+  const typeBg = { meeting: '#eef2ff', review: '#f5f3ff', training: '#ecfeff', task: '#fefce8' }
+  const statusColor = { active: '#22c55e', idle: '#f59e0b', offline: '#94a3b8' }
 
   /* Circular SVG progress helper */
   const CircleProgress = ({ pct, size = 80, stroke = 7, color = '#6366f1', children }) => {
@@ -1493,8 +1754,8 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
     return (
       <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
         <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={stroke} />
-          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={stroke} />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
             strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"
             style={{ transition: 'stroke-dasharray 0.6s ease' }} />
         </svg>
@@ -1515,40 +1776,40 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
         overflow: 'hidden', color: '#fff',
         display: 'grid', gridTemplateColumns: '1fr auto auto', alignItems: 'center', gap: '20px',
       }}>
-        <div style={{ position:'absolute', top:-40, right:-40, width:200, height:200, background:'rgba(255,255,255,0.07)', borderRadius:'50%' }} />
-        <div style={{ position:'absolute', bottom:-50, right:140, width:140, height:140, background:'rgba(255,255,255,0.05)', borderRadius:'50%' }} />
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 200, height: 200, background: 'rgba(255,255,255,0.07)', borderRadius: '50%' }} />
+        <div style={{ position: 'absolute', bottom: -50, right: 140, width: 140, height: 140, background: 'rgba(255,255,255,0.05)', borderRadius: '50%' }} />
         {/* Left: greeting */}
         <div style={{ zIndex: 1 }}>
-          <p style={{ fontSize:'0.82rem', opacity:0.85, marginBottom:'4px', fontWeight:500 }}>{dateStr}</p>
-          <h2 style={{ fontSize:'1.75rem', fontWeight:800, margin:'0 0 6px', letterSpacing:'-0.02em' }}>
-            {greeting}, {user.name}! 
+          <p style={{ fontSize: '0.82rem', opacity: 0.85, marginBottom: '4px', fontWeight: 500 }}>{dateStr}</p>
+          <h2 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 6px', letterSpacing: '-0.02em' }}>
+            {greeting}, {user.name}!
           </h2>
-          <p style={{ opacity:0.88, fontSize:'0.92rem', margin:0 }}>Your real-time workspace is ready.</p>
+          <p style={{ opacity: 0.88, fontSize: '0.92rem', margin: 0 }}>Your real-time workspace is ready.</p>
         </div>
         {/* Centre: live clock */}
         <div style={{
-          background:'rgba(255,255,255,0.13)', backdropFilter:'blur(12px)',
-          borderRadius:'16px', padding:'14px 22px', textAlign:'center',
-          border:'1px solid rgba(255,255,255,0.22)', zIndex:1, flexShrink:0,
+          background: 'rgba(255,255,255,0.13)', backdropFilter: 'blur(12px)',
+          borderRadius: '16px', padding: '14px 22px', textAlign: 'center',
+          border: '1px solid rgba(255,255,255,0.22)', zIndex: 1, flexShrink: 0,
         }}>
-          <div style={{ fontSize:'1.8rem', fontWeight:800, fontVariantNumeric:'tabular-nums', lineHeight:1, letterSpacing:'0.04em' }}>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, fontVariantNumeric: 'tabular-nums', lineHeight: 1, letterSpacing: '0.04em' }}>
             {timeStr}
           </div>
-          <div style={{ fontSize:'0.72rem', opacity:0.85, marginTop:'4px', fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase' }}>
+          <div style={{ fontSize: '0.72rem', opacity: 0.85, marginTop: '4px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
             Live Clock
           </div>
         </div>
         {/* Right: monthly score */}
         <div style={{
-          background:'rgba(255,255,255,0.13)', backdropFilter:'blur(12px)',
-          borderRadius:'16px', padding:'14px 22px', textAlign:'center',
-          border:'1px solid rgba(255,255,255,0.22)', zIndex:1, flexShrink:0,
+          background: 'rgba(255,255,255,0.13)', backdropFilter: 'blur(12px)',
+          borderRadius: '16px', padding: '14px 22px', textAlign: 'center',
+          border: '1px solid rgba(255,255,255,0.22)', zIndex: 1, flexShrink: 0,
         }}>
-          <div style={{ fontSize:'1.8rem', fontWeight:800, lineHeight:1 }}>92%</div>
-          <div style={{ fontSize:'0.72rem', opacity:0.85, marginTop:'4px', fontWeight:600, letterSpacing:'0.05em', textTransform:'uppercase' }}>Monthly Score</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1 }}>92%</div>
+          <div style={{ fontSize: '0.72rem', opacity: 0.85, marginTop: '4px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Monthly Score</div>
           {socketConnected && (
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:'4px', marginTop:'6px', fontSize:'0.7rem', opacity:0.9 }}>
-              <span style={{ width:6, height:6, background:'#4ade80', borderRadius:'50%', display:'inline-block', animation:'pulse 1.5s infinite' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '6px', fontSize: '0.7rem', opacity: 0.9 }}>
+              <span style={{ width: 6, height: 6, background: '#4ade80', borderRadius: '50%', display: 'inline-block', animation: 'pulse 1.5s infinite' }} />
               Live
             </div>
           )}
@@ -1556,12 +1817,12 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
       </div>
 
       {/* -- ROW 1: Stats cards ----------------------------------- */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
         {[
-          { label:'My Attendance', value: attendance?.summary || '97% weekly', detail:'this week', icon:'-', grad:'linear-gradient(135deg,#6366f1,#8b5cf6)' },
-          { label:'Leave Balance',  value: leaveData?.balance || '14 days',    detail:'remaining this year', icon:'*', grad:'linear-gradient(135deg,#34d399,#059669)' },
-          { label:'Net Salary',     value: payroll?.items?.[0]?.value || '4,820', detail:'current month', icon:'*', grad:'linear-gradient(135deg,#fbbf24,#f59e0b)' },
-          { label:'Tasks Done',     value: `${doneTasks}/${tasks.length}`,     detail:'completed today', icon:'*', grad:'linear-gradient(135deg,#38bdf8,#6366f1)' },
+          { label: 'My Attendance', value: attendance?.summary || '97% weekly', detail: 'this week', icon: '-', grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+          { label: 'Leave Balance', value: leaveData?.balance || '14 days', detail: 'remaining this year', icon: '*', grad: 'linear-gradient(135deg,#34d399,#059669)' },
+          { label: 'Net Salary', value: payroll?.items?.[0]?.value || '4,820', detail: 'current month', icon: '*', grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
+          { label: 'Tasks Done', value: `${doneTasks}/${tasks.length}`, detail: 'completed today', icon: '*', grad: 'linear-gradient(135deg,#38bdf8,#6366f1)' },
         ].map(card => (
           <article key={card.label} className="stat-card">
             <div className="stat-icon" style={{ background: card.grad }}>{card.icon}</div>
@@ -1573,118 +1834,118 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
       </div>
 
       {/* -- ROW 2: Work Session + Pomodoro + Work-hours bar ------ */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
 
         {/* Work Session */}
-        <article className="panel-card" style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'14px' }}>
-          <div className="panel-header" style={{ width:'100%' }}>
+        <article className="panel-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+          <div className="panel-header" style={{ width: '100%' }}>
             <h3>Work Session</h3>
             <span className="pill" style={{ background: checkedIn ? '#dcfce7' : '#f1f5f9', color: checkedIn ? '#16a34a' : '#64748b' }}>
               {checkedIn ? ' Active' : ' Idle'}
             </span>
           </div>
           <CircleProgress pct={workHoursPct} size={90} color={checkedIn ? '#6366f1' : '#cbd5e1'}>
-            <span style={{ fontSize:'0.75rem', fontWeight:700, color: checkedIn ? '#6366f1' : '#94a3b8' }}>{workHoursPct}%</span>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: checkedIn ? '#6366f1' : '#94a3b8' }}>{workHoursPct}%</span>
           </CircleProgress>
-          <div style={{ fontFamily:'monospace', fontSize:'1.6rem', fontWeight:800, color:'#1e293b', letterSpacing:'0.06em' }}>
+          <div style={{ fontFamily: 'monospace', fontSize: '1.6rem', fontWeight: 800, color: '#1e293b', letterSpacing: '0.06em' }}>
             {fmtElapsed(elapsed)}
           </div>
-          <div style={{ fontSize:'0.75rem', color:'#94a3b8', marginTop:'-8px' }}>of 8h target</div>
+          <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px' }}>of 8h target</div>
           <button
             type="button"
             onClick={handleWorkSessionToggle}
             disabled={checkInLoading}
 
             style={{
-              width:'100%', padding:'10px', borderRadius:'12px', border:'none', cursor:'pointer',
-              fontWeight:700, fontSize:'0.88rem', letterSpacing:'0.02em',
+              width: '100%', padding: '10px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+              fontWeight: 700, fontSize: '0.88rem', letterSpacing: '0.02em',
               background: checkedIn ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#6366f1,#8b5cf6)',
-              color:'#fff', transition:'opacity 0.2s',
+              color: '#fff', transition: 'opacity 0.2s',
             }}
-            onMouseEnter={e => e.currentTarget.style.opacity='0.88'}
-            onMouseLeave={e => e.currentTarget.style.opacity='1'}
+            onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
           >
             {checkInLoading ? ' Processing...' : (checkedIn ? ' Check Out' : ' Check In')}
           </button>
         </article>
 
         {/* Pomodoro Focus Timer */}
-        <article className="panel-card" style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:'14px' }}>
-          <div className="panel-header" style={{ width:'100%' }}>
+        <article className="panel-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
+          <div className="panel-header" style={{ width: '100%' }}>
             <h3>Focus Timer</h3>
-            <span className="pill" style={{ background: pomoMode==='work' ? '#eef2ff' : '#ecfeff', color: pomoMode==='work' ? '#6366f1' : '#06b6d4' }}>
-              {pomoMode==='work' ? ' Focus' : '- Break'}  #{pomoCycles + 1}
+            <span className="pill" style={{ background: pomoMode === 'work' ? '#eef2ff' : '#ecfeff', color: pomoMode === 'work' ? '#6366f1' : '#06b6d4' }}>
+              {pomoMode === 'work' ? ' Focus' : '- Break'}  #{pomoCycles + 1}
             </span>
           </div>
-          <CircleProgress pct={pomoPct} size={90} color={pomoMode==='work' ? '#6366f1' : '#06b6d4'}>
-            <span style={{ fontSize:'0.72rem', fontWeight:700, color: pomoMode==='work' ? '#6366f1' : '#06b6d4' }}>{pomoPct}%</span>
+          <CircleProgress pct={pomoPct} size={90} color={pomoMode === 'work' ? '#6366f1' : '#06b6d4'}>
+            <span style={{ fontSize: '0.72rem', fontWeight: 700, color: pomoMode === 'work' ? '#6366f1' : '#06b6d4' }}>{pomoPct}%</span>
           </CircleProgress>
-          <div style={{ fontFamily:'monospace', fontSize:'1.6rem', fontWeight:800, color:'#1e293b', letterSpacing:'0.06em' }}>
+          <div style={{ fontFamily: 'monospace', fontSize: '1.6rem', fontWeight: 800, color: '#1e293b', letterSpacing: '0.06em' }}>
             {fmtPomo(pomoSec)}
           </div>
-          <div style={{ fontSize:'0.75rem', color:'#94a3b8', marginTop:'-8px' }}>
-            {pomoMode==='work' ? '25 min deep work' : '5 min break'}
+          <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px' }}>
+            {pomoMode === 'work' ? '25 min deep work' : '5 min break'}
           </div>
-          <div style={{ display:'flex', gap:'8px', width:'100%' }}>
+          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
             <button type="button" onClick={() => setPomoRunning(r => !r)} style={{
-              flex:1, padding:'10px', borderRadius:'12px', border:'none', cursor:'pointer',
-              fontWeight:700, fontSize:'0.88rem',
+              flex: 1, padding: '10px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+              fontWeight: 700, fontSize: '0.88rem',
               background: pomoRunning ? 'linear-gradient(135deg,#f59e0b,#d97706)' : 'linear-gradient(135deg,#6366f1,#8b5cf6)',
-              color:'#fff',
+              color: '#fff',
             }}>
               {pomoRunning ? ' Pause' : ' Start'}
             </button>
             <button type="button" onClick={() => { setPomoRunning(false); setPomoSec(POMO_WORK); setPomoMode('work') }} style={{
-              padding:'10px 14px', borderRadius:'12px', border:'1px solid #e2e8f0', background:'#f8fafc', cursor:'pointer', fontSize:'0.88rem',
+              padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: '0.88rem',
             }}></button>
           </div>
-          <div style={{ display:'flex', gap:'4px' }}>
+          <div style={{ display: 'flex', gap: '4px' }}>
             {[...Array(4)].map((_, i) => (
-              <div key={i} style={{ width:10, height:10, borderRadius:'50%', background: i < pomoCycles % 4 ? '#6366f1' : '#e2e8f0' }} />
+              <div key={i} style={{ width: 10, height: 10, borderRadius: '50%', background: i < pomoCycles % 4 ? '#6366f1' : '#e2e8f0' }} />
             ))}
           </div>
         </article>
 
         {/* Today's Work Hours Bar */}
-        <article className="panel-card" style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+        <article className="panel-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div className="panel-header">
             <h3>Daily Progress</h3>
           </div>
           {[
-            { label:'Work Hours', pct: workHoursPct, color:'#6366f1', value: `${Math.floor(elapsed/3600)}h ${Math.floor((elapsed%3600)/60)}m` },
-            { label:'Tasks Done', pct: taskPct, color:'#10b981', value: `${doneTasks}/${tasks.length}` },
-            { label:'Attendance',  pct: 97, color:'#f59e0b', value:'97%' },
-            { label:'Focus Time',  pct: Math.min(100, pomoCycles * 25), color:'#8b5cf6', value: `${pomoCycles * 25} min` },
+            { label: 'Work Hours', pct: workHoursPct, color: '#6366f1', value: `${Math.floor(elapsed / 3600)}h ${Math.floor((elapsed % 3600) / 60)}m` },
+            { label: 'Tasks Done', pct: taskPct, color: '#10b981', value: `${doneTasks}/${tasks.length}` },
+            { label: 'Attendance', pct: 97, color: '#f59e0b', value: '97%' },
+            { label: 'Focus Time', pct: Math.min(100, pomoCycles * 25), color: '#8b5cf6', value: `${pomoCycles * 25} min` },
           ].map(bar => (
             <div key={bar.label}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'5px' }}>
-                <span style={{ fontSize:'0.78rem', fontWeight:600, color:'#475569' }}>{bar.label}</span>
-                <span style={{ fontSize:'0.78rem', fontWeight:700, color: bar.color }}>{bar.value}</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '5px' }}>
+                <span style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>{bar.label}</span>
+                <span style={{ fontSize: '0.78rem', fontWeight: 700, color: bar.color }}>{bar.value}</span>
               </div>
-              <div style={{ height:8, borderRadius:99, background:'#f1f5f9', overflow:'hidden' }}>
+              <div style={{ height: 8, borderRadius: 99, background: '#f1f5f9', overflow: 'hidden' }}>
                 <div style={{
-                  height:'100%', borderRadius:99, width:`${bar.pct}%`,
+                  height: '100%', borderRadius: 99, width: `${bar.pct}%`,
                   background: bar.color,
-                  transition:'width 0.8s ease',
+                  transition: 'width 0.8s ease',
                 }} />
               </div>
             </div>
           ))}
 
           {/* Team online status */}
-          <div style={{ marginTop:'6px', paddingTop:'12px', borderTop:'1px solid #f1f5f9' }}>
-            <div style={{ fontSize:'0.75rem', fontWeight:700, color:'#94a3b8', marginBottom:'8px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Team Online</div>
-            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+          <div style={{ marginTop: '6px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Team Online</div>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
               {team.map(m => (
                 <div key={m.name} title={`${m.name}  ${m.status}`} style={{
-                  position:'relative', width:30, height:30, borderRadius:'50%',
-                  background: m.color, display:'flex', alignItems:'center', justifyContent:'center',
-                  fontSize:'0.7rem', fontWeight:800, color:'#fff', cursor:'default',
+                  position: 'relative', width: 30, height: 30, borderRadius: '50%',
+                  background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '0.7rem', fontWeight: 800, color: '#fff', cursor: 'default',
                 }}>
                   {m.name[0]}
                   <span style={{
-                    position:'absolute', bottom:0, right:0, width:8, height:8,
-                    borderRadius:'50%', background: statusColor[m.status], border:'2px solid #fff',
+                    position: 'absolute', bottom: 0, right: 0, width: 8, height: 8,
+                    borderRadius: '50%', background: statusColor[m.status], border: '2px solid #fff',
                   }} />
                 </div>
               ))}
@@ -1694,62 +1955,62 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
       </div>
 
       {/* -- ROW 3: Tasks + Schedule ------------------------------ */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
 
         {/* Interactive Tasks */}
         <article className="panel-card">
           <div className="panel-header">
             <h3>My Tasks</h3>
-            <div style={{ display:'flex', alignItems:'center', gap:'8px' }}>
-              <div style={{ height:6, width:60, borderRadius:99, background:'#f1f5f9', overflow:'hidden' }}>
-                <div style={{ height:'100%', width:`${taskPct}%`, background:'linear-gradient(90deg,#6366f1,#8b5cf6)', transition:'width 0.5s' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ height: 6, width: 60, borderRadius: 99, background: '#f1f5f9', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${taskPct}%`, background: 'linear-gradient(90deg,#6366f1,#8b5cf6)', transition: 'width 0.5s' }} />
               </div>
               <span className="pill">{doneTasks}/{tasks.length}</span>
             </div>
           </div>
-          <ul style={{ listStyle:'none', padding:0, margin:'0 0 12px', display:'flex', flexDirection:'column', gap:'8px' }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {tasks.map(task => (
               <li key={task.id}
                 onClick={() => toggleTask(task.id)}
                 style={{
-                  display:'flex', alignItems:'center', gap:'10px', padding:'10px 12px',
-                  borderRadius:'10px', cursor:'pointer', userSelect:'none',
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
+                  borderRadius: '10px', cursor: 'pointer', userSelect: 'none',
                   background: task.done ? '#f8fafc' : '#fff',
                   border: `1px solid ${task.done ? '#f1f5f9' : '#e8eaf0'}`,
-                  transition:'all 0.2s',
+                  transition: 'all 0.2s',
                 }}
                 onMouseEnter={e => e.currentTarget.style.background = task.done ? '#f0f4f8' : '#f8f8ff'}
                 onMouseLeave={e => e.currentTarget.style.background = task.done ? '#f8fafc' : '#fff'}
               >
                 <div style={{
-                  width:18, height:18, borderRadius:'50%', flexShrink:0,
+                  width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
                   border: task.done ? 'none' : '2px solid #cbd5e1',
                   background: task.done ? 'linear-gradient(135deg,#6366f1,#8b5cf6)' : 'transparent',
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  transition:'all 0.2s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s',
                 }}>
-                  {task.done && <span style={{ color:'#fff', fontSize:'10px', fontWeight:900 }}></span>}
+                  {task.done && <span style={{ color: '#fff', fontSize: '10px', fontWeight: 900 }}></span>}
                 </div>
-                <div style={{ flex:1, minWidth:0 }}>
-                  <div style={{ fontSize:'0.85rem', fontWeight:600, color: task.done ? '#94a3b8' : '#1e293b', textDecoration: task.done ? 'line-through' : 'none', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: task.done ? '#94a3b8' : '#1e293b', textDecoration: task.done ? 'line-through' : 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {task.title}
                   </div>
-                  <div style={{ fontSize:'0.73rem', color:'#94a3b8', marginTop:'1px' }}>Due: {task.due}</div>
+                  <div style={{ fontSize: '0.73rem', color: '#94a3b8', marginTop: '1px' }}>Due: {task.due}</div>
                 </div>
-                <span style={{ fontSize:'0.68rem', fontWeight:700, padding:'2px 7px', borderRadius:'6px', color: priorityColor[task.priority], background: priorityBg[task.priority], flexShrink:0, textTransform:'capitalize' }}>
+                <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 7px', borderRadius: '6px', color: priorityColor[task.priority], background: priorityBg[task.priority], flexShrink: 0, textTransform: 'capitalize' }}>
                   {task.priority}
                 </span>
               </li>
             ))}
           </ul>
           {/* Add task inline */}
-          <form onSubmit={addTask} style={{ display:'flex', gap:'8px' }}>
+          <form onSubmit={addTask} style={{ display: 'flex', gap: '8px' }}>
             <input
               type="text" value={newTask} onChange={e => setNewTask(e.target.value)}
               placeholder="+ Add a new task"
-              style={{ flex:1, padding:'8px 12px', border:'1px dashed #cbd5e1', borderRadius:'10px', fontSize:'0.85rem', outline:'none', color:'#1e293b', background:'#fafafe' }}
+              style={{ flex: 1, padding: '8px 12px', border: '1px dashed #cbd5e1', borderRadius: '10px', fontSize: '0.85rem', outline: 'none', color: '#1e293b', background: '#fafafe' }}
             />
-            <button type="submit" style={{ padding:'8px 14px', background:'linear-gradient(135deg,#6366f1,#8b5cf6)', color:'#fff', border:'none', borderRadius:'10px', cursor:'pointer', fontWeight:700, fontSize:'0.85rem' }}>
+            <button type="submit" style={{ padding: '8px 14px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem' }}>
               Add
             </button>
           </form>
@@ -1761,7 +2022,7 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
             <h3>Today's Schedule</h3>
             <span className="pill">4 events</span>
           </div>
-          <ul style={{ listStyle:'none', padding:0, margin:0, display:'flex', flexDirection:'column', gap:'10px' }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {mySchedule.map((s, i) => {
               const [hStr, rest] = s.time.split(':')
               const [mStr, ampm] = rest.split(' ')
@@ -1773,22 +2034,22 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
               const isCurrent = Math.abs(now - eventDate) < 60 * 60 * 1000 && !isPast
               return (
                 <li key={i} style={{
-                  display:'flex', alignItems:'center', gap:'12px', padding:'10px 12px',
-                  borderRadius:'10px', border:`1px solid ${isCurrent ? '#c7d2fe' : '#f1f5f9'}`,
+                  display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
+                  borderRadius: '10px', border: `1px solid ${isCurrent ? '#c7d2fe' : '#f1f5f9'}`,
                   background: isCurrent ? '#eef2ff' : isPast ? '#f8fafc' : '#fafafe',
                   opacity: isPast ? 0.6 : 1,
-                  transition:'all 0.3s',
+                  transition: 'all 0.3s',
                 }}>
-                  {isCurrent && <span style={{ width:6, height:6, borderRadius:'50%', background:'#6366f1', flexShrink:0, animation:'pulse 1.5s infinite' }} />}
-                  <div style={{ fontSize:'0.7rem', fontWeight:700, color:'#6366f1', minWidth:'68px', background:'#eef2ff', padding:'4px 8px', borderRadius:'6px', textAlign:'center' }}>
+                  {isCurrent && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', flexShrink: 0, animation: 'pulse 1.5s infinite' }} />}
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6366f1', minWidth: '68px', background: '#eef2ff', padding: '4px 8px', borderRadius: '6px', textAlign: 'center' }}>
                     {s.time}
                   </div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:'0.87rem', fontWeight:600, color: isPast ? '#94a3b8' : '#1e293b' }}>{s.event}</div>
-                    {isCurrent && <div style={{ fontSize:'0.72rem', color:'#6366f1', fontWeight:600, marginTop:'2px' }}>Happening now</div>}
-                    {isPast && <div style={{ fontSize:'0.72rem', color:'#94a3b8', marginTop:'2px' }}>Completed</div>}
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: '0.87rem', fontWeight: 600, color: isPast ? '#94a3b8' : '#1e293b' }}>{s.event}</div>
+                    {isCurrent && <div style={{ fontSize: '0.72rem', color: '#6366f1', fontWeight: 600, marginTop: '2px' }}>Happening now</div>}
+                    {isPast && <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '2px' }}>Completed</div>}
                   </div>
-                  <span style={{ fontSize:'0.68rem', fontWeight:700, padding:'2px 8px', borderRadius:'6px', color: typeColor[s.type], background: typeBg[s.type], flexShrink:0, textTransform:'capitalize' }}>
+                  <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', color: typeColor[s.type], background: typeBg[s.type], flexShrink: 0, textTransform: 'capitalize' }}>
                     {s.type}
                   </span>
                 </li>
@@ -1799,30 +2060,30 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
       </div>
 
       {/* -- ROW 4: Quick Actions + Live Feed + Team Pulse -------- */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:'16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
 
         {/* Quick Actions */}
         <article className="panel-card">
           <div className="panel-header"><h3>Quick Actions</h3></div>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             {[
-              { label:'Apply Leave',  icon:'*', color:'#059669', bg:'#d1fae5', href:'/leave' },
-              { label:'View Payslip', icon:'*', color:'#d97706', bg:'#fef3c7', href:'/payroll' },
-              { label:'Attendance',   icon:'-', color:'#6366f1', bg:'#eef2ff', href:'/attendance' },
-              { label:'Team Chat',    icon:'*', color:'#8b5cf6', bg:'#f5f3ff', href:'/chat' },
-              { label:'My Projects',  icon:'*', color:'#06b6d4', bg:'#ecfeff', href:'/projects' },
-              { label:'View Profile', icon:'*', color:'#f59e0b', bg:'#fefce8', href:'/settings' },
+              { label: 'Apply Leave', icon: '*', color: '#059669', bg: '#d1fae5', href: '/leave' },
+              { label: 'View Payslip', icon: '*', color: '#d97706', bg: '#fef3c7', href: '/payroll' },
+              { label: 'Attendance', icon: '-', color: '#6366f1', bg: '#eef2ff', href: '/attendance' },
+              { label: 'Team Chat', icon: '*', color: '#8b5cf6', bg: '#f5f3ff', href: '/chat' },
+              { label: 'My Projects', icon: '*', color: '#06b6d4', bg: '#ecfeff', href: '/projects' },
+              { label: 'View Profile', icon: '*', color: '#f59e0b', bg: '#fefce8', href: '/settings' },
             ].map(action => (
               <a key={action.label} href={action.href} style={{
-                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-                gap:'6px', padding:'14px 8px', borderRadius:'12px', background: action.bg,
-                textDecoration:'none', transition:'transform 0.18s, box-shadow 0.18s',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                gap: '6px', padding: '14px 8px', borderRadius: '12px', background: action.bg,
+                textDecoration: 'none', transition: 'transform 0.18s, box-shadow 0.18s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 20px rgba(0,0,0,0.09)' }}
-              onMouseLeave={e => { e.currentTarget.style.transform='translateY(0)'; e.currentTarget.style.boxShadow='none' }}
+                onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.09)' }}
+                onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
               >
-                <span style={{ fontSize:'1.4rem' }}>{action.icon}</span>
-                <span style={{ fontSize:'0.73rem', fontWeight:700, color: action.color, textAlign:'center' }}>{action.label}</span>
+                <span style={{ fontSize: '1.4rem' }}>{action.icon}</span>
+                <span style={{ fontSize: '0.73rem', fontWeight: 700, color: action.color, textAlign: 'center' }}>{action.label}</span>
               </a>
             ))}
           </div>
@@ -1833,19 +2094,19 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
           <div className="panel-header">
             <h3>Live Activity</h3>
             {socketConnected
-              ? <span className="pill" style={{ background:'#dcfce7', color:'#16a34a' }}> Live</span>
-              : <span className="pill" style={{ background:'#f1f5f9', color:'#94a3b8' }}>Offline</span>}
+              ? <span className="pill" style={{ background: '#dcfce7', color: '#16a34a' }}> Live</span>
+              : <span className="pill" style={{ background: '#f1f5f9', color: '#94a3b8' }}>Offline</span>}
           </div>
-          <ul style={{ listStyle:'none', padding:0, margin:0, display:'flex', flexDirection:'column', gap:'8px' }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {feed.map((item, i) => (
               <li key={i} style={{
-                padding:'9px 12px', borderRadius:'10px', fontSize:'0.82rem', color:'#475569',
-                display:'flex', alignItems:'flex-start', gap:'8px',
+                padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', color: '#475569',
+                display: 'flex', alignItems: 'flex-start', gap: '8px',
                 background: i === 0 ? '#eef2ff' : '#f8fafc',
-                border:`1px solid ${i === 0 ? '#c7d2fe' : '#f1f5f9'}`,
-                transition:'all 0.4s',
+                border: `1px solid ${i === 0 ? '#c7d2fe' : '#f1f5f9'}`,
+                transition: 'all 0.4s',
               }}>
-                <span style={{ color:'#6366f1', fontSize:'0.7rem', marginTop:'2px', flexShrink:0 }}></span>
+                <span style={{ color: '#6366f1', fontSize: '0.7rem', marginTop: '2px', flexShrink: 0 }}></span>
                 <span>{item}</span>
               </li>
             ))}
@@ -1856,20 +2117,20 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
         <article className="panel-card">
           <div className="panel-header">
             <h3>Team Pulse</h3>
-            <span className="pill">{team.filter(m=>m.status==='active').length} online</span>
+            <span className="pill">{team.filter(m => m.status === 'active').length} online</span>
           </div>
-          <ul style={{ listStyle:'none', padding:0, margin:0, display:'flex', flexDirection:'column', gap:'10px' }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {team.map(m => (
-              <li key={m.name} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'8px 10px', borderRadius:'10px', background:'#fafafe', border:'1px solid #f1f5f9' }}>
-                <div style={{ position:'relative', width:34, height:34, borderRadius:'50%', background: m.color, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'0.8rem', fontWeight:800, color:'#fff', flexShrink:0 }}>
+              <li key={m.name} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 10px', borderRadius: '10px', background: '#fafafe', border: '1px solid #f1f5f9' }}>
+                <div style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
                   {m.name[0]}
-                  <span style={{ position:'absolute', bottom:0, right:0, width:9, height:9, borderRadius:'50%', background: statusColor[m.status], border:'2px solid #fff' }} />
+                  <span style={{ position: 'absolute', bottom: 0, right: 0, width: 9, height: 9, borderRadius: '50%', background: statusColor[m.status], border: '2px solid #fff' }} />
                 </div>
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:'0.85rem', fontWeight:700, color:'#1e293b' }}>{m.name}</div>
-                  <div style={{ fontSize:'0.73rem', color:'#94a3b8' }}>{m.role}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>{m.name}</div>
+                  <div style={{ fontSize: '0.73rem', color: '#94a3b8' }}>{m.role}</div>
                 </div>
-                <span style={{ fontSize:'0.7rem', fontWeight:700, color: statusColor[m.status], textTransform:'capitalize' }}>
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: statusColor[m.status], textTransform: 'capitalize' }}>
                   {m.status === 'active' ? ' Active' : m.status === 'idle' ? ' Idle' : ' Away'}
                 </span>
               </li>
@@ -1900,7 +2161,22 @@ function EmployeesPage({ employees, attendance, API_BASE, triggerRefresh, user }
   const getLiveStatus = (employee) => {
     const userId = employee.userId || employee.user?._id || employee.user?.id;
     const record = userId ? checkIns[String(userId)] : null;
-    if (record?.checkedIn) return { label: 'Active now', tone: 'active', detail: record.time ? 'Checked in at ' + record.time : 'Checked in' };
+    if (record?.checkedIn) {
+      if (record.breakStartedAt) {
+        return { 
+          label: 'On break', 
+          tone: 'pending', 
+          detail: 'On break since ' + record.breakStartedAt,
+          focus: record.currentFocus 
+        };
+      }
+      return { 
+        label: 'Active now', 
+        tone: 'active', 
+        detail: record.time ? 'Checked in at ' + record.time : 'Checked in',
+        focus: record.currentFocus 
+      };
+    }
     if (employee.status === 'Pending' || employee.status === 'Rejected') return { label: employee.status, tone: employee.status.toLowerCase(), detail: 'Account status' };
     return { label: 'Not checked in', tone: 'idle', detail: 'No active check-in' };
   };
@@ -2035,9 +2311,16 @@ function EmployeesPage({ employees, attendance, API_BASE, triggerRefresh, user }
                   {(() => {
                     const liveStatus = getLiveStatus(employee);
                     return (
-                      <span className={'attendance-status attendance-status-' + liveStatus.tone} title={liveStatus.detail}>
-                        {liveStatus.label}
-                      </span>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <span className={'attendance-status attendance-status-' + liveStatus.tone} title={liveStatus.detail}>
+                          {liveStatus.label}
+                        </span>
+                        {liveStatus.focus && (
+                          <span style={{ fontSize: '0.75rem', color: '#6366f1', fontWeight: 700, fontStyle: 'italic', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            💻 {liveStatus.focus}
+                          </span>
+                        )}
+                      </div>
                     );
                   })()}
                 </td>
@@ -2183,11 +2466,11 @@ function ApprovalsPage({ user, API_BASE, triggerRefresh }) {
 
   // ─── Local demo state (used when backend is offline) ──────────────────────
   const [demoApprovals, setDemoApprovals] = useState([
-    { id: 'demo-1', name: 'Ravi Kumar',    email: 'ravi@ems.com',   department: '',         role: '',           status: 'Pending',     requestedAt: '2026-07-01' },
-    { id: 'demo-2', name: 'Sneha Mehta',   email: 'sneha@ems.com',  department: 'HR',       role: 'HR Analyst', status: 'HR Approved', requestedAt: '2026-07-03' },
-    { id: 'demo-3', name: 'Arjun Das',     email: 'arjun@ems.com',  department: 'Sales',    role: 'Sales Rep',  status: 'HR Approved', requestedAt: '2026-07-05' },
-    { id: 'demo-4', name: 'Priya Singh',   email: 'priya@ems.com',  department: 'Finance',  role: 'Analyst',    status: 'HR Rejected', requestedAt: '2026-07-06' },
-    { id: 'demo-5', name: 'Carlos Reyes',  email: 'carlos@ems.com', department: 'Eng',      role: 'Dev',        status: 'Admin Approved', requestedAt: '2026-07-02' },
+    { id: 'demo-1', name: 'Ravi Kumar', email: 'ravi@ems.com', department: '', role: '', status: 'Pending', requestedAt: '2026-07-01' },
+    { id: 'demo-2', name: 'Sneha Mehta', email: 'sneha@ems.com', department: 'HR', role: 'HR Analyst', status: 'HR Approved', requestedAt: '2026-07-03' },
+    { id: 'demo-3', name: 'Arjun Das', email: 'arjun@ems.com', department: 'Sales', role: 'Sales Rep', status: 'HR Approved', requestedAt: '2026-07-05' },
+    { id: 'demo-4', name: 'Priya Singh', email: 'priya@ems.com', department: 'Finance', role: 'Analyst', status: 'HR Rejected', requestedAt: '2026-07-06' },
+    { id: 'demo-5', name: 'Carlos Reyes', email: 'carlos@ems.com', department: 'Eng', role: 'Dev', status: 'Admin Approved', requestedAt: '2026-07-02' },
   ]);
   const [liveApprovals, setLiveApprovals] = useState(null); // null = not loaded yet
   const [loading, setLoading] = useState(true);
@@ -2288,14 +2571,14 @@ function ApprovalsPage({ user, API_BASE, triggerRefresh }) {
   };
 
   // ─── Derived lists ────────────────────────────────────────────────────────
-  const hrQueue     = approvals.filter((a) => a.status === 'Pending');
-  const adminQueue  = approvals.filter((a) => a.status === 'HR Approved');
-  const history     = approvals.filter((a) => ['HR Rejected', 'Admin Approved', 'Admin Rejected'].includes(a.status));
+  const hrQueue = approvals.filter((a) => a.status === 'Pending');
+  const adminQueue = approvals.filter((a) => a.status === 'HR Approved');
+  const history = approvals.filter((a) => ['HR Rejected', 'Admin Approved', 'Admin Rejected'].includes(a.status));
 
   const statusMeta = {
-    'Pending':        { color: '#d97706', bg: '#fef3c7', label: 'Pending HR Review' },
-    'HR Approved':    { color: '#2563eb', bg: '#dbeafe', label: 'HR Approved – Awaiting Admin' },
-    'HR Rejected':    { color: '#dc2626', bg: '#fee2e2', label: 'HR Rejected' },
+    'Pending': { color: '#d97706', bg: '#fef3c7', label: 'Pending HR Review' },
+    'HR Approved': { color: '#2563eb', bg: '#dbeafe', label: 'HR Approved – Awaiting Admin' },
+    'HR Rejected': { color: '#dc2626', bg: '#fee2e2', label: 'HR Rejected' },
     'Admin Approved': { color: '#16a34a', bg: '#dcfce7', label: 'Admin Approved ✓' },
     'Admin Rejected': { color: '#dc2626', bg: '#fee2e2', label: 'Admin Rejected' },
   };
@@ -2596,16 +2879,129 @@ function ApprovalsPage({ user, API_BASE, triggerRefresh }) {
 }
 
 function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
-  const [status, setStatus] = useState({ checkedIn: false, time: '' });
+  const [status, setStatus] = useState({ checkedIn: false, time: '', breakStartedAt: null, totalBreakDuration: 0, currentFocus: '', history: [] });
   const [loading, setLoading] = useState(false);
+  const [breakLoading, setBreakLoading] = useState(false);
+  
+  // Digital Clock state
+  const [clockTime, setClockTime] = useState(new Date());
+  
+  // Real-time ticking stopwatch states (in seconds)
+  const [activeWorkSeconds, setActiveWorkSeconds] = useState(0);
+  const [activeBreakSeconds, setActiveBreakSeconds] = useState(0);
+  
+  // Tab state
+  const [activeTab, setActiveTab] = useState('history'); // 'history' | 'regularize' | 'approvals'
+  
+  // Regularization requests state
+  const [regRequests, setRegRequests] = useState([]);
+  const [regDate, setRegDate] = useState('');
+  const [regCheckIn, setRegCheckIn] = useState('');
+  const [regCheckOut, setRegCheckOut] = useState('');
+  const [regReason, setRegReason] = useState('');
+  const [regSubmitting, setRegSubmitting] = useState(false);
+  const [regSuccessMessage, setRegSuccessMessage] = useState('');
+  
+  // Live Work Focus state
+  const [focusInput, setFocusInput] = useState('');
+  const [focusUpdating, setFocusUpdating] = useState(false);
+  const [focusSuccess, setFocusSuccess] = useState(false);
+  
+  // HR Approval state
+  const [pendingRegs, setPendingRegs] = useState([]);
+  const [actioningId, setActioningId] = useState(null);
 
-  useEffect(() => {
+  const isHR = user.role === 'hr' || user.role === 'super_admin';
+
+  const loadStatus = useCallback(() => {
     if (!user || !API_BASE) return;
     fetch(`${API_BASE}/api/attendance/status/${user.id}`, { headers: authHeaders() })
       .then((res) => res.json())
-      .then((data) => setStatus(data))
+      .then((data) => {
+        setStatus(data);
+        setFocusInput(data.currentFocus || '');
+      })
       .catch(() => {});
   }, [user, API_BASE]);
+
+  const loadRegularizations = useCallback(() => {
+    if (!user || !API_BASE) return;
+    fetch(`${API_BASE}/api/attendance/regularizations`, { headers: authHeaders() })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          if (isHR) {
+            const sorted = [...data].sort((a, b) => {
+              if (a.status === 'Pending' && b.status !== 'Pending') return -1;
+              if (a.status !== 'Pending' && b.status === 'Pending') return 1;
+              return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+            setPendingRegs(sorted.filter(r => r.status === 'Pending'));
+            setRegRequests(sorted.filter(r => r.userId === user.id || r.status !== 'Pending'));
+          } else {
+            setRegRequests(data);
+          }
+        }
+      })
+      .catch(() => {});
+  }, [user, API_BASE, isHR]);
+
+  useEffect(() => {
+    loadStatus();
+    loadRegularizations();
+  }, [loadStatus, loadRegularizations]);
+
+  // Clock tick & Stopwatch calculations loop
+  useEffect(() => {
+    const parseTimeToday = (timeStr) => {
+      if (!timeStr) return null;
+      const cleanStr = timeStr.trim().toLowerCase();
+      const modifier = cleanStr.endsWith('pm') ? 'pm' : 'am';
+      const timeOnly = cleanStr.replace(/[ap]m/, '').trim();
+      let [hours, minutes] = timeOnly.split(':').map(Number);
+      if (modifier === 'pm' && hours < 12) hours += 12;
+      if (modifier === 'am' && hours === 12) hours = 0;
+      
+      const d = new Date();
+      d.setHours(hours, minutes, 0, 0);
+      return d;
+    };
+
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      setClockTime(now);
+
+      if (status.checkedIn && status.time) {
+        const checkInDate = parseTimeToday(status.time);
+        if (checkInDate) {
+          const elapsedSec = Math.max(0, Math.floor((now - checkInDate) / 1000));
+          
+          if (status.breakStartedAt) {
+            const breakStartDate = parseTimeToday(status.breakStartedAt);
+            if (breakStartDate) {
+              const currentBreakSec = Math.max(0, Math.floor((now - breakStartDate) / 1000));
+              const totalBreakSec = (status.totalBreakDuration || 0) * 60 + currentBreakSec;
+              setActiveBreakSeconds(totalBreakSec);
+              
+              const workedSec = Math.max(0, Math.floor((breakStartDate - checkInDate) / 1000) - (status.totalBreakDuration || 0) * 60);
+              setActiveWorkSeconds(workedSec);
+            }
+          } else {
+            const totalBreakSec = (status.totalBreakDuration || 0) * 60;
+            setActiveBreakSeconds(totalBreakSec);
+            
+            const workedSec = Math.max(0, elapsedSec - totalBreakSec);
+            setActiveWorkSeconds(workedSec);
+          }
+        }
+      } else {
+        setActiveWorkSeconds(0);
+        setActiveBreakSeconds(0);
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [status.checkedIn, status.time, status.breakStartedAt, status.totalBreakDuration]);
 
   const handleCheckInToggle = async () => {
     setLoading(true);
@@ -2616,7 +3012,16 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
         body: JSON.stringify({ userId: user.id, name: user.name })
       });
       const data = await response.json();
-      setStatus({ checkedIn: data.checkedIn, time: data.time || '' });
+      setStatus(prev => ({ 
+        ...prev, 
+        checkedIn: data.checkedIn, 
+        time: data.time || '', 
+        breakStartedAt: null, 
+        totalBreakDuration: 0,
+        currentFocus: ''
+      }));
+      setFocusInput('');
+      loadStatus();
       if (triggerRefresh) triggerRefresh();
     } catch (err) {
       console.error(err);
@@ -2625,47 +3030,539 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
     }
   };
 
+  const handleBreakToggle = async () => {
+    setBreakLoading(true);
+    const action = status.breakStartedAt ? 'end' : 'start';
+    try {
+      const response = await fetch(`${API_BASE}/api/attendance/break`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ userId: user.id, action })
+      });
+      const data = await response.json();
+      setStatus(prev => ({
+        ...prev,
+        breakStartedAt: data.breakStartedAt,
+        totalBreakDuration: data.totalBreakDuration
+      }));
+      loadStatus();
+      if (triggerRefresh) triggerRefresh();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBreakLoading(false);
+    }
+  };
+
+  const handleUpdateFocus = async (e) => {
+    e.preventDefault();
+    setFocusUpdating(true);
+    setFocusSuccess(false);
+    try {
+      const response = await fetch(`${API_BASE}/api/attendance/focus`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ userId: user.id, focus: focusInput })
+      });
+      if (response.ok) {
+        setStatus(prev => ({ ...prev, currentFocus: focusInput }));
+        setFocusSuccess(true);
+        setTimeout(() => setFocusSuccess(false), 3000);
+        if (triggerRefresh) triggerRefresh();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setFocusUpdating(false);
+    }
+  };
+
+  const handleRegularizeSubmit = async (e) => {
+    e.preventDefault();
+    setRegSubmitting(true);
+    setRegSuccessMessage('');
+    try {
+      const response = await fetch(`${API_BASE}/api/attendance/regularize`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          userId: user.id,
+          userName: user.name,
+          date: regDate,
+          checkInTime: regCheckIn,
+          checkOutTime: regCheckOut,
+          reason: regReason
+        })
+      });
+      if (response.ok) {
+        setRegDate('');
+        setRegCheckIn('');
+        setRegCheckOut('');
+        setRegReason('');
+        setRegSuccessMessage('Correction request submitted successfully!');
+        loadRegularizations();
+        if (triggerRefresh) triggerRefresh();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRegSubmitting(false);
+    }
+  };
+
+  const handleApprovalDecision = async (requestId, statusDecision) => {
+    setActioningId(requestId);
+    try {
+      const response = await fetch(`${API_BASE}/api/attendance/regularize/approve`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ requestId, status: statusDecision })
+      });
+      if (response.ok) {
+        loadRegularizations();
+        loadStatus();
+        if (triggerRefresh) triggerRefresh();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActioningId(null);
+    }
+  };
+
+  const formatClockTime = (date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  };
+
+  const formatClockDate = (date) => {
+    return date.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+  };
+
+  const formatDuration = (totalSeconds) => {
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+    return [
+      h.toString().padStart(2, '0'),
+      m.toString().padStart(2, '0'),
+      s.toString().padStart(2, '0')
+    ].join(':');
+  };
+
+  const workdayLimitSec = 28800;
+  const workProgressPct = Math.min(100, (activeWorkSeconds / workdayLimitSec) * 100);
+  const overtimeSeconds = Math.max(0, activeWorkSeconds - workdayLimitSec);
+
   return (
-    <section className="content-grid">
+    <div className="attendance-layout">
       <article className="panel-card">
         <div className="panel-header">
-          <h3>Attendance snapshot</h3>
-          <span className="pill">{attendance.summary}</span>
+          <h3>Clock-In Control Center</h3>
+          {status.breakStartedAt && (
+            <div className="break-pulse-indicator">
+              <span className="dot"></span>
+              <span>On Break</span>
+            </div>
+          )}
         </div>
-        <ul className="list">
-          {attendance.items.map((item) => (
-            <li key={item.label}>{item.label}: {item.value}</li>
-          ))}
-        </ul>
+        
+        <div className="digital-clock-card">
+          <span className="digital-clock-time">{formatClockTime(clockTime)}</span>
+          <span className="digital-clock-date">{formatClockDate(clockTime)}</span>
+        </div>
 
-        <div className="checkin-container" style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
-          <p className="panel-copy" style={{ marginBottom: '12px' }}>
-            {status.checkedIn 
-              ? `Status: Checked In today at ${status.time}` 
-              : 'Status: Not Checked In today'}
-          </p>
-          <button 
-            type="button" 
-            className={`submit-button ${status.checkedIn ? 'danger-btn' : ''}`}
-            onClick={handleCheckInToggle}
-            disabled={loading}
-            style={{ width: 'auto', padding: '10px 24px', background: status.checkedIn ? '#ef4444' : 'linear-gradient(135deg, #4338ca, #8b5cf6)' }}
-          >
-            {loading ? 'Processing...' : (status.checkedIn ? 'Check Out' : 'Check In Now')}
-          </button>
+        <div className="checkin-container" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '12px', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
+            <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Status</span>
+            <span className="pill" style={{ 
+              background: status.checkedIn ? (status.breakStartedAt ? '#fef3c7' : '#dcfce7') : '#fee2e2', 
+              color: status.checkedIn ? (status.breakStartedAt ? '#b45309' : '#15803d') : '#b91c1c', 
+              fontWeight: 'bold', 
+              fontSize: '0.8rem' 
+            }}>
+              {status.checkedIn ? (status.breakStartedAt ? 'On Break' : 'Active / Working') : 'Not Checked In'}
+            </span>
+          </div>
+
+          {status.checkedIn && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', fontSize: '0.8rem', color: '#64748b' }}>
+                <div>
+                  <strong>Logged In Time:</strong>
+                  <p style={{ margin: '4px 0 0 0', fontWeight: 700, color: '#334155', fontSize: '1.05rem', fontFamily: 'monospace' }}>
+                    {formatDuration(activeWorkSeconds)}
+                  </p>
+                </div>
+                <div>
+                  <strong>Break Duration:</strong>
+                  <p style={{ margin: '4px 0 0 0', fontWeight: 700, color: status.breakStartedAt ? '#d97706' : '#334155', fontSize: '1.05rem', fontFamily: 'monospace' }}>
+                    {formatDuration(activeBreakSeconds)}
+                  </p>
+                </div>
+              </div>
+
+              {/* Progress Meter */}
+              <div style={{ marginTop: '8px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '6px' }}>
+                  <span>Daily Progress (8h)</span>
+                  <span>{workProgressPct.toFixed(1)}%</span>
+                </div>
+                <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '99px', overflow: 'hidden', position: 'relative' }}>
+                  <div style={{ 
+                    width: `${workProgressPct}%`, 
+                    height: '100%', 
+                    background: status.breakStartedAt ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #6366f1, #a855f7)', 
+                    borderRadius: '99px',
+                    transition: 'width 0.5s ease-out',
+                    boxShadow: '0 0 8px rgba(99, 102, 241, 0.4)'
+                  }}></div>
+                </div>
+                {overtimeSeconds > 0 && (
+                  <span className="pill" style={{ display: 'inline-block', marginTop: '6px', fontSize: '0.7rem', background: '#fbcfe8', color: '#be185d', fontWeight: 'bold' }}>
+                    ⚠️ Overtime: +{formatDuration(overtimeSeconds)}
+                  </span>
+                )}
+              </div>
+
+              {/* Current Task Input */}
+              <form onSubmit={handleUpdateFocus} style={{ borderTop: '1px solid #e2e8f0', marginTop: '8px', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>What are you working on right now?</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input 
+                    type="text" 
+                    value={focusInput} 
+                    onChange={(e) => setFocusInput(e.target.value)}
+                    placeholder="e.g. Fixing design styles, writing tests..." 
+                    style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
+                  />
+                  <button 
+                    type="submit" 
+                    className="primary-button" 
+                    disabled={focusUpdating}
+                    style={{ marginTop: 0, padding: '8px 14px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                  >
+                    {focusUpdating ? 'Updating...' : 'Update'}
+                  </button>
+                </div>
+                {focusSuccess && (
+                  <span style={{ fontSize: '0.7rem', color: '#16a34a', fontWeight: 'bold' }}>✓ Focus shared with team</span>
+                )}
+              </form>
+            </div>
+          )}
+
+          <div className="attendance-action-buttons">
+            <button 
+              type="button" 
+              className={`submit-button ${status.checkedIn ? 'danger-btn' : ''}`}
+              onClick={handleCheckInToggle}
+              disabled={loading || status.breakStartedAt}
+              style={{ padding: '12px 24px', background: status.checkedIn ? '#ef4444' : 'linear-gradient(135deg, #4338ca, #8b5cf6)', borderRadius: '10px', border: 'none', color: '#fff', cursor: 'pointer', transition: 'all 0.2s', flex: 2 }}
+            >
+              {loading ? 'Processing...' : (status.checkedIn ? 'Check Out' : 'Check In Now')}
+            </button>
+
+            {status.checkedIn && (
+              <button
+                type="button"
+                className={`break-btn ${status.breakStartedAt ? 'on-break' : ''}`}
+                onClick={handleBreakToggle}
+                disabled={breakLoading}
+                style={{ flex: 1.2 }}
+              >
+                {breakLoading ? '...' : (status.breakStartedAt ? 'End Break' : 'Go on Break')}
+              </button>
+            )}
+          </div>
         </div>
       </article>
+
       <article className="panel-card">
         <div className="panel-header">
           <h3>Shift calendar</h3>
         </div>
         <ul className="list">
           {attendance.schedule.map((item) => (
-            <li key={item.title}>{item.title}  {item.time}</li>
+            <li key={item.title} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #f1f5f9' }}>
+              <span style={{ fontWeight: 600, color: '#334155' }}>{item.title}</span>
+              <span className="pill" style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.75rem' }}>{item.time}</span>
+            </li>
           ))}
         </ul>
       </article>
-    </section>
+
+      <div className="attendance-tabs-container">
+        <div className="attendance-tab-headers">
+          <button 
+            type="button" 
+            className={`attendance-tab-btn ${activeTab === 'history' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('history')}
+          >
+            My History Log
+          </button>
+          <button 
+            type="button" 
+            className={`attendance-tab-btn ${activeTab === 'regularize' ? 'active' : ''}`} 
+            onClick={() => setActiveTab('regularize')}
+          >
+            Corrections & Requests
+          </button>
+          {isHR && (
+            <button 
+              type="button" 
+              className={`attendance-tab-btn ${activeTab === 'approvals' ? 'active' : ''}`} 
+              onClick={() => setActiveTab('approvals')}
+              style={{ position: 'relative' }}
+            >
+              Pending Approvals
+              {pendingRegs.length > 0 && (
+                <span style={{ position: 'absolute', top: '-6px', right: '-8px', background: '#ef4444', color: '#fff', fontSize: '0.7rem', padding: '2px 6px', borderRadius: '99px', fontWeight: 'bold' }}>
+                  {pendingRegs.length}
+                </span>
+              )}
+            </button>
+          )}
+        </div>
+
+        <div className="attendance-tab-content">
+          {activeTab === 'history' && (
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h4 style={{ margin: 0, fontSize: '1rem', color: '#1e293b' }}>Attendance Logs</h4>
+                <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                  Live stats: {attendance.summary || '97% weekly'}
+                </span>
+              </div>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="premium-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Check-In</th>
+                      <th>Check-Out</th>
+                      <th>Break</th>
+                      <th>Total Hours</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {status.history && status.history.length > 0 ? (
+                      [...status.history].reverse().map((h, i) => (
+                        <tr key={i}>
+                          <td style={{ fontWeight: 600 }}>{h.date}</td>
+                          <td>{h.checkInTime}</td>
+                          <td>{h.checkOutTime || 'Active'}</td>
+                          <td>{h.breakDuration} mins</td>
+                          <td>{h.totalHours} hrs</td>
+                          <td>
+                            <span className="pill" style={{ 
+                              background: h.status === 'On Time' ? '#dcfce7' : '#fef3c7', 
+                              color: h.status === 'On Time' ? '#16a34a' : '#d97706',
+                              fontSize: '0.75rem',
+                              padding: '4px 8px'
+                            }}>
+                              {h.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="6" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                          No attendance logs recorded yet.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'regularize' && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '24px' }}>
+              <div style={{ background: 'rgba(248, 250, 252, 0.5)', padding: '20px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
+                <h4 style={{ marginTop: 0, marginBottom: '16px', fontSize: '0.95rem' }}>Request Clock Time Correction</h4>
+                
+                {regSuccessMessage && (
+                  <div className="success-alert">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                      <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                    {regSuccessMessage}
+                  </div>
+                )}
+
+                <form onSubmit={handleRegularizeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '4px', display: 'block' }}>Date</label>
+                    <input 
+                      type="date" 
+                      value={regDate} 
+                      onChange={(e) => setRegDate(e.target.value)} 
+                      required 
+                      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', width: '100%' }}
+                    />
+                  </div>
+                  <div className="regularize-grid">
+                    <div className="form-group">
+                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '4px', display: 'block' }}>Clock In</label>
+                      <input 
+                        type="text" 
+                        value={regCheckIn} 
+                        onChange={(e) => setRegCheckIn(e.target.value)} 
+                        placeholder="e.g. 09:15 am" 
+                        required 
+                        style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', width: '100%' }}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '4px', display: 'block' }}>Clock Out</label>
+                      <input 
+                        type="text" 
+                        value={regCheckOut} 
+                        onChange={(e) => setRegCheckOut(e.target.value)} 
+                        placeholder="e.g. 06:00 pm" 
+                        required 
+                        style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', width: '100%' }}
+                      />
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '4px', display: 'block' }}>Reason</label>
+                    <textarea 
+                      value={regReason} 
+                      onChange={(e) => setRegReason(e.target.value)} 
+                      placeholder="Why do you need correction?" 
+                      required 
+                      rows="3"
+                      style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', width: '100%', resize: 'none' }}
+                    />
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="primary-button" 
+                    disabled={regSubmitting}
+                    style={{ marginTop: '8px', padding: '10px 16px', fontSize: '0.85rem' }}
+                  >
+                    {regSubmitting ? 'Submitting...' : 'Submit Request'}
+                  </button>
+                </form>
+              </div>
+
+              <div>
+                <h4 style={{ marginTop: 0, marginBottom: '16px', fontSize: '0.95rem' }}>My Requests</h4>
+                <div style={{ overflowX: 'auto' }}>
+                  <table className="premium-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>Correction Times</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {regRequests && regRequests.length > 0 ? (
+                        regRequests.map((r) => (
+                          <tr key={r._id || r.id}>
+                            <td style={{ fontWeight: 600 }}>{r.date}</td>
+                            <td>
+                              <span style={{ fontSize: '0.8rem' }}>{r.checkInTime} - {r.checkOutTime}</span>
+                            </td>
+                            <td><p style={{ margin: 0, fontSize: '0.8rem', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.reason}>{r.reason}</p></td>
+                            <td>
+                              <span className="pill" style={{ 
+                                background: r.status === 'Approved' ? '#dcfce7' : (r.status === 'Rejected' ? '#fee2e2' : '#fef3c7'), 
+                                color: r.status === 'Approved' ? '#16a34a' : (r.status === 'Rejected' ? '#dc2626' : '#b45309'),
+                                fontSize: '0.75rem'
+                              }}>
+                                {r.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="4" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                            No correction requests found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'approvals' && isHR && (
+            <div>
+              <h4 style={{ marginTop: 0, marginBottom: '16px', fontSize: '0.95rem', color: '#1e293b' }}>
+                Pending Attendance Corrections ({pendingRegs.length})
+              </h4>
+              <div style={{ overflowX: 'auto' }}>
+                <table className="premium-table">
+                  <thead>
+                    <tr>
+                      <th>Employee</th>
+                      <th>Date</th>
+                      <th>Proposed Time</th>
+                      <th>Reason</th>
+                      <th style={{ textAlign: 'right' }}>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingRegs && pendingRegs.length > 0 ? (
+                      pendingRegs.map((r) => (
+                        <tr key={r._id || r.id}>
+                          <td><strong>{r.userName}</strong></td>
+                          <td style={{ fontWeight: 600 }}>{r.date}</td>
+                          <td>
+                            <span className="pill" style={{ background: '#eef2ff', color: '#4338ca', fontSize: '0.75rem', fontWeight: 600 }}>
+                              {r.checkInTime} - {r.checkOutTime}
+                            </span>
+                          </td>
+                          <td>{r.reason}</td>
+                          <td style={{ textAlign: 'right' }}>
+                            <div style={{ display: 'inline-flex', gap: '8px' }}>
+                              <button 
+                                type="button" 
+                                className="primary-button" 
+                                onClick={() => handleApprovalDecision(r._id || r.id, 'Approved')}
+                                disabled={actioningId === (r._id || r.id)}
+                                style={{ padding: '6px 12px', background: '#16a34a', fontSize: '0.75rem', marginTop: 0 }}
+                              >
+                                {actioningId === (r._id || r.id) ? '...' : 'Approve'}
+                              </button>
+                              <button 
+                                type="button" 
+                                className="submit-button danger-btn" 
+                                onClick={() => handleApprovalDecision(r._id || r.id, 'Rejected')}
+                                disabled={actioningId === (r._id || r.id)}
+                                style={{ padding: '6px 12px', background: '#dc2626', fontSize: '0.75rem', marginTop: 0 }}
+                              >
+                                {actioningId === (r._id || r.id) ? '...' : 'Reject'}
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', color: '#64748b', padding: '20px' }}>
+                          No pending correction approvals at the moment.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -2728,9 +3625,9 @@ function LeavePage({ leaveData, user, API_BASE, triggerRefresh }) {
 
         <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
           {!showForm ? (
-            <button 
-              type="button" 
-              className="primary-button" 
+            <button
+              type="button"
+              className="primary-button"
               onClick={() => setShowForm(true)}
             >
               Apply for Leave
@@ -2745,12 +3642,12 @@ function LeavePage({ leaveData, user, API_BASE, triggerRefresh }) {
                 </select>
               </div>
               <div className="form-group">
-                <input 
-                  type="text" 
-                  value={reason} 
+                <input
+                  type="text"
+                  value={reason}
                   onChange={(e) => setReason(e.target.value)}
-                  placeholder="Reason for leave" 
-                  required 
+                  placeholder="Reason for leave"
+                  required
                   style={{ padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
                 />
               </div>
@@ -2781,16 +3678,16 @@ function LeavePage({ leaveData, user, API_BASE, triggerRefresh }) {
                 <span className={`subtle-pill status-${item.status.toLowerCase()}`} style={{ color: item.status === 'Approved' ? '#16a34a' : (item.status === 'Rejected' ? '#dc2626' : '#d97706'), background: item.status === 'Approved' ? '#dcfce7' : (item.status === 'Rejected' ? '#fee2e2' : '#fef3c7') }}>{item.status}</span>
                 {isHR && item.status === 'Pending' && (
                   <div style={{ display: 'flex', gap: '4px' }}>
-                    <button 
-                      type="button" 
-                      onClick={() => handleApproveReject(item.id, 'Approved')} 
+                    <button
+                      type="button"
+                      onClick={() => handleApproveReject(item.id, 'Approved')}
                       style={{ padding: '6px 12px', background: '#16a34a', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}
                     >
                       Approve
                     </button>
-                    <button 
-                      type="button" 
-                      onClick={() => handleApproveReject(item.id, 'Rejected')} 
+                    <button
+                      type="button"
+                      onClick={() => handleApproveReject(item.id, 'Rejected')}
                       style={{ padding: '6px 12px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: '6px', fontSize: '0.8rem', cursor: 'pointer' }}
                     >
                       Reject
@@ -2891,7 +3788,7 @@ function PayrollPage({ payroll, API_BASE, triggerRefresh, user }) {
     setPayrollActionLoading(action)
     setPayrollActionMessage('')
     setPayrollActionError('')
-    
+
     // Client-side actions
     if (action === 'bank_transfer_file') {
       try {
@@ -2911,7 +3808,7 @@ function PayrollPage({ payroll, API_BASE, triggerRefresh, user }) {
         const csv = [headers, ...rows]
           .map((row) => row.map(escapeCsvValue).join(','))
           .join('\n')
-        
+
         downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `bank_transfer_${new Date().toISOString().slice(0, 10)}.csv`)
         setPayrollActionMessage('Bank transfer file downloaded securely.')
       } catch (error) {
@@ -2930,13 +3827,13 @@ function PayrollPage({ payroll, API_BASE, triggerRefresh, user }) {
       })
       const payload = await response.json()
       if (!response.ok) throw new Error(payload.message || 'Payroll action failed')
-      
+
       // Customize message based on action for better UX
       if (action === 'generate_slips') setPayrollActionMessage('Success: Payslips generated and emailed to all active employees.')
       else if (action === 'review_bonuses') setPayrollActionMessage('Success: Bonus review tasks assigned to department heads.')
       else if (action === 'approve_reimbursements') setPayrollActionMessage('Success: 12 pending reimbursements sent for final approval.')
       else setPayrollActionMessage(payload.message)
-      
+
       if (triggerRefresh) triggerRefresh()
     } catch (error) {
       setPayrollActionError(error.message === 'Failed to fetch' ? 'Backend unavailable. Start the server at http://localhost:5000.' : error.message)
@@ -3269,7 +4166,7 @@ function RecruitmentPage({ recruitment, user, API_BASE, triggerRefresh }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to add role');
-      
+
       setShowModal(false);
       setNewRoleTitle('');
       if (triggerRefresh) triggerRefresh();
@@ -3284,9 +4181,9 @@ function RecruitmentPage({ recruitment, user, API_BASE, triggerRefresh }) {
     if (!isAdmin) return;
     const currentIndex = STAGE_PROGRESSION.indexOf(job.stage);
     if (currentIndex === -1 || currentIndex >= STAGE_PROGRESSION.length - 1) return;
-    
+
     const nextStage = STAGE_PROGRESSION[currentIndex + 1];
-    
+
     try {
       const token = window.localStorage.getItem('ems-token');
       const response = await fetch(`${API_BASE}/api/recruitment/${job.id}/stage`, {
@@ -3299,7 +4196,7 @@ function RecruitmentPage({ recruitment, user, API_BASE, triggerRefresh }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to update stage');
-      
+
       if (triggerRefresh) triggerRefresh();
     } catch (err) {
       alert(err.message === 'Failed to fetch' ? 'Backend unavailable.' : err.message);
@@ -3346,22 +4243,22 @@ function RecruitmentPage({ recruitment, user, API_BASE, triggerRefresh }) {
           <h3>Active Positions</h3>
           <span className="pill">{recruitment.openRoles} total</span>
         </div>
-        
+
         {recruitment.positions && recruitment.positions.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {recruitment.positions.map((job) => {
               const stageMeta = getStageColor(job.stage);
               const canAdvance = isAdmin && STAGE_PROGRESSION.indexOf(job.stage) < STAGE_PROGRESSION.length - 1;
               return (
-                <div key={job.title} style={{ 
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                <div key={job.title} style={{
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   padding: '16px 20px', background: '#f8fafc', borderRadius: '12px',
                   border: '1px solid #e2e8f0', transition: 'all 0.2s', cursor: canAdvance ? 'pointer' : 'default'
                 }}
-                onMouseEnter={e => Object.assign(e.currentTarget.style, { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' })}
-                onMouseLeave={e => Object.assign(e.currentTarget.style, { transform: 'none', boxShadow: 'none' })}
-                onClick={() => handleAdvanceStage(job)}
-                title={canAdvance ? `Click to advance to ${STAGE_PROGRESSION[STAGE_PROGRESSION.indexOf(job.stage) + 1]}` : ''}
+                  onMouseEnter={e => Object.assign(e.currentTarget.style, { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' })}
+                  onMouseLeave={e => Object.assign(e.currentTarget.style, { transform: 'none', boxShadow: 'none' })}
+                  onClick={() => handleAdvanceStage(job)}
+                  title={canAdvance ? `Click to advance to ${STAGE_PROGRESSION[STAGE_PROGRESSION.indexOf(job.stage) + 1]}` : ''}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #e0e7ff, #f3e8ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4f46e5', fontWeight: 800, fontSize: '0.9rem' }}>
@@ -3372,18 +4269,18 @@ function RecruitmentPage({ recruitment, user, API_BASE, triggerRefresh }) {
                       <p style={{ margin: '2px 0 0', color: '#64748b', fontSize: '0.8rem' }}>Full-time • Remote/Hybrid</p>
                     </div>
                   </div>
-                  
+
                   <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                    <span style={{ 
-                      padding: '6px 12px', borderRadius: '20px', 
-                      background: stageMeta.bg, color: stageMeta.color, 
-                      fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap' 
+                    <span style={{
+                      padding: '6px 12px', borderRadius: '20px',
+                      background: stageMeta.bg, color: stageMeta.color,
+                      fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap'
                     }}>
                       {job.stage}
                     </span>
                     {canAdvance && (
-                      <button type="button" style={{ 
-                        background: 'none', border: 'none', color: '#94a3b8', 
+                      <button type="button" style={{
+                        background: 'none', border: 'none', color: '#94a3b8',
                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
                       }}>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -3416,19 +4313,19 @@ function RecruitmentPage({ recruitment, user, API_BASE, triggerRefresh }) {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
-            
+
             {error && <div className="feather-badge danger" style={{ marginBottom: '16px', display: 'flex' }}>{error}</div>}
-            
+
             <form onSubmit={handleAddRole}>
               <div className="form-group" style={{ marginBottom: '24px' }}>
                 <label>Job Title</label>
-                <input 
-                  type="text" 
-                  value={newRoleTitle} 
-                  onChange={(e) => setNewRoleTitle(e.target.value)} 
-                  placeholder="e.g. Senior Backend Engineer" 
-                  autoFocus 
-                  required 
+                <input
+                  type="text"
+                  value={newRoleTitle}
+                  onChange={(e) => setNewRoleTitle(e.target.value)}
+                  placeholder="e.g. Senior Backend Engineer"
+                  autoFocus
+                  required
                 />
               </div>
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
@@ -3457,13 +4354,13 @@ function ProjectsPage({ projects, user, API_BASE, triggerRefresh, socket }) {
 
   useEffect(() => {
     if (!socket) return;
-    
+
     const handleProjectAdded = () => {
       if (triggerRefresh) triggerRefresh();
     };
-    
+
     socket.on('project_added', handleProjectAdded);
-    
+
     return () => {
       socket.off('project_added', handleProjectAdded);
     };
@@ -3474,7 +4371,7 @@ function ProjectsPage({ projects, user, API_BASE, triggerRefresh, socket }) {
     if (!name || !summary) return;
     setSubmitting(true);
     setError('');
-    
+
     try {
       const response = await fetch(`${API_BASE}/api/projects`, {
         method: 'POST',
@@ -3483,7 +4380,7 @@ function ProjectsPage({ projects, user, API_BASE, triggerRefresh, socket }) {
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to create project');
-      
+
       setName('');
       setSummary('');
       setOwner('');
@@ -3527,11 +4424,11 @@ function ProjectsPage({ projects, user, API_BASE, triggerRefresh, socket }) {
               <h3 style={{ fontSize: '1.1rem', color: '#0f172a' }}>{project.name}</h3>
               <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca' }}>{project.progress || '0%'}</span>
             </div>
-            
+
             <p className="panel-copy" style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '20px', lineHeight: '1.5' }}>
               {project.summary}
             </p>
-            
+
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: 'auto' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f1f5f9', padding: '6px 10px', borderRadius: '8px', fontSize: '0.8rem', color: '#475569' }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
@@ -3563,24 +4460,24 @@ function ProjectsPage({ projects, user, API_BASE, triggerRefresh, socket }) {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
-            
+
             {error && <div className="feather-badge danger" style={{ marginBottom: '16px', display: 'flex' }}>{error}</div>}
-            
+
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div className="form-group">
-                <label>Project Name <span style={{color: '#ef4444'}}>*</span></label>
+                <label>Project Name <span style={{ color: '#ef4444' }}>*</span></label>
                 <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Q4 Marketing Campaign" autoFocus required />
               </div>
               <div className="form-group">
-                <label>Summary <span style={{color: '#ef4444'}}>*</span></label>
+                <label>Summary <span style={{ color: '#ef4444' }}>*</span></label>
                 <textarea value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Brief description of the project goals" rows="3" required style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '0.9rem', color: '#334155', fontFamily: 'inherit', resize: 'vertical' }}></textarea>
               </div>
-              
+
               <div className="form-group">
                 <label>Project Owner</label>
                 <input type="text" value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="e.g. Sarah Jenkins" />
               </div>
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                 <div className="form-group">
                   <label>Deadline</label>
@@ -3591,7 +4488,7 @@ function ProjectsPage({ projects, user, API_BASE, triggerRefresh, socket }) {
                   <input type="text" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="e.g. $45,000" />
                 </div>
               </div>
-              
+
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
                 <button type="button" className="ghost-button" onClick={() => setShowModal(false)}>Cancel</button>
                 <button type="submit" className="primary-button" disabled={submitting || !name || !summary}>
@@ -3619,7 +4516,7 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
       .then(data => {
         if (Array.isArray(data)) setMeetings(data);
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [API_BASE]);
 
   useEffect(() => {
@@ -3627,8 +4524,8 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
     fetch(`${API_BASE}/api/chat/messages`, { headers: authHeaders() })
       .then((res) => res.json())
       .then((data) => setMessages(data))
-      .catch(() => {});
-      
+      .catch(() => { });
+
     fetchMeetings();
   }, [API_BASE, fetchMeetings]);
 
@@ -3638,7 +4535,7 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
     const handleChatMessage = (msg) => {
       setMessages((prev) => [...prev, msg]);
     };
-    
+
     const handleMeetingUpdate = () => {
       fetchMeetings();
     };
@@ -3662,7 +4559,7 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
     });
     setNewMessage('');
   };
-  
+
   const handleJoinMeeting = async () => {
     try {
       const response = await fetch(`${API_BASE}/api/meetings`, {
@@ -3680,7 +4577,7 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
       setInCall(true); // Still allow joining if API fails
     }
   };
-  
+
   const handleLeaveMeeting = async () => {
     setInCall(false);
     if (currentMeetingId) {
@@ -3705,7 +4602,7 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
           <h3>Team collaboration</h3>
           <span className="pill">Live Chat</span>
         </div>
-        
+
         <div className="chat-messages" style={{ flexGrow: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
           {messages.map((msg, index) => {
             const isMe = msg.sender === user.name;
@@ -3721,13 +4618,13 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
         </div>
 
         <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-          <input 
-            type="text" 
-            value={newMessage} 
-            onChange={(e) => setNewMessage(e.target.value)} 
-            placeholder="Type your message..." 
-            required 
-            style={{ flexGrow: 1, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '10px', outline: 'none', fontSize: '0.95rem' }} 
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Type your message..."
+            required
+            style={{ flexGrow: 1, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '10px', outline: 'none', fontSize: '0.95rem' }}
           />
           <button type="submit" className="primary-button" style={{ borderRadius: '10px', padding: '10px 20px' }}>
             Send
@@ -3741,7 +4638,7 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
             <h3>Live Video Meeting</h3>
             {inCall && <span className="pill" style={{ background: '#dcfce7', color: '#16a34a' }}>Ongoing</span>}
           </div>
-          
+
           {!inCall ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: '12px', marginTop: '10px' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', color: '#6366f1' }}>
@@ -3752,9 +4649,9 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
               </div>
               <h4 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>Group Standup Room</h4>
               <p style={{ margin: '0 0 20px 0', color: '#64748b', fontSize: '0.9rem' }}>Join the live team video call. No external software required.</p>
-              <button 
-                type="button" 
-                className="primary-button" 
+              <button
+                type="button"
+                className="primary-button"
                 onClick={handleJoinMeeting}
                 style={{ borderRadius: '24px', padding: '10px 24px', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none' }}
               >
@@ -3770,8 +4667,8 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
                 title="Live Video Meeting"
               />
               <div style={{ padding: '10px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={handleLeaveMeeting}
                   style={{ padding: '8px 16px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}
                 >
@@ -3819,7 +4716,7 @@ function SettingsPage({ user, setUser, API_BASE }) {
   const [editName, setEditName] = useState(user.name || '');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
-  
+
   // Local state for toggles (mocked for now, but UI reflects instant changes)
   const [controls, setControls] = useState({
     twoFactor: true,
@@ -3837,10 +4734,10 @@ function SettingsPage({ user, setUser, API_BASE }) {
       setIsEditing(false);
       return;
     }
-    
+
     setIsSaving(true);
     setError('');
-    
+
     try {
       const token = window.localStorage.getItem('ems-token');
       const response = await fetch(`${API_BASE}/api/users/profile`, {
@@ -3851,10 +4748,10 @@ function SettingsPage({ user, setUser, API_BASE }) {
         },
         body: JSON.stringify({ name: editName })
       });
-      
+
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to update profile');
-      
+
       setUser(prev => ({ ...prev, name: data.user.name }));
       setIsEditing(false);
     } catch (err) {
@@ -3884,7 +4781,7 @@ function SettingsPage({ user, setUser, API_BASE }) {
             <h3>Profile Information</h3>
             <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca' }}>{user.role}</span>
           </div>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
               <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: getAvatarColor(user.name), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 'bold' }}>
@@ -3894,10 +4791,10 @@ function SettingsPage({ user, setUser, API_BASE }) {
                 <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Display Name</label>
                 {isEditing ? (
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <input 
-                      type="text" 
-                      value={editName} 
-                      onChange={e => setEditName(e.target.value)} 
+                    <input
+                      type="text"
+                      value={editName}
+                      onChange={e => setEditName(e.target.value)}
                       style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', flexGrow: 1 }}
                       autoFocus
                     />
@@ -3911,8 +4808,8 @@ function SettingsPage({ user, setUser, API_BASE }) {
                 ) : (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{ fontSize: '1.1rem', color: '#0f172a', fontWeight: 600 }}>{user.name}</span>
-                    <button 
-                      onClick={() => setIsEditing(true)} 
+                    <button
+                      onClick={() => setIsEditing(true)}
                       style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
                       title="Edit Name"
                     >
@@ -3936,7 +4833,7 @@ function SettingsPage({ user, setUser, API_BASE }) {
                 <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Authentication Method</label>
                 <div style={{ fontSize: '1rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   {user.isGoogle ? (
-                    <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea4335" strokeWidth="2"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Connected via Google</>
+                    <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea4335" strokeWidth="2"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg> Connected via Google</>
                   ) : (
                     <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Email & Password</>
                   )}
@@ -3954,7 +4851,7 @@ function SettingsPage({ user, setUser, API_BASE }) {
           <div className="panel-header" style={{ marginBottom: '24px' }}>
             <h3>Security Controls</h3>
           </div>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {[
               { key: 'twoFactor', title: 'Two-Factor Authentication (2FA)', desc: 'Require a security code in addition to your password.' },
@@ -3966,17 +4863,17 @@ function SettingsPage({ user, setUser, API_BASE }) {
                   <h4 style={{ margin: '0 0 4px 0', color: '#0f172a', fontSize: '1rem' }}>{setting.title}</h4>
                   <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>{setting.desc}</p>
                 </div>
-                
+
                 {/* Toggle Switch */}
-                <button 
+                <button
                   onClick={() => handleToggle(setting.key)}
-                  style={{ 
+                  style={{
                     position: 'relative', width: '44px', height: '24px', borderRadius: '12px',
-                    background: controls[setting.key] ? '#10b981' : '#cbd5e1', 
+                    background: controls[setting.key] ? '#10b981' : '#cbd5e1',
                     border: 'none', cursor: 'pointer', transition: 'background 0.3s'
                   }}
                 >
-                  <div style={{ 
+                  <div style={{
                     position: 'absolute', top: '2px', left: controls[setting.key] ? '22px' : '2px',
                     width: '20px', height: '20px', background: 'white', borderRadius: '50%',
                     transition: 'left 0.3s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
@@ -4101,10 +4998,13 @@ function App() {
     socketInstance.on('notification', handleRealtimeRefresh)
     socketInstance.on('employee_added', () => handleRealtimeRefresh('Employee directory updated'))
     socketInstance.on('employee_moved', () => handleRealtimeRefresh('Employee role or department updated'))
+    socketInstance.on('employee_updated', () => handleRealtimeRefresh('Employee details updated'))
     socketInstance.on('approval_updated', () => handleRealtimeRefresh('Approval status updated'))
     socketInstance.on('attendance_updated', () => handleRealtimeRefresh('Attendance status updated'))
     socketInstance.on('project_added', () => handleRealtimeRefresh('Project list updated'))
     socketInstance.on('payroll_updated', (message) => handleRealtimeRefresh(message || 'Payroll updated'))
+    socketInstance.on('leave_updated', () => handleRealtimeRefresh('Leave requests updated'))
+    socketInstance.on('recruitment_updated', () => handleRealtimeRefresh('Recruitment list updated'))
 
     const fallbackRefresh = setInterval(() => {
       if (!socketInstance.connected) loadData()
@@ -4151,10 +5051,10 @@ function App() {
       if (payload.user.token) {
         window.localStorage.setItem('ems-token', payload.user.token)
       }
-      setUser({ 
-        id: payload.user.id, 
-        name: payload.user.name, 
-        email: payload.user.email, 
+      setUser({
+        id: payload.user.id,
+        name: payload.user.name,
+        email: payload.user.email,
         role: payload.user.role,
         isGoogle: true
       })
@@ -4281,11 +5181,11 @@ function App() {
           <Route path="/login" element={<LoginPage form={form} setForm={setForm} authMode={authMode} setAuthMode={setAuthMode} onSubmit={handleSubmit} onGoogleLogin={handleGoogleLogin} error={error} googleEmail={googleEmail} pendingMessage={pendingMessage} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        <GoogleModal 
-          isOpen={showGoogleModal} 
-          onClose={() => setShowGoogleModal(false)} 
-          onSelectAccount={handleGoogleSelect} 
-          demoUsers={demoUsers} 
+        <GoogleModal
+          isOpen={showGoogleModal}
+          onClose={() => setShowGoogleModal(false)}
+          onSelectAccount={handleGoogleSelect}
+          demoUsers={demoUsers}
         />
       </BrowserRouter>
     )
@@ -4295,8 +5195,8 @@ function App() {
     <BrowserRouter>
       <AppLayout user={user} onLogout={handleLogout}>
         <Routes>
-          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} />}</ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} />}</ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} />}</ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} />}</ProtectedRoute>} />
           <Route path="/employees" element={<ProtectedRoute user={user}><EmployeesPage employees={employees} attendance={attendance} API_BASE={API_BASE} triggerRefresh={loadData} user={user} /></ProtectedRoute>} />
           <Route path="/approvals" element={<ProtectedRoute user={user}><ApprovalsPage user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/attendance" element={<ProtectedRoute user={user}><AttendancePage attendance={attendance} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
