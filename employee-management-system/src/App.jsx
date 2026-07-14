@@ -476,7 +476,9 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
             <div className="google-spinner"></div>
             <p className="google-loading-title">Signing in with Google</p>
             <p className="google-loading-subtitle">
-              {selectedUser ? selectedUser.email : customEmail}
+              {selectedUser 
+                ? (selectedUser.role === 'super_admin' ? '••••••••@ems.com' : selectedUser.email) 
+                : (customEmail === 'admin@ems.com' ? '••••••••@ems.com' : customEmail)}
             </p>
           </div>
         ) : view === 'custom' ? (
@@ -562,7 +564,6 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
                   </div>
                   <div className="google-account-details">
                     <span className="google-account-name">{item.name}</span>
-                    <span className="google-account-email">{item.email}</span>
                   </div>
                   <span className="google-role-badge">{item.role.replace('_', ' ')}</span>
                 </button>
@@ -630,7 +631,7 @@ function LoginPage({ form, setForm, authMode, setAuthMode, onSubmit, onGoogleLog
           Continue with Google
         </button>
         {googleEmail && (
-          <p className="google-email-label">Signing in with {googleEmail}</p>
+          <p className="google-email-label">Signing in with {googleEmail === 'admin@ems.com' ? '••••••••@ems.com' : googleEmail}</p>
         )}
 
         <div className="divider">
@@ -3927,7 +3928,9 @@ function SettingsPage({ user, setUser, API_BASE }) {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Email Address</label>
-                <div style={{ fontSize: '1rem', color: '#334155' }}>{user.email}</div>
+                <div style={{ fontSize: '1rem', color: '#334155' }}>
+                  {user.role === 'super_admin' ? '••••••••@ems.com' : user.email}
+                </div>
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Authentication Method</label>
