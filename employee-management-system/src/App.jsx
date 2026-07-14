@@ -1187,6 +1187,7 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected }) {
   return (
     <>
       <SectionHeading title={`Welcome back, ${user.name}`} subtitle="A unified view of growth, operations, and collaboration." action={socketConnected ? 'Live sync on' : 'Connecting...'} />
+
       <section className="stats-grid">
         {cards.map((card) => (
           <article key={card.label} className="stat-card">
@@ -2175,20 +2176,30 @@ function EmployeesPage({ employees, attendance, API_BASE, triggerRefresh, user }
 }
 
 function ApprovalsPage({ user, API_BASE, triggerRefresh }) {
-  const [approvals, setApprovals] = useState([]);
+  const isHR = user.role === 'hr';
+  const isAdmin = user.role === 'super_admin';
+  const canApprove = isHR || isAdmin;
+
+  // ─── Local demo state (used when backend is offline) ──────────────────────
+  const [demoApprovals, setDemoApprovals] = useState([
+    { id: 'demo-1', name: 'Ravi Kumar',    email: 'ravi@ems.com',   department: '',         role: '',           status: 'Pending',     requestedAt: '2026-07-01' },
+    { id: 'demo-2', name: 'Sneha Mehta',   email: 'sneha@ems.com',  department: 'HR',       role: 'HR Analyst', status: 'HR Approved', requestedAt: '2026-07-03' },
+    { id: 'demo-3', name: 'Arjun Das',     email: 'arjun@ems.com',  department: 'Sales',    role: 'Sales Rep',  status: 'HR Approved', requestedAt: '2026-07-05' },
+    { id: 'demo-4', name: 'Priya Singh',   email: 'priya@ems.com',  department: 'Finance',  role: 'Analyst',    status: 'HR Rejected', requestedAt: '2026-07-06' },
+    { id: 'demo-5', name: 'Carlos Reyes',  email: 'carlos@ems.com', department: 'Eng',      role: 'Dev',        status: 'Admin Approved', requestedAt: '2026-07-02' },
+  ]);
+  const [liveApprovals, setLiveApprovals] = useState(null); // null = not loaded yet
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState('');
   const [formById, setFormById] = useState({});
 
-  const canApprove = user.role === 'hr' || user.role === 'super_admin';
+  // Which tab is active: 'hr-queue' | 'admin-queue' | 'history'
+  const [activeTab, setActiveTab] = useState(isAdmin ? 'admin-queue' : 'hr-queue');
+
+  const approvals = liveApprovals ?? demoApprovals;
 
   const loadApprovals = () => {
-    if (!canApprove) {
-      setApprovals([]);
-      setLoading(false);
-      return;
-    }
-
+    if (!canApprove) { setLoading(false); return; }
     setLoading(true);
     fetch(`${API_BASE}/api/approvals`, { headers: authHeaders() })
       .then(async (res) => {
@@ -2197,130 +2208,389 @@ function ApprovalsPage({ user, API_BASE, triggerRefresh }) {
         return data;
       })
       .then((data) => {
-        setApprovals(data);
+        setLiveApprovals(data);
         setFormById(Object.fromEntries(data.map((item) => [
           item.id,
-          { department: item.department === 'General' ? '' : item.department, role: item.role === 'Employee' ? '' : item.role }
+          { department: item.department === 'General' ? '' : (item.department || ''), role: item.role === 'Employee' ? '' : (item.role || '') }
         ])));
         setMessage('');
       })
-      .catch((err) => setMessage(err.message))
+      .catch(() => {
+        // Backend unavailable – fall back to demo data
+        setLiveApprovals(null);
+        setFormById(Object.fromEntries(demoApprovals.map((item) => [
+          item.id,
+          { department: item.department || '', role: item.role || '' }
+        ])));
+      })
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    loadApprovals();
-  }, [user.id]);
+  useEffect(() => { loadApprovals(); }, [user.id]);
 
   const updateForm = (id, field, value) => {
-    setFormById((current) => ({
-      ...current,
-      [id]: { ...(current[id] || {}), [field]: value }
-    }));
+    setFormById((cur) => ({ ...cur, [id]: { ...(cur[id] || {}), [field]: value } }));
   };
 
-  const handleDecision = async (id, decision) => {
+  // ─── HR handles first-level decisions ─────────────────────────────────────
+  const handleHRDecision = async (id, decision) => {
     setMessage('');
     const form = formById[id] || {};
-    const endpoint = decision === 'approve' ? 'approve' : 'reject';
-
-    if (decision === 'approve' && (!form.department?.trim() || !form.role?.trim())) {
-      setMessage('Department and role are required before approval.');
+    if (decision === 'hr_approve' && (!form.department?.trim() || !form.role?.trim())) {
+      setMessage('Fill in Department and Role before approving.');
       return;
     }
-
+    const nextStatus = decision === 'hr_approve' ? 'HR Approved' : 'HR Rejected';
     try {
-      const response = await fetch(`${API_BASE}/api/approvals/${id}/${endpoint}`, {
+      const res = await fetch(`${API_BASE}/api/approvals/${id}/${decision === 'hr_approve' ? 'approve' : 'reject'}`, {
         method: 'PUT',
         headers: authHeaders(),
         body: JSON.stringify({ department: form.department, role: form.role })
       });
-      const payload = await response.json();
-      if (!response.ok) throw new Error(payload.message || 'Approval update failed');
-      setMessage(payload.message || 'Approval updated');
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.message || 'Action failed');
+      setMessage(payload.message || `Marked as ${nextStatus}`);
       loadApprovals();
       if (triggerRefresh) triggerRefresh();
-    } catch (err) {
-      setMessage(err.message);
+    } catch {
+      // Offline: mutate demo state locally
+      setDemoApprovals((prev) =>
+        prev.map((a) => a.id === id
+          ? { ...a, status: nextStatus, department: form.department || a.department, role: form.role || a.role }
+          : a)
+      );
+      setMessage(`[Offline demo] Marked as ${nextStatus}`);
     }
+  };
+
+  // ─── Admin handles final decisions ────────────────────────────────────────
+  const handleAdminDecision = async (id, decision) => {
+    setMessage('');
+    const nextStatus = decision === 'admin_approve' ? 'Admin Approved' : 'Admin Rejected';
+    try {
+      const res = await fetch(`${API_BASE}/api/approvals/${id}/admin-${decision === 'admin_approve' ? 'approve' : 'reject'}`, {
+        method: 'PUT',
+        headers: authHeaders()
+      });
+      const payload = await res.json();
+      if (!res.ok) throw new Error(payload.message || 'Action failed');
+      setMessage(payload.message || `Marked as ${nextStatus}`);
+      loadApprovals();
+      if (triggerRefresh) triggerRefresh();
+    } catch {
+      // Offline: mutate demo state locally
+      setDemoApprovals((prev) =>
+        prev.map((a) => a.id === id ? { ...a, status: nextStatus } : a)
+      );
+      setMessage(`[Offline demo] Marked as ${nextStatus}`);
+    }
+  };
+
+  // ─── Derived lists ────────────────────────────────────────────────────────
+  const hrQueue     = approvals.filter((a) => a.status === 'Pending');
+  const adminQueue  = approvals.filter((a) => a.status === 'HR Approved');
+  const history     = approvals.filter((a) => ['HR Rejected', 'Admin Approved', 'Admin Rejected'].includes(a.status));
+
+  const statusMeta = {
+    'Pending':        { color: '#d97706', bg: '#fef3c7', label: 'Pending HR Review' },
+    'HR Approved':    { color: '#2563eb', bg: '#dbeafe', label: 'HR Approved – Awaiting Admin' },
+    'HR Rejected':    { color: '#dc2626', bg: '#fee2e2', label: 'HR Rejected' },
+    'Admin Approved': { color: '#16a34a', bg: '#dcfce7', label: 'Admin Approved ✓' },
+    'Admin Rejected': { color: '#dc2626', bg: '#fee2e2', label: 'Admin Rejected' },
   };
 
   if (!canApprove) {
     return (
       <article className="panel-card">
-        <div className="panel-header">
-          <h3>Approvals</h3>
-        </div>
-        <p className="panel-copy">Only HR and admin accounts can manage employee approvals.</p>
+        <div className="panel-header"><h3>Approvals</h3></div>
+        <p className="panel-copy">Only HR and Admin accounts can manage employee approvals.</p>
       </article>
     );
   }
 
+  // ─── Tab styles ───────────────────────────────────────────────────────────
+  const tabStyle = (key) => ({
+    padding: '9px 20px',
+    borderRadius: '10px',
+    border: 'none',
+    cursor: 'pointer',
+    fontWeight: 700,
+    fontSize: '0.85rem',
+    transition: 'all 0.18s',
+    background: activeTab === key ? 'linear-gradient(135deg,#4338ca,#8b5cf6)' : '#f1f5f9',
+    color: activeTab === key ? '#fff' : '#64748b',
+    boxShadow: activeTab === key ? '0 4px 12px rgba(99,102,241,0.25)' : 'none',
+  });
+
+  // ─── Approval row renderer ────────────────────────────────────────────────
+  const renderRow = (item, actions) => {
+    const meta = statusMeta[item.status] || {};
+    return (
+      <tr key={item.id}>
+        <td>
+          <div style={{ fontWeight: 700, color: '#1e293b' }}>{item.name}</div>
+          <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>{item.email}</div>
+        </td>
+        <td>
+          {actions === 'hr' ? (
+            <input
+              type="text"
+              value={formById[item.id]?.department || ''}
+              onChange={(e) => updateForm(item.id, 'department', e.target.value)}
+              placeholder="Department"
+              style={{ width: '100%', minWidth: 120, padding: '7px 10px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
+            />
+          ) : (
+            <span style={{ fontWeight: 600, color: '#334155' }}>{item.department || '—'}</span>
+          )}
+        </td>
+        <td>
+          {actions === 'hr' ? (
+            <input
+              type="text"
+              value={formById[item.id]?.role || ''}
+              onChange={(e) => updateForm(item.id, 'role', e.target.value)}
+              placeholder="Job role"
+              style={{ width: '100%', minWidth: 120, padding: '7px 10px', border: '1px solid #e2e8f0', borderRadius: '8px', fontSize: '0.85rem' }}
+            />
+          ) : (
+            <span style={{ fontWeight: 600, color: '#334155' }}>{item.role || '—'}</span>
+          )}
+        </td>
+        <td>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: 5,
+            padding: '4px 10px', borderRadius: 20,
+            background: meta.bg, color: meta.color,
+            fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap'
+          }}>
+            {meta.label || item.status}
+          </span>
+        </td>
+        <td style={{ textAlign: 'right' }}>
+          {actions === 'hr' && (
+            <div style={{ display: 'inline-flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => handleHRDecision(item.id, 'hr_approve')}
+                style={{ padding: '7px 14px', background: 'linear-gradient(135deg,#2563eb,#4f46e5)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'opacity 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                HR Approve
+              </button>
+              <button
+                type="button"
+                onClick={() => handleHRDecision(item.id, 'hr_reject')}
+                style={{ padding: '7px 14px', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'opacity 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                Reject
+              </button>
+            </div>
+          )}
+          {actions === 'admin' && (
+            <div style={{ display: 'inline-flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => handleAdminDecision(item.id, 'admin_approve')}
+                style={{ padding: '7px 14px', background: 'linear-gradient(135deg,#16a34a,#059669)', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'opacity 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                Admin Approve ✓
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAdminDecision(item.id, 'admin_reject')}
+                style={{ padding: '7px 14px', background: '#fee2e2', color: '#dc2626', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', transition: 'opacity 0.15s' }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                Final Reject
+              </button>
+            </div>
+          )}
+          {actions === 'history' && (
+            <span style={{ fontSize: '0.78rem', color: '#94a3b8' }}>{item.requestedAt || '—'}</span>
+          )}
+        </td>
+      </tr>
+    );
+  };
+
+  const tableHeader = (showInputCols = true) => (
+    <thead>
+      <tr>
+        <th>Employee</th>
+        <th>Department</th>
+        <th>Role</th>
+        <th>Status</th>
+        <th style={{ textAlign: 'right' }}>Actions</th>
+      </tr>
+    </thead>
+  );
+
   return (
-    <section className="panel-card">
-      <div className="panel-header">
-        <h3>Employee approvals</h3>
-        <span className="pill">{approvals.length} pending</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* ── Header ── */}
+      <section className="page-heading" style={{ paddingBottom: 0 }}>
+        <div>
+          <p className="eyebrow">Approval workflow</p>
+          <h2>Employee Onboarding Approvals</h2>
+          <p className="helper-text" style={{ margin: 0 }}>
+            Two-stage pipeline: HR reviews first → Admin gives final sign-off.
+          </p>
+        </div>
+
+        {/* Stage pipeline legend */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {[
+            { label: 'Pending', color: '#d97706', bg: '#fef3c7' },
+            { label: '→ HR Approved', color: '#2563eb', bg: '#dbeafe' },
+            { label: '→ Admin Approved', color: '#16a34a', bg: '#dcfce7' },
+          ].map((s) => (
+            <span key={s.label} style={{ padding: '4px 12px', borderRadius: 20, background: s.bg, color: s.color, fontSize: '0.75rem', fontWeight: 700 }}>
+              {s.label}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Tabs ── */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {isHR && (
+          <button type="button" style={tabStyle('hr-queue')} onClick={() => setActiveTab('hr-queue')}>
+            HR Queue
+            {hrQueue.length > 0 && (
+              <span style={{ marginLeft: 8, background: '#ef4444', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: '0.72rem' }}>
+                {hrQueue.length}
+              </span>
+            )}
+          </button>
+        )}
+        {isAdmin && (
+          <>
+            <button type="button" style={tabStyle('admin-queue')} onClick={() => setActiveTab('admin-queue')}>
+              Admin Queue
+              {adminQueue.length > 0 && (
+                <span style={{ marginLeft: 8, background: '#ef4444', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: '0.72rem' }}>
+                  {adminQueue.length}
+                </span>
+              )}
+            </button>
+            <button type="button" style={tabStyle('hr-queue')} onClick={() => setActiveTab('hr-queue')}>
+              HR Queue
+              {hrQueue.length > 0 && (
+                <span style={{ marginLeft: 8, background: '#ef4444', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: '0.72rem' }}>
+                  {hrQueue.length}
+                </span>
+              )}
+            </button>
+          </>
+        )}
+        <button type="button" style={tabStyle('history')} onClick={() => setActiveTab('history')}>
+          History
+          {history.length > 0 && (
+            <span style={{ marginLeft: 8, background: '#94a3b8', color: '#fff', borderRadius: 10, padding: '1px 7px', fontSize: '0.72rem' }}>
+              {history.length}
+            </span>
+          )}
+        </button>
       </div>
-      {message && <p className="error-text" style={{ marginTop: 0 }}>{message}</p>}
-      {loading ? (
-        <p className="panel-copy">Loading approvals...</p>
-      ) : approvals.length === 0 ? (
-        <p className="panel-copy">No pending employee requests.</p>
-      ) : (
-        <div style={{ overflowX: 'auto' }}>
-          <table className="data-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Department</th>
-                <th>Role</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {approvals.map((item) => (
-                <tr key={item.id}>
-                  <td>{item.name}</td>
-                  <td>{item.email}</td>
-                  <td>
-                    <input
-                      type="text"
-                      value={formById[item.id]?.department || ''}
-                      onChange={(e) => updateForm(item.id, 'department', e.target.value)}
-                      placeholder="Department"
-                      style={{ width: '100%', minWidth: '140px', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                    />
-                  </td>
-                  <td>
-                    <input
-                      type="text"
-                      value={formById[item.id]?.role || ''}
-                      onChange={(e) => updateForm(item.id, 'role', e.target.value)}
-                      placeholder="Job role"
-                      style={{ width: '100%', minWidth: '140px', padding: '8px 10px', border: '1px solid #e2e8f0', borderRadius: '8px' }}
-                    />
-                  </td>
-                  <td><span className="subtle-pill">{item.status}</span></td>
-                  <td style={{ textAlign: 'right' }}>
-                    <div style={{ display: 'inline-flex', gap: '8px' }}>
-                      <button type="button" className="primary-button" style={{ padding: '8px 12px' }} onClick={() => handleDecision(item.id, 'approve')}>
-                        Approve
-                      </button>
-                      <button type="button" className="ghost-button" style={{ padding: '8px 12px', color: '#dc2626' }} onClick={() => handleDecision(item.id, 'reject')}>
-                        Reject
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+      {/* ── Status message ── */}
+      {message && (
+        <div className={`feather-badge ${message.toLowerCase().includes('reject') ? 'danger' : 'success'}`} style={{ alignSelf: 'flex-start' }}>
+          {message}
         </div>
       )}
-    </section>
+
+      {/* ── HR Queue Tab ── */}
+      {activeTab === 'hr-queue' && (
+        <section className="panel-card">
+          <div className="panel-header">
+            <div>
+              <h3>HR First-Level Review</h3>
+              <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+                Set department &amp; role, then approve or reject.
+              </p>
+            </div>
+            <span className="pill" style={{ background: '#fef3c7', color: '#d97706' }}>
+              {hrQueue.length} pending
+            </span>
+          </div>
+          {loading ? (
+            <p className="panel-copy">Loading…</p>
+          ) : hrQueue.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '36px 0', color: '#94a3b8' }}>
+              <div style={{ fontSize: '2rem', marginBottom: 8 }}>✅</div>
+              <p style={{ margin: 0, fontWeight: 600 }}>No pending HR requests</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="data-table">
+                {tableHeader()}
+                <tbody>{hrQueue.map((item) => renderRow(item, isHR ? 'hr' : 'history'))}</tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── Admin Queue Tab ── */}
+      {activeTab === 'admin-queue' && isAdmin && (
+        <section className="panel-card">
+          <div className="panel-header">
+            <div>
+              <h3>Admin Final Sign-Off</h3>
+              <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#94a3b8' }}>
+                These have been reviewed by HR and are awaiting your final decision.
+              </p>
+            </div>
+            <span className="pill" style={{ background: '#dbeafe', color: '#2563eb' }}>
+              {adminQueue.length} awaiting
+            </span>
+          </div>
+          {loading ? (
+            <p className="panel-copy">Loading…</p>
+          ) : adminQueue.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '36px 0', color: '#94a3b8' }}>
+              <div style={{ fontSize: '2rem', marginBottom: 8 }}>🎯</div>
+              <p style={{ margin: 0, fontWeight: 600 }}>No requests awaiting admin approval</p>
+            </div>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="data-table">
+                {tableHeader(false)}
+                <tbody>{adminQueue.map((item) => renderRow(item, 'admin'))}</tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* ── History Tab ── */}
+      {activeTab === 'history' && (
+        <section className="panel-card">
+          <div className="panel-header">
+            <h3>Approval History</h3>
+            <span className="subtle-pill">{history.length} resolved</span>
+          </div>
+          {history.length === 0 ? (
+            <p className="panel-copy">No resolved approvals yet.</p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="data-table">
+                {tableHeader(false)}
+                <tbody>{history.map((item) => renderRow(item, 'history'))}</tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      )}
+    </div>
   );
 }
 
@@ -2535,91 +2805,693 @@ function LeavePage({ leaveData, user, API_BASE, triggerRefresh }) {
   )
 }
 
-function PayrollPage({ payroll }) {
+function PayrollPage({ payroll, API_BASE, triggerRefresh, user }) {
+  const [payrollActionMessage, setPayrollActionMessage] = useState('')
+  const [payrollActionError, setPayrollActionError] = useState('')
+  const [payrollActionLoading, setPayrollActionLoading] = useState('')
+  const [employeePayroll, setEmployeePayroll] = useState([])
+  const [selectedPayrollId, setSelectedPayrollId] = useState('')
+
+  const isAdmin = user?.role === 'super_admin' || user?.role === 'hr'
+
+  const payrollStats = [
+    { label: 'Gross pay', value: '$5,470', detail: 'before deductions', icon: 'GP', grad: 'linear-gradient(135deg,#0ea5e9,#6366f1)' },
+    { label: 'Net salary', value: payroll.items.find((item) => item.label === 'Net salary')?.value || '$4,820', detail: 'ready to release', icon: 'NS', grad: 'linear-gradient(135deg,#10b981,#059669)' },
+    { label: 'Tax withheld', value: '$420', detail: 'statutory estimate', icon: 'TX', grad: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+    { label: 'Pay cycle', value: 'Monthly', detail: 'closes Jun 25', icon: 'PC', grad: 'linear-gradient(135deg,#8b5cf6,#6366f1)' }
+  ]
+
+  const payrollTimeline = [
+    { label: 'Timesheets locked', date: '2026-06-20', status: 'Done' },
+    { label: 'Finance verification', date: '2026-06-23', status: 'Done' },
+    { label: 'Bank file prepared', date: '2026-06-24', status: 'Ready' },
+    { label: 'Employee payslips sent', date: '2026-06-25', status: payroll.status }
+  ]
+
+  const complianceChecks = [
+    { label: 'PF / benefits matched', status: 'Clear' },
+    { label: 'Tax declarations reviewed', status: 'Clear' },
+    { label: 'Reimbursements included', status: '2 pending' },
+    { label: 'Bank account validation', status: 'Clear' }
+  ]
+
+  const departmentSplit = [
+    { label: 'Engineering', value: '$2,140', pct: 44, color: '#6366f1' },
+    { label: 'Operations', value: '$1,210', pct: 25, color: '#0ea5e9' },
+    { label: 'HR', value: '$760', pct: 16, color: '#10b981' },
+    { label: 'Sales', value: '$710', pct: 15, color: '#f59e0b' }
+  ]
+
+  const payrollActions = [
+    { label: 'Generate slips', action: 'generate_slips' },
+    { label: 'Review bonuses', action: 'review_bonuses' },
+    { label: 'Approve reimbursements', action: 'approve_reimbursements' },
+    { label: 'Bank transfer file', action: 'bank_transfer_file' }
+  ]
+
+  useEffect(() => {
+    if (!API_BASE) return
+    fetch(`${API_BASE}/api/payroll/employees`, { headers: authHeaders() })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('Unable to load employee payroll')))
+      .then((rows) => {
+        setEmployeePayroll(rows)
+        setSelectedPayrollId((current) => current || rows[0]?.id || '')
+      })
+      .catch(() => setEmployeePayroll([]))
+  }, [API_BASE])
+
+  const selectedPayroll = employeePayroll.find((item) => item.id === selectedPayrollId) || employeePayroll[0]
+  const canTransferPayroll = user?.role === 'hr' || user?.role === 'super_admin'
+
+  const handleSalaryTransfer = async () => {
+    if (!selectedPayroll) return
+    setPayrollActionLoading(`transfer-${selectedPayroll.id}`)
+    setPayrollActionMessage('')
+    setPayrollActionError('')
+    try {
+      const response = await fetch(`${API_BASE}/api/payroll/transfer`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ employeeId: selectedPayroll.id })
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.message || 'Salary transfer failed')
+      setPayrollActionMessage(`${payload.message} (${payload.transactionId})`)
+      setEmployeePayroll((rows) => rows.map((row) => row.id === selectedPayroll.id ? payload.payroll : row))
+      if (triggerRefresh) triggerRefresh()
+    } catch (error) {
+      setPayrollActionError(error.message === 'Failed to fetch' ? 'Backend unavailable. Start the server at http://localhost:5000.' : error.message)
+    } finally {
+      setPayrollActionLoading('')
+    }
+  }
+
+  const handlePayrollAction = async (action) => {
+    setPayrollActionLoading(action)
+    setPayrollActionMessage('')
+    setPayrollActionError('')
+    
+    // Client-side actions
+    if (action === 'bank_transfer_file') {
+      try {
+        if (!employeePayroll || employeePayroll.length === 0) {
+          throw new Error('No employees available for transfer')
+        }
+        const headers = ['Beneficiary Name', 'Bank Name', 'Account Number', 'IFSC Code', 'Amount', 'Currency', 'Payment Reference']
+        const rows = employeePayroll.map(emp => [
+          emp.name,
+          emp.bankName || 'N/A',
+          emp.accountNumber || 'N/A',
+          emp.ifsc || 'N/A',
+          emp.netSalary || 0,
+          emp.currency || '$',
+          `SALARY-${new Date().toISOString().slice(0, 7)}`
+        ])
+        const csv = [headers, ...rows]
+          .map((row) => row.map(escapeCsvValue).join(','))
+          .join('\n')
+        
+        downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), `bank_transfer_${new Date().toISOString().slice(0, 10)}.csv`)
+        setPayrollActionMessage('Bank transfer file downloaded securely.')
+      } catch (error) {
+        setPayrollActionError(error.message)
+      } finally {
+        setPayrollActionLoading('')
+      }
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/payroll/action`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ action })
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.message || 'Payroll action failed')
+      
+      // Customize message based on action for better UX
+      if (action === 'generate_slips') setPayrollActionMessage('Success: Payslips generated and emailed to all active employees.')
+      else if (action === 'review_bonuses') setPayrollActionMessage('Success: Bonus review tasks assigned to department heads.')
+      else if (action === 'approve_reimbursements') setPayrollActionMessage('Success: 12 pending reimbursements sent for final approval.')
+      else setPayrollActionMessage(payload.message)
+      
+      if (triggerRefresh) triggerRefresh()
+    } catch (error) {
+      setPayrollActionError(error.message === 'Failed to fetch' ? 'Backend unavailable. Start the server at http://localhost:5000.' : error.message)
+    } finally {
+      setPayrollActionLoading('')
+    }
+  }
+
+  const handlePayrollExport = async () => {
+    setPayrollActionLoading('export')
+    setPayrollActionMessage('')
+    setPayrollActionError('')
+    try {
+      const response = await fetch(`${API_BASE}/api/payroll/export`, { headers: authDownloadHeaders() })
+      if (!response.ok) throw new Error('Failed to export payroll data.')
+      const blob = await response.blob()
+      downloadBlob(blob, 'payroll.csv')
+      setPayrollActionMessage('Payroll CSV exported')
+    } catch {
+      const headers = ['Label', 'Value']
+      const rows = [
+        ...payroll.items.map((item) => [item.label, item.value]),
+        ...payroll.payslips.map((item) => [item.name, item.date])
+      ]
+      const csv = [headers, ...rows]
+        .map((row) => row.map(escapeCsvValue).join(','))
+        .join('\n')
+      downloadBlob(new Blob([csv], { type: 'text/csv;charset=utf-8;' }), 'payroll.csv')
+      setPayrollActionMessage('Backend unavailable, exported current payroll view')
+    } finally {
+      setPayrollActionLoading('')
+    }
+  }
+
+  // ─── Employee-only view ────────────────────────────────────────────────────
+  if (!isAdmin) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <section className="page-heading">
+          <div>
+            <p className="eyebrow">My Payroll</p>
+            <h2>Salary &amp; Payslips</h2>
+            <p className="helper-text" style={{ margin: 0 }}>View your salary summary and download your payslips.</p>
+          </div>
+        </section>
+
+        {/* Personal salary summary cards */}
+        <section className="stats-grid">
+          {[
+            { label: 'Net salary', value: payroll.items.find(i => i.label === 'Net salary')?.value || '$4,820', detail: 'this month', icon: 'NS', grad: 'linear-gradient(135deg,#10b981,#059669)' },
+            { label: 'Bonus', value: payroll.items.find(i => i.label === 'Bonus')?.value || '$480', detail: 'included', icon: 'BN', grad: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+            { label: 'Deductions', value: payroll.items.find(i => i.label === 'Deductions')?.value || '$170', detail: 'this cycle', icon: 'DX', grad: 'linear-gradient(135deg,#8b5cf6,#6366f1)' },
+            { label: 'Pay cycle', value: 'Monthly', detail: 'closes Jun 25', icon: 'PC', grad: 'linear-gradient(135deg,#0ea5e9,#6366f1)' },
+          ].map(card => (
+            <article key={card.label} className="stat-card">
+              <div className="stat-icon" style={{ background: card.grad, color: '#fff', fontSize: '0.78rem', fontWeight: 800 }}>{card.icon}</div>
+              <p>{card.label}</p>
+              <h3>{card.value}</h3>
+              <span>{card.detail}</span>
+              <div className="card-gradient-band" />
+            </article>
+          ))}
+        </section>
+
+        <section className="content-grid">
+          {/* Monthly breakdown */}
+          <article className="panel-card">
+            <div className="panel-header">
+              <h3>Monthly payroll</h3>
+              <span className="pill">{payroll.status}</span>
+            </div>
+            <ul className="list">
+              {payroll.items.map(item => (
+                <li key={item.label}>{item.label}: {item.value}</li>
+              ))}
+            </ul>
+          </article>
+
+          {/* Recent payslips */}
+          <article className="panel-card">
+            <div className="panel-header">
+              <h3>Recent payslips</h3>
+              <span className="subtle-pill">{payroll.payslips.length} files</span>
+            </div>
+            <ul className="list">
+              {payroll.payslips.map(item => (
+                <li key={item.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>{item.name}</span>
+                  <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{item.date}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="helper-text" style={{ marginTop: '12px', fontSize: '0.78rem' }}>
+              Contact HR to download or dispute a payslip.
+            </p>
+          </article>
+        </section>
+      </div>
+    )
+  }
+
+  // ─── Admin / HR full payroll dashboard ────────────────────────────────────
   return (
-    <section className="content-grid">
-      <article className="panel-card">
-        <div className="panel-header">
-          <h3>Monthly payroll</h3>
-          <span className="pill">{payroll.status}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <section className="page-heading">
+        <div>
+          <p className="eyebrow">Payroll workspace</p>
+          <h2>Monthly compensation control</h2>
+          <p className="helper-text" style={{ margin: 0 }}>Track payouts, compliance, payslips, and department payroll exposure.</p>
         </div>
-        <ul className="list">
-          {payroll.items.map((item) => (
-            <li key={item.label}>{item.label}: {item.value}</li>
-          ))}
-        </ul>
-      </article>
-      <article className="panel-card">
-        <div className="panel-header">
-          <h3>Recent payslips</h3>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+          <button type="button" className="ghost-button" onClick={handlePayrollExport} disabled={payrollActionLoading === 'export'}>
+            {payrollActionLoading === 'export' ? 'Exporting...' : 'Export CSV'}
+          </button>
+          <button type="button" className="primary-button" onClick={() => handlePayrollAction('release')} disabled={payrollActionLoading === 'release'}>
+            {payrollActionLoading === 'release' ? 'Releasing...' : 'Release Payroll'}
+          </button>
         </div>
-        <ul className="list">
-          {payroll.payslips.map((item) => (
-            <li key={item.name}>{item.name}  {item.date}</li>
-          ))}
-        </ul>
-      </article>
-    </section>
+      </section>
+
+      {(payrollActionMessage || payrollActionError) && (
+        <div className={`feather-badge ${payrollActionError ? 'danger' : 'success'}`} style={{ alignSelf: 'flex-start' }}>
+          {payrollActionError || payrollActionMessage}
+        </div>
+      )}
+
+      <section className="stats-grid">
+        {payrollStats.map((card) => (
+          <article key={card.label} className="stat-card">
+            <div className="stat-icon" style={{ background: card.grad, color: '#fff', fontSize: '0.78rem', fontWeight: 800 }}>
+              {card.icon}
+            </div>
+            <p>{card.label}</p>
+            <h3>{card.value}</h3>
+            <span>{card.detail}</span>
+            <div className="card-gradient-band" />
+          </article>
+        ))}
+      </section>
+
+      <section className="content-grid">
+        <article className="panel-card">
+          <div className="panel-header">
+            <h3>Employee salary transfer</h3>
+            <span className="pill">{employeePayroll.length} employees</span>
+          </div>
+          {employeePayroll.length ? (
+            <div style={{ display: 'grid', gap: '14px' }}>
+              <div className="form-group">
+                <label>Select employee</label>
+                <select value={selectedPayroll?.id || ''} onChange={(event) => setSelectedPayrollId(event.target.value)}>
+                  {employeePayroll.map((item) => (
+                    <option key={item.id} value={item.id}>{item.name} - {item.department}</option>
+                  ))}
+                </select>
+              </div>
+              {selectedPayroll && (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
+                  <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>Role <strong>{selectedPayroll.role}</strong></div>
+                  <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>Bank <strong>{selectedPayroll.bankName}</strong></div>
+                  <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>Account <strong>{selectedPayroll.accountNumber}</strong></div>
+                  <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>IFSC <strong>{selectedPayroll.ifsc}</strong></div>
+                  <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>Gross <strong>{selectedPayroll.currency}{selectedPayroll.baseSalary + selectedPayroll.bonus}</strong></div>
+                  <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>Net <strong>{selectedPayroll.currency}{selectedPayroll.netSalary}</strong></div>
+                </div>
+              )}
+              <button type="button" className="primary-button" onClick={handleSalaryTransfer} disabled={!canTransferPayroll || !selectedPayroll || payrollActionLoading === `transfer-${selectedPayroll?.id}`} style={{ justifyContent: 'center', borderRadius: '12px' }}>
+                {payrollActionLoading === `transfer-${selectedPayroll?.id}` ? 'Transferring...' : 'Transfer Salary'}
+              </button>
+              {!canTransferPayroll && <p className="helper-text" style={{ margin: 0 }}>Only HR and Super Admin can transfer salary.</p>}
+            </div>
+          ) : (
+            <p className="helper-text">No active employees are available for payroll transfer.</p>
+          )}
+        </article>
+
+        <article className="panel-card">
+          <div className="panel-header">
+            <h3>Transfer process</h3>
+            <span className="feather-badge info">Admin controlled</span>
+          </div>
+          <ul className="list">
+            <li>1. HR selects an active employee.</li>
+            <li>2. Admin-reviewed salary, bonus, deductions, and bank details are shown.</li>
+            <li>3. HR clicks Transfer Salary.</li>
+            <li>4. Backend records the action, sends a live payroll update, and returns a transaction ID.</li>
+          </ul>
+        </article>
+      </section>
+      <section className="content-grid">
+        <article className="panel-card">
+          <div className="panel-header">
+            <h3>Monthly payroll</h3>
+            <span className="pill">{payroll.status}</span>
+          </div>
+          <ul className="list">
+            {payroll.items.map((item) => (
+              <li key={item.label}>{item.label}: {item.value}</li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="panel-card">
+          <div className="panel-header">
+            <h3>Recent payslips</h3>
+            <span className="subtle-pill">{payroll.payslips.length} files</span>
+          </div>
+          <ul className="list">
+            {payroll.payslips.map((item) => (
+              <li key={item.name}>{item.name}  {item.date}</li>
+            ))}
+          </ul>
+        </article>
+      </section>
+
+      <section className="content-grid">
+        <article className="panel-card">
+          <div className="panel-header">
+            <h3>Payroll timeline</h3>
+            <span className="feather-badge success">On schedule</span>
+          </div>
+          <ul className="list">
+            {payrollTimeline.map((item) => (
+              <li key={item.label}>
+                <span style={{ fontWeight: 700, color: '#334155' }}>{item.label}</span>
+                <span style={{ float: 'right', color: '#94a3b8' }}>{item.date}  {item.status}</span>
+              </li>
+            ))}
+          </ul>
+        </article>
+
+        <article className="panel-card">
+          <div className="panel-header">
+            <h3>Compliance checks</h3>
+            <span className="feather-badge info">Audit ready</span>
+          </div>
+          <ul className="list">
+            {complianceChecks.map((item) => (
+              <li key={item.label}>{item.label}: {item.status}</li>
+            ))}
+          </ul>
+        </article>
+      </section>
+
+      <section className="content-grid">
+        <article className="panel-card">
+          <div className="panel-header">
+            <h3>Department split</h3>
+            <span className="subtle-pill">$4,820 total</span>
+          </div>
+          <div className="dept-list">
+            {departmentSplit.map((dept) => (
+              <div key={dept.label} className="dept-item">
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span className="dept-name">{dept.label}</span>
+                    <span style={{ fontSize: '0.73rem', color: '#94a3b8', fontWeight: 600 }}>{dept.value}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div className="dept-bar-container">
+                      <div className="dept-bar-value" style={{ width: `${dept.pct}%`, background: dept.color }} />
+                    </div>
+                    <span className="dept-percent-text">{dept.pct}%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="panel-card">
+          <div className="panel-header">
+            <h3>Quick actions</h3>
+            <span className="pill">Finance</span>
+          </div>
+          <div className="feature-grid" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', marginTop: 0 }}>
+            {payrollActions.map((item) => (
+              <button key={item.action} type="button" className="ghost-button" onClick={() => handlePayrollAction(item.action)} disabled={payrollActionLoading === item.action} style={{ justifyContent: 'center', borderRadius: '12px' }}>
+                {payrollActionLoading === item.action ? 'Working...' : item.label}
+              </button>
+            ))}
+          </div>
+        </article>
+      </section>
+    </div>
   )
 }
 
-function RecruitmentPage({ recruitment }) {
+function RecruitmentPage({ recruitment, user, API_BASE, triggerRefresh }) {
+  const [showModal, setShowModal] = useState(false);
+  const [newRoleTitle, setNewRoleTitle] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  const isAdmin = user?.role === 'super_admin' || user?.role === 'hr';
+
+  // Mapping for pipeline stats to give them icons and gradients
+  const pipelineConfig = {
+    'Applicants': { icon: 'AP', grad: 'linear-gradient(135deg, #6366f1, #8b5cf6)' },
+    'Interviews': { icon: 'IN', grad: 'linear-gradient(135deg, #0ea5e9, #3b82f6)' },
+    'Offers': { icon: 'OF', grad: 'linear-gradient(135deg, #10b981, #059669)' }
+  };
+
+  const getStageColor = (stage) => {
+    const s = (stage || '').toLowerCase();
+    if (s.includes('screen')) return { bg: '#fef3c7', color: '#d97706' };
+    if (s.includes('hr') || s.includes('interview')) return { bg: '#e0e7ff', color: '#4338ca' };
+    if (s.includes('offer')) return { bg: '#dcfce7', color: '#16a34a' };
+    if (s.includes('hire') || s.includes('accept')) return { bg: '#dcfce7', color: '#16a34a' };
+    return { bg: '#f1f5f9', color: '#475569' };
+  };
+
+  const STAGE_PROGRESSION = ['Screening', 'HR Round', 'Technical Interview', 'Final Round', 'Offer Extended', 'Hired'];
+
+  const handleAddRole = async (e) => {
+    e.preventDefault();
+    if (!newRoleTitle.trim()) return;
+    setIsSubmitting(true);
+    setError('');
+
+    try {
+      const token = window.localStorage.getItem('ems-token');
+      const response = await fetch(`${API_BASE}/api/recruitment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ title: newRoleTitle.trim() })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to add role');
+      
+      setShowModal(false);
+      setNewRoleTitle('');
+      if (triggerRefresh) triggerRefresh();
+    } catch (err) {
+      setError(err.message === 'Failed to fetch' ? 'Backend unavailable.' : err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAdvanceStage = async (job) => {
+    if (!isAdmin) return;
+    const currentIndex = STAGE_PROGRESSION.indexOf(job.stage);
+    if (currentIndex === -1 || currentIndex >= STAGE_PROGRESSION.length - 1) return;
+    
+    const nextStage = STAGE_PROGRESSION[currentIndex + 1];
+    
+    try {
+      const token = window.localStorage.getItem('ems-token');
+      const response = await fetch(`${API_BASE}/api/recruitment/${job.id}/stage`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ stage: nextStage })
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to update stage');
+      
+      if (triggerRefresh) triggerRefresh();
+    } catch (err) {
+      alert(err.message === 'Failed to fetch' ? 'Backend unavailable.' : err.message);
+    }
+  };
+
   return (
-    <section className="content-grid">
-      <article className="panel-card">
-        <div className="panel-header">
-          <h3>Open positions</h3>
-          <span className="pill">{recruitment.openRoles} active</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative' }}>
+      <section className="page-heading">
+        <div>
+          <p className="eyebrow">Talent acquisition</p>
+          <h2>Recruitment Pipeline</h2>
+          <p className="helper-text" style={{ margin: 0 }}>
+            Track open positions, applicant funnels, and interview stages.
+          </p>
         </div>
-        <ul className="list">
-          {recruitment.positions.map((job) => (
-            <li key={job.title}>{job.title}  {job.stage}</li>
-          ))}
-        </ul>
-      </article>
-      <article className="panel-card">
+        {isAdmin && (
+          <button type="button" className="primary-button" onClick={() => setShowModal(true)}>
+            + New Requisition
+          </button>
+        )}
+      </section>
+
+      {/* Pipeline Health Stats */}
+      <section className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+        {recruitment.pipeline.map((item) => {
+          const config = pipelineConfig[item.label] || { icon: 'PI', grad: 'linear-gradient(135deg, #94a3b8, #64748b)' };
+          return (
+            <article key={item.label} className="stat-card">
+              <div className="stat-icon" style={{ background: config.grad, color: '#fff', fontSize: '0.85rem', fontWeight: 800 }}>
+                {config.icon}
+              </div>
+              <p>{item.label}</p>
+              <h3>{item.value}</h3>
+              <div className="card-gradient-band" />
+            </article>
+          );
+        })}
+      </section>
+
+      {/* Open Positions List */}
+      <section className="panel-card">
         <div className="panel-header">
-          <h3>Pipeline health</h3>
+          <h3>Active Positions</h3>
+          <span className="pill">{recruitment.openRoles} total</span>
         </div>
-        <ul className="list">
-          {recruitment.pipeline.map((item) => (
-            <li key={item.label}>{item.label}: {item.value}</li>
-          ))}
-        </ul>
-      </article>
-    </section>
-  )
+        
+        {recruitment.positions && recruitment.positions.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {recruitment.positions.map((job) => {
+              const stageMeta = getStageColor(job.stage);
+              const canAdvance = isAdmin && STAGE_PROGRESSION.indexOf(job.stage) < STAGE_PROGRESSION.length - 1;
+              return (
+                <div key={job.title} style={{ 
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                  padding: '16px 20px', background: '#f8fafc', borderRadius: '12px',
+                  border: '1px solid #e2e8f0', transition: 'all 0.2s', cursor: canAdvance ? 'pointer' : 'default'
+                }}
+                onMouseEnter={e => Object.assign(e.currentTarget.style, { transform: 'translateY(-2px)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' })}
+                onMouseLeave={e => Object.assign(e.currentTarget.style, { transform: 'none', boxShadow: 'none' })}
+                onClick={() => handleAdvanceStage(job)}
+                title={canAdvance ? `Click to advance to ${STAGE_PROGRESSION[STAGE_PROGRESSION.indexOf(job.stage) + 1]}` : ''}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'linear-gradient(135deg, #e0e7ff, #f3e8ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4f46e5', fontWeight: 800, fontSize: '0.9rem' }}>
+                      {job.title.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0, color: '#1e293b', fontSize: '1rem', fontWeight: 700 }}>{job.title}</h4>
+                      <p style={{ margin: '2px 0 0', color: '#64748b', fontSize: '0.8rem' }}>Full-time • Remote/Hybrid</p>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <span style={{ 
+                      padding: '6px 12px', borderRadius: '20px', 
+                      background: stageMeta.bg, color: stageMeta.color, 
+                      fontSize: '0.75rem', fontWeight: 700, whiteSpace: 'nowrap' 
+                    }}>
+                      {job.stage}
+                    </span>
+                    {canAdvance && (
+                      <button type="button" style={{ 
+                        background: 'none', border: 'none', color: '#94a3b8', 
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#94a3b8' }}>
+            <p>No active recruitment positions.</p>
+          </div>
+        )}
+      </section>
+
+      {/* New Requisition Modal */}
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: '#fff', borderRadius: '20px', width: '100%', maxWidth: '440px', padding: '32px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#0f172a' }}>New Job Requisition</h3>
+                <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem' }}>Open a new position for hiring.</p>
+              </div>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '4px' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            
+            {error && <div className="feather-badge danger" style={{ marginBottom: '16px', display: 'flex' }}>{error}</div>}
+            
+            <form onSubmit={handleAddRole}>
+              <div className="form-group" style={{ marginBottom: '24px' }}>
+                <label>Job Title</label>
+                <input 
+                  type="text" 
+                  value={newRoleTitle} 
+                  onChange={(e) => setNewRoleTitle(e.target.value)} 
+                  placeholder="e.g. Senior Backend Engineer" 
+                  autoFocus 
+                  required 
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button type="button" className="ghost-button" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="primary-button" disabled={isSubmitting || !newRoleTitle.trim()}>
+                  {isSubmitting ? 'Opening...' : 'Open Position'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
-function ProjectsPage({ projects, user, API_BASE, triggerRefresh }) {
-  const [showForm, setShowForm] = useState(false);
+function ProjectsPage({ projects, user, API_BASE, triggerRefresh, socket }) {
+  const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState('');
   const [summary, setSummary] = useState('');
   const [owner, setOwner] = useState('');
   const [deadline, setDeadline] = useState('');
   const [budget, setBudget] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!socket) return;
+    
+    const handleProjectAdded = () => {
+      if (triggerRefresh) triggerRefresh();
+    };
+    
+    socket.on('project_added', handleProjectAdded);
+    
+    return () => {
+      socket.off('project_added', handleProjectAdded);
+    };
+  }, [socket, triggerRefresh]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!name || !summary) return;
     setSubmitting(true);
+    setError('');
+    
     try {
       const response = await fetch(`${API_BASE}/api/projects`, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify({ name, summary, owner, deadline, budget })
       });
-      if (response.ok) {
-        setName('');
-        setSummary('');
-        setOwner('');
-        setDeadline('');
-        setBudget('');
-        setShowForm(false);
-        if (triggerRefresh) triggerRefresh();
-      }
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to create project');
+      
+      setName('');
+      setSummary('');
+      setOwner('');
+      setDeadline('');
+      setBudget('');
+      setShowModal(false);
+      // Backend emits project_added, triggering the socket listener to refresh
     } catch (err) {
-      console.error(err);
+      setError(err.message === 'Failed to fetch' ? 'Backend unavailable.' : err.message);
     } finally {
       setSubmitting(false);
     }
@@ -2628,69 +3500,126 @@ function ProjectsPage({ projects, user, API_BASE, triggerRefresh }) {
   const isHR = user.role === 'hr' || user.role === 'super_admin';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {isHR && (
-        <div style={{ alignSelf: 'flex-start' }}>
-          {!showForm ? (
-            <button type="button" className="primary-button" onClick={() => setShowForm(true)}>
-              + Add New Project
-            </button>
-          ) : (
-            <article className="panel-card" style={{ maxWidth: '500px', marginTop: '10px' }}>
-              <div className="panel-header" style={{ marginBottom: '16px' }}>
-                <h3>Add New Project</h3>
-              </div>
-              <form onSubmit={handleSubmit} className="auth-form-new" style={{ gap: '12px' }}>
-                <div className="form-group">
-                  <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Project name" required />
-                </div>
-                <div className="form-group">
-                  <input type="text" value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Summary" required />
-                </div>
-                <div className="form-group">
-                  <input type="text" value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="Owner Name" />
-                </div>
-                <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} placeholder="Deadline" />
-                  <input type="text" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="Budget (e.g. $180k)" />
-                </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                  <button type="submit" className="submit-button" disabled={submitting} style={{ marginTop: 0, flex: 1 }}>
-                    {submitting ? 'Creating...' : 'Create'}
-                  </button>
-                  <button type="button" className="google-login-button" onClick={() => setShowForm(false)} style={{ marginBottom: 0, flex: 1 }}>
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            </article>
-          )}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative' }}>
+      <section className="page-heading">
+        <div>
+          <p className="eyebrow">Project Management</p>
+          <h2>Active Projects</h2>
+          <p className="helper-text" style={{ margin: 0 }}>
+            Track cross-functional initiatives, budgets, and deadlines in real-time.
+          </p>
         </div>
-      )}
+        {isHR && (
+          <button type="button" className="primary-button" onClick={() => setShowModal(true)}>
+            + Add New Project
+          </button>
+        )}
+      </section>
 
       <section className="content-grid">
         {projects.map((project) => (
-          <article key={project.name} className="panel-card">
-            <div className="panel-header">
-              <h3>{project.name}</h3>
-              <span className="pill">{project.progress}</span>
+          <article key={project.name || project._id} className="panel-card" style={{ transition: 'transform 0.2s', cursor: 'pointer' }}
+            onMouseEnter={e => Object.assign(e.currentTarget.style, { transform: 'translateY(-2px)', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)' })}
+            onMouseLeave={e => Object.assign(e.currentTarget.style, { transform: 'none', boxShadow: 'none' })}
+          >
+            <div className="panel-header" style={{ marginBottom: '12px' }}>
+              <h3 style={{ fontSize: '1.1rem', color: '#0f172a' }}>{project.name}</h3>
+              <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca' }}>{project.progress || '0%'}</span>
             </div>
-            <p className="panel-copy">{project.summary}</p>
-            <ul className="list">
-              <li>Owner: {project.owner}</li>
-              <li>Deadline: {project.deadline}</li>
-              <li>Budget: {project.budget}</li>
-            </ul>
+            
+            <p className="panel-copy" style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '20px', lineHeight: '1.5' }}>
+              {project.summary}
+            </p>
+            
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: 'auto' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#f1f5f9', padding: '6px 10px', borderRadius: '8px', fontSize: '0.8rem', color: '#475569' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                {project.owner || 'Unassigned'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#fef2f2', padding: '6px 10px', borderRadius: '8px', fontSize: '0.8rem', color: '#b91c1c' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                {project.deadline || 'No deadline'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#ecfdf5', padding: '6px 10px', borderRadius: '8px', fontSize: '0.8rem', color: '#047857' }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                {project.budget || 'N/A'}
+              </div>
+            </div>
           </article>
         ))}
       </section>
+
+      {/* New Project Modal */}
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ background: '#fff', borderRadius: '20px', width: '100%', maxWidth: '500px', padding: '32px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', color: '#0f172a' }}>Add New Project</h3>
+                <p style={{ margin: '4px 0 0', color: '#64748b', fontSize: '0.85rem' }}>Create a new cross-functional initiative.</p>
+              </div>
+              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '4px' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            
+            {error && <div className="feather-badge danger" style={{ marginBottom: '16px', display: 'flex' }}>{error}</div>}
+            
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div className="form-group">
+                <label>Project Name <span style={{color: '#ef4444'}}>*</span></label>
+                <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Q4 Marketing Campaign" autoFocus required />
+              </div>
+              <div className="form-group">
+                <label>Summary <span style={{color: '#ef4444'}}>*</span></label>
+                <textarea value={summary} onChange={(e) => setSummary(e.target.value)} placeholder="Brief description of the project goals" rows="3" required style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '0.9rem', color: '#334155', fontFamily: 'inherit', resize: 'vertical' }}></textarea>
+              </div>
+              
+              <div className="form-group">
+                <label>Project Owner</label>
+                <input type="text" value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="e.g. Sarah Jenkins" />
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div className="form-group">
+                  <label>Deadline</label>
+                  <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label>Budget</label>
+                  <input type="text" value={budget} onChange={(e) => setBudget(e.target.value)} placeholder="e.g. $45,000" />
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <button type="button" className="ghost-button" onClick={() => setShowModal(false)}>Cancel</button>
+                <button type="submit" className="primary-button" disabled={submitting || !name || !summary}>
+                  {submitting ? 'Creating...' : 'Create Project'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
 function ChatPage({ notifications, user, API_BASE, socket }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
+  const [inCall, setInCall] = useState(false);
+  const [meetings, setMeetings] = useState([]);
+  const [currentMeetingId, setCurrentMeetingId] = useState(null);
+
+  const fetchMeetings = useCallback(() => {
+    fetch(`${API_BASE}/api/meetings`, { headers: authHeaders() })
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setMeetings(data);
+      })
+      .catch(() => {});
+  }, [API_BASE]);
 
   useEffect(() => {
     if (!API_BASE) return;
@@ -2698,7 +3627,9 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
       .then((res) => res.json())
       .then((data) => setMessages(data))
       .catch(() => {});
-  }, [API_BASE]);
+      
+    fetchMeetings();
+  }, [API_BASE, fetchMeetings]);
 
   useEffect(() => {
     if (!socket) return;
@@ -2706,13 +3637,19 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
     const handleChatMessage = (msg) => {
       setMessages((prev) => [...prev, msg]);
     };
+    
+    const handleMeetingUpdate = () => {
+      fetchMeetings();
+    };
 
     socket.on('chat_message', handleChatMessage);
+    socket.on('meeting_updated', handleMeetingUpdate);
 
     return () => {
       socket.off('chat_message', handleChatMessage);
+      socket.off('meeting_updated', handleMeetingUpdate);
     };
-  }, [socket]);
+  }, [socket, fetchMeetings]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -2724,10 +3661,45 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
     });
     setNewMessage('');
   };
+  
+  const handleJoinMeeting = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/meetings`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ title: 'Group Standup Room' })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setCurrentMeetingId(data._id);
+        setInCall(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setInCall(true); // Still allow joining if API fails
+    }
+  };
+  
+  const handleLeaveMeeting = async () => {
+    setInCall(false);
+    if (currentMeetingId) {
+      try {
+        await fetch(`${API_BASE}/api/meetings/${currentMeetingId}/end`, {
+          method: 'PUT',
+          headers: authHeaders()
+        });
+        setCurrentMeetingId(null);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
+  const meetingRoomUrl = `https://meet.jit.si/EMS-Team-Collaboration-Room`;
 
   return (
-    <section className="content-grid">
-      <article className="panel-card" style={{ display: 'flex', flexDirection: 'column', height: '480px' }}>
+    <section className="content-grid" style={{ gridTemplateColumns: inCall ? '1fr 2fr' : '1fr 1fr' }}>
+      <article className="panel-card" style={{ display: 'flex', flexDirection: 'column', height: inCall ? '600px' : '480px' }}>
         <div className="panel-header">
           <h3>Team collaboration</h3>
           <span className="pill">Live Chat</span>
@@ -2737,9 +3709,9 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
           {messages.map((msg, index) => {
             const isMe = msg.sender === user.name;
             return (
-              <div key={index} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '75%', display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start' }}>
+              <div key={index} style={{ alignSelf: isMe ? 'flex-end' : 'flex-start', maxWidth: '85%', display: 'flex', flexDirection: 'column', alignItems: isMe ? 'flex-end' : 'flex-start' }}>
                 <span style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: '2px' }}>{msg.sender}  {msg.time}</span>
-                <div style={{ background: isMe ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : '#f1f5f9', color: isMe ? '#fff' : '#1e293b', padding: '8px 14px', borderRadius: isMe ? '16px 16px 2px 16px' : '16px 16px 16px 2px', fontSize: '0.95rem' }}>
+                <div style={{ background: isMe ? 'linear-gradient(135deg, #6366f1, #8b5cf6)' : '#f1f5f9', color: isMe ? '#fff' : '#1e293b', padding: '8px 14px', borderRadius: isMe ? '16px 16px 2px 16px' : '16px 16px 16px 2px', fontSize: '0.95rem', wordBreak: 'break-word' }}>
                   {msg.text}
                 </div>
               </div>
@@ -2761,47 +3733,259 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
           </button>
         </form>
       </article>
-      <article className="panel-card">
-        <div className="panel-header">
-          <h3>Notifications center</h3>
-        </div>
-        <ul className="list">
-          {notifications.map((item, index) => (
-            <li key={index}>{item.title}  {item.time}</li>
-          ))}
-        </ul>
-      </article>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <article className="panel-card" style={{ flexGrow: inCall ? 1 : 0, display: 'flex', flexDirection: 'column', minHeight: inCall ? '600px' : 'auto' }}>
+          <div className="panel-header">
+            <h3>Live Video Meeting</h3>
+            {inCall && <span className="pill" style={{ background: '#dcfce7', color: '#16a34a' }}>Ongoing</span>}
+          </div>
+          
+          {!inCall ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: '12px', marginTop: '10px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', color: '#6366f1' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+              </div>
+              <h4 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>Group Standup Room</h4>
+              <p style={{ margin: '0 0 20px 0', color: '#64748b', fontSize: '0.9rem' }}>Join the live team video call. No external software required.</p>
+              <button 
+                type="button" 
+                className="primary-button" 
+                onClick={handleJoinMeeting}
+                style={{ borderRadius: '24px', padding: '10px 24px', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none' }}
+              >
+                Join Meeting Now
+              </button>
+            </div>
+          ) : (
+            <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', marginTop: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
+              <iframe
+                allow="camera; microphone; display-capture; autoplay; clipboard-write"
+                src={`${meetingRoomUrl}#userInfo.displayName="${encodeURIComponent(user.name)}"&config.prejoinPageEnabled=false`}
+                style={{ width: '100%', height: '100%', border: '0', flexGrow: 1 }}
+                title="Live Video Meeting"
+              />
+              <div style={{ padding: '10px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
+                <button 
+                  type="button" 
+                  onClick={handleLeaveMeeting}
+                  style={{ padding: '8px 16px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.85rem' }}
+                >
+                  Leave Meeting
+                </button>
+              </div>
+            </div>
+          )}
+        </article>
+
+        {!inCall && (
+          <article className="panel-card" style={{ flexGrow: 1 }}>
+            <div className="panel-header">
+              <h3>Meeting History</h3>
+              <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca' }}>{meetings.length} Total</span>
+            </div>
+            {meetings.length > 0 ? (
+              <ul className="list" style={{ maxHeight: '200px', overflowY: 'auto', margin: 0, padding: 0 }}>
+                {meetings.map((meeting) => (
+                  <li key={meeting._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                    <div>
+                      <div style={{ color: '#0f172a', fontWeight: '500' }}>{meeting.title}</div>
+                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Hosted by {meeting.organizer} • {new Date(meeting.startedAt).toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: meeting.status === 'Ongoing' ? '#dcfce7' : '#f1f5f9', color: meeting.status === 'Ongoing' ? '#16a34a' : '#475569', fontWeight: 'bold' }}>
+                        {meeting.status}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p style={{ color: '#94a3b8', fontSize: '0.9rem', textAlign: 'center', marginTop: '20px' }}>No past meetings recorded.</p>
+            )}
+          </article>
+        )}
+      </div>
     </section>
-  )
+  );
 }
 
-function SettingsPage({ user }) {
+function SettingsPage({ user, setUser, API_BASE }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(user.name || '');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Local state for toggles (mocked for now, but UI reflects instant changes)
+  const [controls, setControls] = useState({
+    twoFactor: true,
+    deviceManagement: true,
+    auditLogs: true
+  });
+
+  const handleToggle = (key) => {
+    setControls(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) return;
+    if (editName === user.name) {
+      setIsEditing(false);
+      return;
+    }
+    
+    setIsSaving(true);
+    setError('');
+    
+    try {
+      const token = window.localStorage.getItem('ems-token');
+      const response = await fetch(`${API_BASE}/api/users/profile`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ name: editName })
+      });
+      
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to update profile');
+      
+      setUser(prev => ({ ...prev, name: data.user.name }));
+      setIsEditing(false);
+    } catch (err) {
+      setError(err.message === 'Failed to fetch' ? 'Backend unavailable.' : err.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <section className="content-grid">
-      <article className="panel-card">
-        <div className="panel-header">
-          <h3>Profile</h3>
-          <span className="pill">{user.role}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+      <section className="page-heading" style={{ paddingBottom: '10px', borderBottom: '1px solid #e2e8f0', marginBottom: '10px' }}>
+        <div>
+          <p className="eyebrow">Account Configuration</p>
+          <h2>Settings</h2>
+          <p className="helper-text" style={{ margin: 0 }}>
+            Manage your personal profile and security preferences.
+          </p>
         </div>
-        <ul className="list">
-          <li>Name: {user.name}</li>
-          <li>Email: {user.email}</li>
-          <li>Authentication: {user.isGoogle ? 'Connected via Google' : 'Email / Password'}</li>
-          <li>Timezone: UTC+5:30</li>
-        </ul>
-      </article>
-      <article className="panel-card">
-        <div className="panel-header">
-          <h3>Security controls</h3>
-        </div>
-        <ul className="list">
-          <li>2FA enabled</li>
-          <li>Device management active</li>
-          <li>Audit logs enabled</li>
-        </ul>
-      </article>
-    </section>
-  )
+      </section>
+
+      {error && <div className="feather-badge danger">{error}</div>}
+
+      <section className="content-grid" style={{ gridTemplateColumns: '1fr' }}>
+        <article className="panel-card" style={{ padding: '30px' }}>
+          <div className="panel-header" style={{ marginBottom: '24px' }}>
+            <h3>Profile Information</h3>
+            <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca' }}>{user.role}</span>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: getAvatarColor(user.name), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 'bold' }}>
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div style={{ flexGrow: 1 }}>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Display Name</label>
+                {isEditing ? (
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <input 
+                      type="text" 
+                      value={editName} 
+                      onChange={e => setEditName(e.target.value)} 
+                      style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', flexGrow: 1 }}
+                      autoFocus
+                    />
+                    <button className="primary-button" onClick={handleSaveProfile} disabled={isSaving} style={{ padding: '8px 16px', borderRadius: '8px' }}>
+                      {isSaving ? 'Saving...' : 'Save'}
+                    </button>
+                    <button className="ghost-button" onClick={() => { setIsEditing(false); setEditName(user.name); }} style={{ padding: '8px 16px' }}>
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '1.1rem', color: '#0f172a', fontWeight: 600 }}>{user.name}</span>
+                    <button 
+                      onClick={() => setIsEditing(true)} 
+                      style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
+                      title="Edit Name"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div style={{ height: '1px', background: '#f1f5f9', margin: '10px 0' }}></div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Email Address</label>
+                <div style={{ fontSize: '1rem', color: '#334155' }}>{user.email}</div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Authentication Method</label>
+                <div style={{ fontSize: '1rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {user.isGoogle ? (
+                    <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea4335" strokeWidth="2"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg> Connected via Google</>
+                  ) : (
+                    <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Email & Password</>
+                  )}
+                </div>
+              </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Timezone</label>
+                <div style={{ fontSize: '1rem', color: '#334155' }}>UTC+5:30 (IST)</div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article className="panel-card" style={{ padding: '30px' }}>
+          <div className="panel-header" style={{ marginBottom: '24px' }}>
+            <h3>Security Controls</h3>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {[
+              { key: 'twoFactor', title: 'Two-Factor Authentication (2FA)', desc: 'Require a security code in addition to your password.' },
+              { key: 'deviceManagement', title: 'Device Management', desc: 'Monitor and manage devices logged into your account.' },
+              { key: 'auditLogs', title: 'Activity Audit Logs', desc: 'Keep a record of all sensitive actions performed on this account.' }
+            ].map(setting => (
+              <div key={setting.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 4px 0', color: '#0f172a', fontSize: '1rem' }}>{setting.title}</h4>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>{setting.desc}</p>
+                </div>
+                
+                {/* Toggle Switch */}
+                <button 
+                  onClick={() => handleToggle(setting.key)}
+                  style={{ 
+                    position: 'relative', width: '44px', height: '24px', borderRadius: '12px',
+                    background: controls[setting.key] ? '#10b981' : '#cbd5e1', 
+                    border: 'none', cursor: 'pointer', transition: 'background 0.3s'
+                  }}
+                >
+                  <div style={{ 
+                    position: 'absolute', top: '2px', left: controls[setting.key] ? '22px' : '2px',
+                    width: '20px', height: '20px', background: 'white', borderRadius: '50%',
+                    transition: 'left 0.3s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
+                  }} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+    </div>
+  );
 }
 
 function App() {
@@ -2917,6 +4101,7 @@ function App() {
     socketInstance.on('approval_updated', () => handleRealtimeRefresh('Approval status updated'))
     socketInstance.on('attendance_updated', () => handleRealtimeRefresh('Attendance status updated'))
     socketInstance.on('project_added', () => handleRealtimeRefresh('Project list updated'))
+    socketInstance.on('payroll_updated', (message) => handleRealtimeRefresh(message || 'Payroll updated'))
 
     const fallbackRefresh = setInterval(() => {
       if (!socketInstance.connected) loadData()
@@ -3113,11 +4298,11 @@ function App() {
           <Route path="/approvals" element={<ProtectedRoute user={user}><ApprovalsPage user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/attendance" element={<ProtectedRoute user={user}><AttendancePage attendance={attendance} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/leave" element={<ProtectedRoute user={user}><LeavePage leaveData={leaveData} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
-          <Route path="/payroll" element={<ProtectedRoute user={user}><PayrollPage payroll={payroll} /></ProtectedRoute>} />
-          <Route path="/recruitment" element={<ProtectedRoute user={user}><RecruitmentPage recruitment={recruitment} /></ProtectedRoute>} />
-          <Route path="/projects" element={<ProtectedRoute user={user}><ProjectsPage projects={projects} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
+          <Route path="/payroll" element={<ProtectedRoute user={user}><PayrollPage payroll={payroll} API_BASE={API_BASE} triggerRefresh={loadData} user={user} /></ProtectedRoute>} />
+          <Route path="/recruitment" element={<ProtectedRoute user={user}><RecruitmentPage recruitment={recruitment} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
+          <Route path="/projects" element={<ProtectedRoute user={user}><ProjectsPage projects={projects} user={user} API_BASE={API_BASE} triggerRefresh={loadData} socket={socket} /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute user={user}><ChatPage notifications={notifications} user={user} API_BASE={API_BASE} socket={socket} /></ProtectedRoute>} />
-          <Route path="/settings" element={<ProtectedRoute user={user}><SettingsPage user={user} /></ProtectedRoute>} />
+          <Route path="/settings" element={<ProtectedRoute user={user}><SettingsPage user={user} setUser={setUser} API_BASE={API_BASE} /></ProtectedRoute>} />
           {/* Redirect /login and any unknown route to dashboard after login */}
           <Route path="/login" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

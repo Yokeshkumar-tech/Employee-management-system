@@ -21,7 +21,7 @@ import Notification from './models/Notification.js';
 import ChatMessage from './models/ChatMessage.js';
 import PayrollRecord from './models/PayrollRecord.js';
 import RecruitmentRole from './models/RecruitmentRole.js';
-
+import Meeting from './models/Meeting.js';
 dotenv.config();
 
 const app = express();
@@ -135,8 +135,36 @@ function isSampleEmployee(employee) {
   return sampleEmployeeNameSet.has(String(employee.name || '').toLowerCase());
 }
 
+function hashText(text) {
+  return String(text || '').split('').reduce((total, char) => total + char.charCodeAt(0), 0);
+}
 
-// REST Routes
+function buildEmployeePayroll(employee) {
+  const seed = hashText(employee._id || employee.id || employee.name);
+  const baseSalary = 3600 + (seed % 7) * 420;
+  const bonus = 250 + (seed % 5) * 75;
+  const deductions = Math.round(baseSalary * 0.08) + (seed % 4) * 35;
+  const netSalary = baseSalary + bonus - deductions;
+  const accountSuffix = String(1000 + (seed % 9000));
+
+  return {
+    id: String(employee._id || employee.id),
+    name: employee.name,
+    role: employee.role,
+    department: employee.department,
+    status: employee.status,
+    bankName: ['HDFC Bank', 'ICICI Bank', 'Axis Bank', 'SBI'][seed % 4],
+    accountNumber: `XXXX-${accountSuffix}`,
+    ifsc: `EMS${String(seed % 10000).padStart(4, '0')}`,
+    baseSalary,
+    bonus,
+    deductions,
+    netSalary,
+    currency: '$',
+    payStatus: payrollData.status === 'Released' ? 'Transferred' : 'Ready'
+  };
+}
+
 app.get('/api/health', (_req, res) => res.json({ ok: true, message: 'Employee Management API is running' }));
 
 app.get('/api/dashboard', async (req, res) => {
@@ -230,70 +258,144 @@ app.put('/api/employees/:id/move', protect, async (req, res) => {
   }
 });
 
-// Approval Routes (HR & Admin only)
+// ─── Approval Routes (Two-Stage: HR → Admin) ─────────────────────────────────
+
+// GET all approvals (Pending, HR Approved, HR Rejected, Admin Approved, Admin Rejected)
 app.get('/api/approvals', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
-    const pendings = await Employee.find({ status: 'Pending' }).populate('userId', 'email');
-    res.json(pendings.map(e => ({
+
+    // Fetch employees that are in any approval stage OR have Pending status
+    const records = await Employee.find({
+      $or: [
+        { status: 'Pending' },
+        { approvalStage: { $in: ['Pending', 'HR Approved', 'HR Rejected', 'Admin Approved', 'Admin Rejected'] } }
+      ]
+    })
+      .populate('userId', 'email')
+      .sort({ requestedAt: -1 });
+
+    res.json(records.map(e => ({
       id: e._id,
       name: e.name,
       role: e.role,
       department: e.department,
-      status: e.status,
+      // approvalStage takes priority; fall back to 'Pending' if status is Pending
+      status: e.approvalStage || (e.status === 'Pending' ? 'Pending' : null),
       email: e.userId?.email || 'N/A',
-      createdAt: e.createdAt
-    })));
+      requestedAt: e.requestedAt ? new Date(e.requestedAt).toISOString().split('T')[0] : (e.createdAt ? new Date(e.createdAt).toISOString().split('T')[0] : '—')
+    })).filter(e => e.status !== null));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
+// STAGE 1 – HR approves (Pending → HR Approved)
 app.put('/api/approvals/:id/approve', protect, async (req, res) => {
   try {
-    const adminUser = await User.findById(req.user.id);
-    if (!adminUser || (adminUser.role !== 'hr' && adminUser.role !== 'super_admin')) {
+    const hrUser = await User.findById(req.user.id);
+    if (!hrUser || (hrUser.role !== 'hr' && hrUser.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
+
     const { department, role } = req.body || {};
     if (!department || !role) {
-      return res.status(400).json({ message: 'Department and Role are required for approval.' });
+      return res.status(400).json({ message: 'Department and Role are required for HR approval.' });
     }
 
     const employee = await Employee.findById(req.params.id);
-    if (!employee) return res.status(404).json({ message: 'Employee join request not found.' });
+    if (!employee) return res.status(404).json({ message: 'Employee request not found.' });
 
-    employee.status = 'Active';
+    if (employee.approvalStage && employee.approvalStage !== 'Pending') {
+      return res.status(409).json({ message: `Cannot HR-approve: current stage is "${employee.approvalStage}".` });
+    }
+
+    employee.approvalStage = 'HR Approved';
     employee.department = department;
     employee.role = role;
+    // keep status as 'Pending' so employee is NOT yet active — awaiting admin
     await employee.save();
 
-    await addNotification(`Join request approved: ${employee.name} assigned to ${department} (${role})`);
-    io.emit('approval_updated', employee);
-    res.json({ message: 'Employee approved successfully', employee });
+    await addNotification(`HR approved: ${employee.name} → awaiting Admin sign-off`);
+    io.emit('approval_updated', { id: employee._id, stage: 'HR Approved', name: employee.name });
+    res.json({ message: `${employee.name} HR-approved. Forwarded to Admin for final sign-off.`, employee });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
+// STAGE 1 – HR rejects (Pending → HR Rejected)
 app.put('/api/approvals/:id/reject', protect, async (req, res) => {
   try {
-    const adminUser = await User.findById(req.user.id);
-    if (!adminUser || (adminUser.role !== 'hr' && adminUser.role !== 'super_admin')) {
+    const hrUser = await User.findById(req.user.id);
+    if (!hrUser || (hrUser.role !== 'hr' && hrUser.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
-    const employee = await Employee.findById(req.params.id);
-    if (!employee) return res.status(404).json({ message: 'Employee join request not found.' });
 
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: 'Employee request not found.' });
+
+    employee.approvalStage = 'HR Rejected';
     employee.status = 'Rejected';
     await employee.save();
 
-    await addNotification(`Join request rejected: ${employee.name}`);
-    io.emit('approval_updated', employee);
-    res.json({ message: 'Employee request rejected', employee });
+    await addNotification(`HR rejected: ${employee.name}`);
+    io.emit('approval_updated', { id: employee._id, stage: 'HR Rejected', name: employee.name });
+    res.json({ message: `${employee.name}'s request was rejected by HR.`, employee });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// STAGE 2 – Admin final approve (HR Approved → Admin Approved → Active)
+app.put('/api/approvals/:id/admin-approve', protect, async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.user.id);
+    if (!adminUser || adminUser.role !== 'super_admin') {
+      return res.status(403).json({ message: 'Forbidden. Super Admin access required.' });
+    }
+
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: 'Employee request not found.' });
+
+    if (employee.approvalStage !== 'HR Approved') {
+      return res.status(409).json({ message: `Cannot Admin-approve: current stage is "${employee.approvalStage || employee.status}". Requires "HR Approved" first.` });
+    }
+
+    employee.approvalStage = 'Admin Approved';
+    employee.status = 'Active'; // Employee is now fully onboarded
+    await employee.save();
+
+    await addNotification(`Admin approved: ${employee.name} is now Active in ${employee.department}`);
+    io.emit('approval_updated', { id: employee._id, stage: 'Admin Approved', name: employee.name });
+    io.emit('employee_added', employee); // Trigger employee list refresh
+    res.json({ message: `${employee.name} fully approved by Admin. Employee is now Active.`, employee });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// STAGE 2 – Admin final reject (HR Approved → Admin Rejected)
+app.put('/api/approvals/:id/admin-reject', protect, async (req, res) => {
+  try {
+    const adminUser = await User.findById(req.user.id);
+    if (!adminUser || adminUser.role !== 'super_admin') {
+      return res.status(403).json({ message: 'Forbidden. Super Admin access required.' });
+    }
+
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: 'Employee request not found.' });
+
+    employee.approvalStage = 'Admin Rejected';
+    employee.status = 'Rejected';
+    await employee.save();
+
+    await addNotification(`Admin rejected: ${employee.name}`);
+    io.emit('approval_updated', { id: employee._id, stage: 'Admin Rejected', name: employee.name });
+    res.json({ message: `${employee.name} was finally rejected by Admin.`, employee });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -423,6 +525,93 @@ app.get('/api/payroll', async (_req, res) => {
   }
 });
 
+app.get('/api/payroll/employees', protect, async (_req, res) => {
+  try {
+    const employees = (await Employee.find({ status: 'Active' }).sort({ name: 1 }).lean()).filter((employee) => !isSampleEmployee(employee));
+    res.json(employees.map(buildEmployeePayroll));
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/payroll/transfer', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
+      return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
+    }
+
+    const { employeeId } = req.body || {};
+    if (!employeeId) return res.status(400).json({ message: 'Employee ID is required' });
+
+    const employee = await Employee.findById(employeeId).lean();
+    if (!employee || employee.status !== 'Active') return res.status(404).json({ message: 'Active employee not found' });
+
+    const payroll = buildEmployeePayroll(employee);
+    const transactionId = `EMS-PAY-${Date.now().toString(36).toUpperCase()}`;
+    const message = `Salary transferred to ${payroll.name}: ${payroll.currency}${payroll.netSalary}`;
+
+    await addNotification(message);
+    io.emit('payroll_updated', message);
+    res.json({ message, transactionId, payroll: { ...payroll, payStatus: 'Transferred' } });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.get('/api/payroll/export', protect, async (_req, res) => {
+  try {
+    const records = await PayrollRecord.find().sort({ createdAt: 1 }).lean();
+    const source = records.length
+      ? records.map((record) => ({ label: record.label, value: record.value, type: record.type, date: record.date || '', status: record.status }))
+      : [
+          ...payrollData.items.map((item) => ({ ...item, type: 'summary', date: '', status: payrollData.status })),
+          ...payrollData.payslips.map((item) => ({ label: item.name, value: item.date, type: 'payslip', date: item.date, status: payrollData.status }))
+        ];
+    const headers = ['Label', 'Value', 'Type', 'Date', 'Status'];
+    const escapeCsvValue = (value) => {
+      const text = value === null || value === undefined ? '' : String(value);
+      return `"${text.replace(/"/g, '""')}"`;
+    };
+    const csv = [headers, ...source.map((record) => [record.label, record.value, record.type, record.date, record.status])]
+      .map((row) => row.map(escapeCsvValue).join(','))
+      .join('\n');
+
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="payroll.csv"');
+    res.send(csv);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/payroll/action', protect, async (req, res) => {
+  try {
+    const { action } = req.body || {};
+    const allowedActions = {
+      release: 'Payroll released to finance',
+      generate_slips: 'Payslips generated',
+      review_bonuses: 'Bonus review queued',
+      approve_reimbursements: 'Reimbursements sent for approval',
+      bank_transfer_file: 'Bank transfer file prepared'
+    };
+
+    if (!allowedActions[action]) {
+      return res.status(400).json({ message: 'Unknown payroll action' });
+    }
+
+    if (action === 'release') {
+      payrollData = { ...payrollData, status: 'Released' };
+      await PayrollRecord.updateMany({}, { $set: { status: 'Released' } });
+    }
+
+    await addNotification(allowedActions[action]);
+    io.emit('payroll_updated', allowedActions[action]);
+    res.json({ message: allowedActions[action], status: action === 'release' ? 'Released' : payrollData.status });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.get('/api/recruitment', async (_req, res) => {
   try {
     const roles = await RecruitmentRole.find().sort({ createdAt: 1 });
@@ -434,9 +623,54 @@ app.get('/api/recruitment', async (_req, res) => {
 
     res.json({
       openRoles: roles.length,
-      positions: roles.map((role) => ({ title: role.title, stage: role.stage })),
+      positions: roles.map((role) => ({ id: role._id, title: role.title, stage: role.stage })),
       pipeline: pipeline.length ? pipeline : recruitmentData.pipeline
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/recruitment', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
+      return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
+    }
+
+    const { title, stage } = req.body || {};
+    if (!title) return res.status(400).json({ message: 'Job title is required.' });
+
+    const newRole = new RecruitmentRole({ title, stage: stage || 'Screening' });
+    await newRole.save();
+
+    await addNotification(`New open position added: ${title}`);
+    io.emit('recruitment_updated');
+    res.status(201).json(newRole);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/recruitment/:id/stage', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
+      return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
+    }
+
+    const { stage } = req.body || {};
+    if (!stage) return res.status(400).json({ message: 'Stage is required.' });
+
+    const role = await RecruitmentRole.findById(req.params.id);
+    if (!role) return res.status(404).json({ message: 'Position not found.' });
+
+    role.stage = stage;
+    await role.save();
+
+    await addNotification(`Recruitment update: ${role.title} advanced to ${stage}`);
+    io.emit('recruitment_updated');
+    res.json(role);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -487,6 +721,47 @@ app.get('/api/chat/messages', async (_req, res) => {
   }
 });
 
+app.get('/api/meetings', async (_req, res) => {
+  try {
+    const meetings = await Meeting.find().sort({ createdAt: -1 });
+    res.json(meetings);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/meetings', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const newMeeting = new Meeting({
+      title: req.body.title || 'Team Standup',
+      organizer: user ? user.name : 'Unknown',
+      status: 'Ongoing'
+    });
+    await newMeeting.save();
+    io.emit('meeting_updated');
+    res.status(201).json(newMeeting);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/meetings/:id/end', protect, async (req, res) => {
+  try {
+    const meeting = await Meeting.findById(req.params.id);
+    if (!meeting) return res.status(404).json({ message: 'Meeting not found' });
+    
+    meeting.status = 'Completed';
+    meeting.endedAt = Date.now();
+    await meeting.save();
+    
+    io.emit('meeting_updated');
+    res.json(meeting);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Authentication Routes
 app.post('/api/auth/login', async (req, res) => {
   try {
@@ -530,6 +805,33 @@ app.post('/api/auth/login', async (req, res) => {
       }
     }
     res.status(401).json({ message: 'Invalid credentials' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/users/profile', protect, async (req, res) => {
+  try {
+    const { name } = req.body;
+    if (!name) return res.status(400).json({ message: 'Name is required' });
+    
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    
+    user.name = name;
+    await user.save();
+    
+    // Also update Employee record if they are an employee
+    if (user.role === 'employee') {
+      const emp = await Employee.findOne({ userId: user._id });
+      if (emp) {
+        emp.name = name;
+        await emp.save();
+        io.emit('employee_updated', emp);
+      }
+    }
+    
+    res.json({ message: 'Profile updated successfully', user: { id: user._id, name: user.name, email: user.email, role: user.role } });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -637,10 +939,3 @@ app.post('/api/auth/google', async (req, res) => {
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
-
-
-
-
-
-
-
