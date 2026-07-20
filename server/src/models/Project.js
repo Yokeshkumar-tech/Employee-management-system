@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const projectSchema = new mongoose.Schema({
+  employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
   name: { type: String, required: true },
   progress: { type: String, default: '0%' },
   summary: { type: String, required: true },

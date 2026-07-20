@@ -23,6 +23,7 @@ import ChatMessage from './models/ChatMessage.js';
 import PayrollRecord from './models/PayrollRecord.js';
 import RecruitmentRole from './models/RecruitmentRole.js';
 import Meeting from './models/Meeting.js';
+import Task from './models/Task.js';
 dotenv.config();
 
 const app = express();
@@ -118,15 +119,27 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => clearInterval(timer));
 });
 
-async function addNotification(title) {
+async function addNotification(title, employeeId = null) {
   const time = 'Just now';
-  const notification = new Notification({ title, time });
-  await notification.save();
+  if (employeeId) {
+    const notification = new Notification({ employee: employeeId, title, time });
+    await notification.save();
+  } else {
+    const employees = await Employee.find({ status: 'Active' });
+    const notifications = employees.map(emp => ({
+      employee: emp._id,
+      title,
+      time
+    }));
+    if (notifications.length > 0) {
+      await Notification.insertMany(notifications);
+    }
+  }
   io.emit('notification', title);
 }
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '30d' });
+const generateToken = (employeeId, role, userId) => {
+  return jwt.sign({ employeeId, role, userId }, process.env.JWT_SECRET || 'fallback_secret', { expiresIn: '30d' });
 };
 
 const sampleEmployeeNames = ['Alicia Stone', 'Daniel Kim', 'Nadia Flores', 'Sanjay Rao', 'Leo Brooks'];
@@ -168,16 +181,45 @@ function buildEmployeePayroll(employee) {
 
 app.get('/api/health', (_req, res) => res.json({ ok: true, message: 'Employee Management API is running' }));
 
-app.get('/api/dashboard', async (req, res) => {
+app.get('/api/dashboard', protect, async (req, res) => {
   try {
-    const role = req.query.role || 'super_admin';
+    const role = req.user.role;
     const totalEmployeesCount = await Employee.countDocuments();
     const pendingLeavesCount = await LeaveRequest.countDocuments({ status: 'Pending' });
 
+    if (role === 'employee') {
+      const emp = await Employee.findById(req.user.id);
+      const attendanceRecord = await CheckIn.findOne({ employee: req.user.id });
+      const leavesCount = await LeaveRequest.countDocuments({ employee: req.user.id });
+      const projectsCount = await Project.countDocuments({ employee: req.user.id });
+      const completedTasks = await Task.countDocuments({ employee: req.user.id, done: true });
+      const totalTasks = await Task.countDocuments({ employee: req.user.id });
+      
+      let attendanceRate = '100%';
+      if (attendanceRecord && attendanceRecord.history.length > 0) {
+        const onTimeCount = attendanceRecord.history.filter(h => h.status === 'On Time').length;
+        attendanceRate = `${Math.round((onTimeCount / attendanceRecord.history.length) * 100)}%`;
+      }
+
+      const payload = {
+        employee: {
+          totalEmployees: totalEmployeesCount,
+          attendance: attendanceRate,
+          pendingLeaves: pendingLeavesCount,
+          payrollStatus: 'Current month',
+          leaveBalance: `${emp?.leaveBalance || 14} days`,
+          salary: emp?.salary || '$4,820',
+          projectsCount,
+          tasksCompleted: `${completedTasks}/${totalTasks}`,
+          monthlyScore: `${emp?.performanceScore || 92}%`
+        }
+      };
+      return res.json(payload);
+    }
+
     const payload = {
       super_admin: { totalEmployees: totalEmployeesCount, attendance: '92%', pendingLeaves: pendingLeavesCount, payrollStatus: '8 batches' },
-      hr: { totalEmployees: totalEmployeesCount, attendance: '95%', pendingLeaves: pendingLeavesCount, payrollStatus: '5 batches' },
-      employee: { totalEmployees: totalEmployeesCount, attendance: '96%', pendingLeaves: pendingLeavesCount, payrollStatus: 'Current month' }
+      hr: { totalEmployees: totalEmployeesCount, attendance: '95%', pendingLeaves: pendingLeavesCount, payrollStatus: '5 batches' }
     };
 
     res.json(payload[role] ? { [role]: payload[role] } : payload);
@@ -186,9 +228,13 @@ app.get('/api/dashboard', async (req, res) => {
   }
 });
 
-app.get('/api/employees', async (_req, res) => {
+app.get('/api/employees', protect, async (req, res) => {
   try {
-    const employees = await Employee.find().sort({ createdAt: -1 });
+    let query = {};
+    if (req.user.role === 'employee') {
+      query = { _id: req.user.id };
+    }
+    const employees = await Employee.find(query).sort({ createdAt: -1 });
     res.json(employees.filter((employee) => !isSampleEmployee(employee)).map(e => ({ ...e.toObject(), id: e._id })));
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -264,7 +310,7 @@ app.put('/api/employees/:id/move', protect, async (req, res) => {
 // GET all approvals (Pending, HR Approved, HR Rejected, Admin Approved, Admin Rejected)
 app.get('/api/approvals', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.userId);
     if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
@@ -297,7 +343,7 @@ app.get('/api/approvals', protect, async (req, res) => {
 // STAGE 1 – HR approves (Pending → HR Approved)
 app.put('/api/approvals/:id/approve', protect, async (req, res) => {
   try {
-    const hrUser = await User.findById(req.user.id);
+    const hrUser = await User.findById(req.user.userId);
     if (!hrUser || (hrUser.role !== 'hr' && hrUser.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
@@ -331,7 +377,7 @@ app.put('/api/approvals/:id/approve', protect, async (req, res) => {
 // STAGE 1 – HR rejects (Pending → HR Rejected)
 app.put('/api/approvals/:id/reject', protect, async (req, res) => {
   try {
-    const hrUser = await User.findById(req.user.id);
+    const hrUser = await User.findById(req.user.userId);
     if (!hrUser || (hrUser.role !== 'hr' && hrUser.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
@@ -354,7 +400,7 @@ app.put('/api/approvals/:id/reject', protect, async (req, res) => {
 // STAGE 2 – Admin final approve (HR Approved → Admin Approved → Active)
 app.put('/api/approvals/:id/admin-approve', protect, async (req, res) => {
   try {
-    const adminUser = await User.findById(req.user.id);
+    const adminUser = await User.findById(req.user.userId);
     if (!adminUser || adminUser.role !== 'super_admin') {
       return res.status(403).json({ message: 'Forbidden. Super Admin access required.' });
     }
@@ -382,7 +428,7 @@ app.put('/api/approvals/:id/admin-approve', protect, async (req, res) => {
 // STAGE 2 – Admin final reject (HR Approved → Admin Rejected)
 app.put('/api/approvals/:id/admin-reject', protect, async (req, res) => {
   try {
-    const adminUser = await User.findById(req.user.id);
+    const adminUser = await User.findById(req.user.userId);
     if (!adminUser || adminUser.role !== 'super_admin') {
       return res.status(403).json({ message: 'Forbidden. Super Admin access required.' });
     }
@@ -422,30 +468,41 @@ function calculateHours(checkIn, checkOut, breakMin = 0) {
   return Math.max(0, parseFloat((actualDiff / 60).toFixed(2)));
 }
 
-app.get('/api/attendance', async (_req, res) => {
+app.get('/api/attendance', protect, async (req, res) => {
   try {
-    const checkInsList = await CheckIn.find();
+    let query = {};
+    if (req.user.role === 'employee') {
+      query = { employee: req.user.id };
+    }
+    const checkInsList = await CheckIn.find(query);
     let checkInsMap = {};
     checkInsList.forEach(c => {
-      checkInsMap[c.userId] = { 
-        checkedIn: c.checkedIn, 
+      const payload = {
+        checkedIn: c.checkedIn,
         time: c.time,
         breakStartedAt: c.breakStartedAt,
         totalBreakDuration: c.totalBreakDuration,
         currentFocus: c.currentFocus,
-        history: c.history 
+        history: c.history
       };
+      if (c.userId) {
+        checkInsMap[c.userId] = payload;
+      }
+      if (c.employee) {
+        checkInsMap[String(c.employee)] = payload;
+      }
     });
-    
+
     res.json({ ...attendanceStats, checkIns: checkInsMap });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-app.get('/api/attendance/status/:userId', async (req, res) => {
+app.get('/api/attendance/status/:userId', protect, async (req, res) => {
   try {
-    const status = await CheckIn.findOne({ userId: req.params.userId });
+    const targetUserId = req.user.role === 'employee' ? String(req.user.id) : req.params.userId;
+    const status = await CheckIn.findOne({ $or: [{ employee: req.user.id }, { userId: targetUserId }] });
     res.json(status || { checkedIn: false, breakStartedAt: null, totalBreakDuration: 0, currentFocus: '', history: [] });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -455,9 +512,10 @@ app.get('/api/attendance/status/:userId', async (req, res) => {
 app.post('/api/attendance/checkin', protect, async (req, res) => {
   try {
     const { userId, name } = req.body || {};
-    if (!userId) return res.status(400).json({ message: 'User ID is required' });
+    const targetUserId = req.user.role === 'employee' ? String(req.user.id) : (userId || String(req.user.id));
+    const targetName = req.user.role === 'employee' ? req.user.name : (name || req.user.name);
 
-    let record = await CheckIn.findOne({ userId });
+    let record = await CheckIn.findOne({ $or: [{ employee: req.user.id }, { userId: targetUserId }] });
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const date = new Date().toISOString().split('T')[0];
 
@@ -477,7 +535,7 @@ app.post('/api/attendance/checkin', protect, async (req, res) => {
         if (modifier === 'am' && h === 12) h = 0;
         return h * 60 + m;
       };
-      
+
       const checkInMinutes = parseTime(checkInTime);
       const isLate = checkInMinutes > (9 * 60 + 30); // 09:30 am
       const statusStr = isLate ? 'Late' : 'On Time';
@@ -497,33 +555,36 @@ app.post('/api/attendance/checkin', protect, async (req, res) => {
         status: statusStr,
         totalHours
       });
+      record.employee = req.user.id;
 
       await record.save();
-      await addNotification(`${name} checked out. Worked: ${totalHours}h.`);
+      await addNotification(`${targetName} checked out. Worked: ${totalHours}h.`, req.user.id);
       io.emit('attendance_updated', record);
       res.json({ checkedIn: false, message: 'Checked out successfully', totalHours });
     } else {
       // Check In
       if (record) {
+        record.employee = req.user.id;
         record.checkedIn = true;
         record.time = time;
         record.breakStartedAt = null;
         record.totalBreakDuration = 0;
         record.currentFocus = '';
       } else {
-        record = new CheckIn({ 
-          userId, 
-          checkedIn: true, 
-          time, 
-          breakStartedAt: null, 
+        record = new CheckIn({
+          employee: req.user.id,
+          userId: targetUserId,
+          checkedIn: true,
+          time,
+          breakStartedAt: null,
           totalBreakDuration: 0,
           currentFocus: '',
-          history: [] 
+          history: []
         });
       }
       await record.save();
-      
-      await addNotification(`${name} checked in at ${time}`);
+
+      await addNotification(`${targetName} checked in at ${time}`, req.user.id);
       io.emit('attendance_updated', record);
       res.json({ checkedIn: true, time, message: 'Checked in successfully' });
     }
@@ -535,9 +596,9 @@ app.post('/api/attendance/checkin', protect, async (req, res) => {
 app.post('/api/attendance/break', protect, async (req, res) => {
   try {
     const { userId, action } = req.body || {};
-    if (!userId) return res.status(400).json({ message: 'User ID is required' });
+    const targetUserId = req.user.role === 'employee' ? String(req.user.id) : (userId || String(req.user.id));
 
-    let record = await CheckIn.findOne({ userId });
+    let record = await CheckIn.findOne({ $or: [{ employee: req.user.id }, { userId: targetUserId }] });
     if (!record || !record.checkedIn) {
       return res.status(400).json({ message: 'User is not checked in' });
     }
@@ -546,18 +607,19 @@ app.post('/api/attendance/break', protect, async (req, res) => {
 
     if (action === 'start') {
       record.breakStartedAt = time;
+      record.employee = req.user.id;
       await record.save();
       io.emit('attendance_updated', record);
-      res.json({ 
-        message: 'Break started', 
-        breakStartedAt: record.breakStartedAt, 
-        totalBreakDuration: record.totalBreakDuration 
+      res.json({
+        message: 'Break started',
+        breakStartedAt: record.breakStartedAt,
+        totalBreakDuration: record.totalBreakDuration
       });
     } else if (action === 'end') {
       if (!record.breakStartedAt) {
         return res.status(400).json({ message: 'No active break to end' });
       }
-      
+
       const parseTime = (timeStr) => {
         const cleanStr = timeStr.trim().toLowerCase();
         const modifier = cleanStr.endsWith('pm') ? 'pm' : 'am';
@@ -567,19 +629,20 @@ app.post('/api/attendance/break', protect, async (req, res) => {
         if (modifier === 'am' && hours === 12) hours = 0;
         return hours * 60 + minutes;
       };
-      
+
       const startMin = parseTime(record.breakStartedAt);
       const endMin = parseTime(time);
       const diff = endMin < startMin ? (endMin - startMin + 24 * 60) : (endMin - startMin);
-      
+
       record.totalBreakDuration = (record.totalBreakDuration || 0) + diff;
       record.breakStartedAt = null;
+      record.employee = req.user.id;
       await record.save();
       io.emit('attendance_updated', record);
-      res.json({ 
-        message: 'Break ended, back to work', 
-        breakStartedAt: null, 
-        totalBreakDuration: record.totalBreakDuration 
+      res.json({
+        message: 'Break ended, back to work',
+        breakStartedAt: null,
+        totalBreakDuration: record.totalBreakDuration
       });
     } else {
       res.status(400).json({ message: 'Invalid action' });
@@ -592,14 +655,15 @@ app.post('/api/attendance/break', protect, async (req, res) => {
 app.post('/api/attendance/focus', protect, async (req, res) => {
   try {
     const { userId, focus } = req.body || {};
-    if (!userId) return res.status(400).json({ message: 'User ID is required' });
+    const targetUserId = req.user.role === 'employee' ? String(req.user.id) : (userId || String(req.user.id));
 
-    let record = await CheckIn.findOne({ userId });
+    let record = await CheckIn.findOne({ $or: [{ employee: req.user.id }, { userId: targetUserId }] });
     if (!record || !record.checkedIn) {
       return res.status(400).json({ message: 'User is not checked in' });
     }
 
     record.currentFocus = focus || '';
+    record.employee = req.user.id;
     await record.save();
 
     io.emit('attendance_updated', record);
@@ -639,10 +703,10 @@ app.get('/api/attendance/regularizations', protect, async (req, res) => {
   try {
     const { userId } = req.query;
     let query = {};
-    
-    const user = await User.findById(req.user.id);
+
+    const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
+
     if (user.role === 'employee') {
       query.userId = user._id.toString();
     } else if (userId) {
@@ -663,7 +727,7 @@ app.post('/api/attendance/regularize/approve', protect, async (req, res) => {
       return res.status(400).json({ message: 'Request ID and status are required' });
     }
 
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.userId);
     if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Not authorized to approve requests' });
     }
@@ -677,14 +741,14 @@ app.post('/api/attendance/regularize/approve', protect, async (req, res) => {
     if (status === 'Approved') {
       let checkInDoc = await CheckIn.findOne({ userId: reqRecord.userId });
       if (!checkInDoc) {
-        checkInDoc = new CheckIn({ 
-          userId: reqRecord.userId, 
-          checkedIn: false, 
-          time: '', 
+        checkInDoc = new CheckIn({
+          userId: reqRecord.userId,
+          checkedIn: false,
+          time: '',
           breakStartedAt: null,
           totalBreakDuration: 0,
           currentFocus: '',
-          history: [] 
+          history: []
         });
       }
 
@@ -701,7 +765,7 @@ app.post('/api/attendance/regularize/approve', protect, async (req, res) => {
         if (modifier === 'am' && h === 12) h = 0;
         return h * 60 + m;
       };
-      
+
       const checkInMinutes = parseTime(reqRecord.checkInTime);
       const isLate = checkInMinutes > (9 * 60 + 30);
       const statusStr = isLate ? 'Late' : 'On Time';
@@ -729,11 +793,34 @@ app.post('/api/attendance/regularize/approve', protect, async (req, res) => {
   }
 });
 
-app.get('/api/leave', async (_req, res) => {
+app.get('/api/leave', protect, async (req, res) => {
   try {
-    const requests = await LeaveRequest.find().sort({ createdAt: -1 });
+    let requests;
+    let balance = '14 days';
+    let casualLeft = 6, sickLeft = 4, annualLeft = 4;
+
+    const targetEmployeeId = req.user.role === 'employee' ? req.user.id : req.query.employeeId;
+
+    if (targetEmployeeId) {
+      requests = await LeaveRequest.find({ employee: targetEmployeeId }).sort({ createdAt: -1 });
+      const emp = await Employee.findById(targetEmployeeId);
+      if (emp) {
+        balance = `${emp.leaveBalance || 14} days`;
+        casualLeft = emp.casualLeaveBalance !== undefined ? emp.casualLeaveBalance : 6;
+        sickLeft = emp.sickLeaveBalance !== undefined ? emp.sickLeaveBalance : 4;
+        annualLeft = emp.annualLeaveBalance !== undefined ? emp.annualLeaveBalance : 4;
+      }
+    } else {
+      requests = await LeaveRequest.find().sort({ createdAt: -1 });
+    }
+
     res.json({
-      ...leaveStats,
+      balance,
+      items: [
+        { label: 'Casual', value: `${casualLeft} left` },
+        { label: 'Sick', value: `${sickLeft} left` },
+        { label: 'Annual', value: `${annualLeft} left` }
+      ],
       requests: requests.map(r => ({ ...r.toObject(), id: r._id }))
     });
   } catch (error) {
@@ -743,15 +830,22 @@ app.get('/api/leave', async (_req, res) => {
 
 app.post('/api/leave/request', protect, async (req, res) => {
   try {
-    const { name, type, reason } = req.body || {};
-    if (!name || !type) return res.status(400).json({ message: 'Name and type are required' });
+    const { type, reason } = req.body || {};
+    if (!type) return res.status(400).json({ message: 'Type is required' });
+
+    const emp = await Employee.findById(req.user.id);
+    if (!emp) return res.status(404).json({ message: 'Employee not found' });
 
     const newRequest = new LeaveRequest({
-      name, type, reason: reason || 'No reason provided', status: 'Pending'
+      employee: emp._id,
+      name: emp.name,
+      type,
+      reason: reason || 'No reason provided',
+      status: 'Pending'
     });
     await newRequest.save();
 
-    await addNotification(`Leave requested: ${name} (${type})`);
+    await addNotification(`Leave requested: ${emp.name} (${type})`, emp._id);
     io.emit('leave_updated'); // Real-time trigger refresh
     res.status(201).json(newRequest);
   } catch (error) {
@@ -767,10 +861,26 @@ app.post('/api/leave/approve', protect, async (req, res) => {
     const request = await LeaveRequest.findById(id);
     if (!request) return res.status(404).json({ message: 'Request not found' });
 
+    const oldStatus = request.status;
     request.status = status;
     await request.save();
 
-    await addNotification(`Leave request for ${request.name} was ${status.toLowerCase()}`);
+    if (status === 'Approved' && oldStatus !== 'Approved') {
+      const emp = await Employee.findById(request.employee);
+      if (emp) {
+        emp.leaveBalance = Math.max(0, (emp.leaveBalance || 14) - 1);
+        if (request.type?.toLowerCase().includes('sick')) {
+          emp.sickLeaveBalance = Math.max(0, (emp.sickLeaveBalance || 4) - 1);
+        } else if (request.type?.toLowerCase().includes('casual')) {
+          emp.casualLeaveBalance = Math.max(0, (emp.casualLeaveBalance || 6) - 1);
+        } else {
+          emp.annualLeaveBalance = Math.max(0, (emp.annualLeaveBalance || 4) - 1);
+        }
+        await emp.save();
+      }
+    }
+
+    await addNotification(`Leave request for ${request.name} was ${status.toLowerCase()}`, request.employee);
     io.emit('leave_updated'); // Real-time trigger refresh
     res.json(request);
   } catch (error) {
@@ -778,20 +888,43 @@ app.post('/api/leave/approve', protect, async (req, res) => {
   }
 });
 
-app.get('/api/payroll', async (_req, res) => {
+app.get('/api/payroll', protect, async (req, res) => {
   try {
-    const records = await PayrollRecord.find().sort({ createdAt: 1 });
-    if (!records.length) return res.json(payrollData);
+    let query = {};
+    if (req.user.role === 'employee') {
+      query = { employee: req.user.id };
+    } else if (req.query.employeeId) {
+      query = { employee: req.query.employeeId };
+    }
+    const records = await PayrollRecord.find(query).sort({ createdAt: 1 });
+    
+    const items = records.filter(r => r.type === 'summary').map(r => ({ label: r.label, value: r.value, type: r.type, status: r.status }));
+    const payslips = records.filter(r => r.type === 'payslip').map(r => ({ label: r.label, name: r.label, value: r.value, date: r.value, type: r.type, status: r.status }));
+
+    if (!records.length && req.user.role === 'employee') {
+      const emp = await Employee.findById(req.user.id);
+      if (emp) {
+        const payroll = buildEmployeePayroll(emp);
+        return res.json({
+          status: 'Released',
+          items: [
+            { label: 'Net salary', value: `$${payroll.netSalary}`, type: 'summary', status: 'Processed' },
+            { label: 'Bonus', value: `$${payroll.bonus}`, type: 'summary', status: 'Processed' },
+            { label: 'Deductions', value: `$${payroll.deductions}`, type: 'summary', status: 'Processed' }
+          ],
+          payslips: [
+            { label: 'June payslip', name: 'June payslip', value: '2026-06-25', date: '2026-06-25', type: 'payslip', status: 'Processed' },
+            { label: 'May payslip', name: 'May payslip', value: '2026-05-27', date: '2026-05-27', type: 'payslip', status: 'Processed' }
+          ]
+        });
+      }
+    }
 
     const firstStatus = records.find((record) => record.status)?.status || 'Processed';
     res.json({
       status: firstStatus,
-      items: records
-        .filter((record) => record.type === 'summary')
-        .map((record) => ({ label: record.label, value: record.value })),
-      payslips: records
-        .filter((record) => record.type === 'payslip')
-        .map((record) => ({ name: record.label, date: record.date || record.value }))
+      items,
+      payslips
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -809,7 +942,7 @@ app.get('/api/payroll/employees', protect, async (_req, res) => {
 
 app.post('/api/payroll/transfer', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.userId);
     if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
@@ -817,14 +950,36 @@ app.post('/api/payroll/transfer', protect, async (req, res) => {
     const { employeeId } = req.body || {};
     if (!employeeId) return res.status(400).json({ message: 'Employee ID is required' });
 
-    const employee = await Employee.findById(employeeId).lean();
+    const employee = await Employee.findById(employeeId);
     if (!employee || employee.status !== 'Active') return res.status(404).json({ message: 'Active employee not found' });
 
     const payroll = buildEmployeePayroll(employee);
     const transactionId = `EMS-PAY-${Date.now().toString(36).toUpperCase()}`;
     const message = `Salary transferred to ${payroll.name}: ${payroll.currency}${payroll.netSalary}`;
 
-    await addNotification(message);
+    const monthName = new Date().toLocaleString('default', { month: 'long' });
+
+    // Save payslip record
+    const payslip = new PayrollRecord({
+      employee: employee._id,
+      label: `${monthName} payslip`,
+      value: new Date().toISOString().split('T')[0],
+      type: 'payslip',
+      status: 'Processed'
+    });
+    await payslip.save();
+
+    // Save net salary summary record
+    const summary = new PayrollRecord({
+      employee: employee._id,
+      label: 'Net salary',
+      value: `$${payroll.netSalary}`,
+      type: 'summary',
+      status: 'Processed'
+    });
+    await summary.save();
+
+    await addNotification(message, employee._id);
     io.emit('payroll_updated', message);
     res.json({ message, transactionId, payroll: { ...payroll, payStatus: 'Transferred' } });
   } catch (error) {
@@ -906,7 +1061,7 @@ app.get('/api/recruitment', async (_req, res) => {
 
 app.post('/api/recruitment', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.userId);
     if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
@@ -927,7 +1082,7 @@ app.post('/api/recruitment', protect, async (req, res) => {
 
 app.put('/api/recruitment/:id/stage', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.userId);
     if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
@@ -949,9 +1104,15 @@ app.put('/api/recruitment/:id/stage', protect, async (req, res) => {
   }
 });
 
-app.get('/api/projects', async (_req, res) => {
+app.get('/api/projects', protect, async (req, res) => {
   try {
-    const projects = await Project.find().sort({ createdAt: -1 });
+    let query = {};
+    if (req.user.role === 'employee') {
+      query = { employee: req.user.id };
+    } else if (req.query.employeeId) {
+      query = { employee: req.query.employeeId };
+    }
+    const projects = await Project.find(query).sort({ createdAt: -1 });
     res.json(projects.map(p => ({ ...p.toObject(), id: p._id })));
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -963,12 +1124,25 @@ app.post('/api/projects', protect, async (req, res) => {
     const { name, summary, owner, deadline, budget } = req.body || {};
     if (!name || !summary) return res.status(400).json({ message: 'Name and summary are required' });
 
+    let emp = await Employee.findOne({ name: new RegExp('^' + (owner || '').trim() + '$', 'i') });
+    if (!emp) {
+      emp = await Employee.findById(req.user.id);
+    }
+    if (!emp) {
+      emp = await Employee.findOne();
+    }
+
     const newProject = new Project({
-      name, summary, owner: owner || 'Unassigned', deadline: deadline || '2026-12-31', budget: budget || 'N/A'
+      employee: emp._id,
+      name,
+      summary,
+      owner: emp.name,
+      deadline: deadline || '2026-12-31',
+      budget: budget || 'N/A'
     });
     await newProject.save();
 
-    await addNotification(`New Project Created: ${name}`);
+    await addNotification(`New Project Created: ${name}`, emp._id);
     io.emit('project_added', newProject); // Real-time
     res.status(201).json(newProject);
   } catch (error) {
@@ -976,9 +1150,13 @@ app.post('/api/projects', protect, async (req, res) => {
   }
 });
 
-app.get('/api/notifications', async (_req, res) => {
+app.get('/api/notifications', protect, async (req, res) => {
   try {
-    const notifs = await Notification.find().sort({ createdAt: -1 }).limit(10);
+    let query = {};
+    if (req.user.role === 'employee') {
+      query = { employee: req.user.id };
+    }
+    const notifs = await Notification.find(query).sort({ createdAt: -1 }).limit(10);
     res.json(notifs);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -1005,7 +1183,7 @@ app.get('/api/meetings', async (_req, res) => {
 
 app.post('/api/meetings', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.userId);
     const newMeeting = new Meeting({
       title: req.body.title || 'Team Standup',
       organizer: user ? user.name : 'Unknown',
@@ -1042,7 +1220,7 @@ app.post('/api/admin/broadcast', protect, async (req, res) => {
     if (!message || !message.trim()) {
       return res.status(400).json({ message: 'Announcement message is required' });
     }
-    
+
     // Broadcast notification to all connected clients
     await addNotification(`[Broadcast] ${message.trim()}`);
     io.emit('notification', `[Broadcast] ${message.trim()}`);
@@ -1065,23 +1243,23 @@ app.post('/api/auth/login', async (req, res) => {
         if (role && matchedUser.role !== role) {
           return res.status(403).json({ message: 'Selected role does not match this account.' });
         }
+        let emp = await Employee.findOne({ userId: matchedUser._id });
+        if (!emp) {
+          const empRole = matchedUser.role === 'super_admin' ? 'Super Admin' : (matchedUser.role === 'hr' ? 'HR Partner' : 'Employee');
+          const initialStatus = matchedUser.role === 'employee' ? 'Pending' : 'Active';
+          emp = await Employee.create({
+            userId: matchedUser._id,
+            name: matchedUser.name,
+            role: empRole,
+            department: 'General',
+            status: initialStatus
+          });
+        } else if (emp.name !== matchedUser.name) {
+          emp.name = matchedUser.name;
+          await emp.save();
+        }
+
         if (matchedUser.role === 'employee') {
-          let emp = await Employee.findOne({ userId: matchedUser._id });
-          if (!emp) {
-            emp = await Employee.create({
-              userId: matchedUser._id,
-              name: matchedUser.name,
-              role: 'Employee',
-              department: 'General',
-              status: 'Active'
-            });
-          } else if (emp.name !== matchedUser.name) {
-            emp.name = matchedUser.name;
-            emp.role = emp.role || 'Employee';
-            emp.department = emp.department || 'General';
-            emp.status = 'Active';
-            await emp.save();
-          }
           if (emp && emp.status === 'Pending') {
             return res.status(403).json({ message: 'Your registration is pending HR/Admin approval.', status: 'Pending' });
           }
@@ -1090,7 +1268,7 @@ app.post('/api/auth/login', async (req, res) => {
           }
         }
         return res.json({
-          user: { id: matchedUser._id, name: matchedUser.name, email: matchedUser.email, role: matchedUser.role, token: generateToken(matchedUser._id) }
+          user: { id: emp._id, name: matchedUser.name, email: matchedUser.email, role: matchedUser.role, performanceScore: emp.performanceScore || 92, token: generateToken(emp._id, matchedUser.role, matchedUser._id) }
         });
       }
     }
@@ -1105,7 +1283,7 @@ app.put('/api/users/profile', protect, async (req, res) => {
     const { name } = req.body;
     if (!name) return res.status(400).json({ message: 'Name is required' });
 
-    const user = await User.findById(req.user.id);
+    const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     user.name = name;
@@ -1156,7 +1334,7 @@ app.post('/api/auth/register', async (req, res) => {
     }
 
     res.status(201).json({
-      user: { id: newUser._id, name: newUser.name, email: newUser.email, role: newUser.role, token: generateToken(newUser._id) }
+      user: { id: newEmp._id, name: newUser.name, email: newUser.email, role: newUser.role, performanceScore: newEmp.performanceScore || 92, token: generateToken(newEmp._id, newUser.role, newUser._id) }
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -1170,6 +1348,7 @@ app.post('/api/auth/google', async (req, res) => {
 
     const normalizedEmail = email.trim().toLowerCase();
     let matchedUser = await User.findOne({ email: normalizedEmail });
+    let emp;
 
     if (!matchedUser) {
       matchedUser = new User({
@@ -1181,34 +1360,33 @@ app.post('/api/auth/google', async (req, res) => {
 
       const empRole = matchedUser.role === 'super_admin' ? 'Super Admin' : (matchedUser.role === 'hr' ? 'HR Partner' : 'Employee');
       const initialStatus = matchedUser.role === 'employee' ? 'Pending' : 'Active';
-      const newEmp = new Employee({ userId: matchedUser._id, name: matchedUser.name, role: empRole, department: 'General', status: initialStatus });
-      await newEmp.save();
+      emp = new Employee({ userId: matchedUser._id, name: matchedUser.name, role: empRole, department: 'General', status: initialStatus });
+      await emp.save();
 
       if (matchedUser.role === 'employee') {
-        await addNotification(`New employee registration pending approval: ${newEmp.name}`);
+        await addNotification(`New employee registration pending approval: ${emp.name}`);
         return res.status(202).json({
           message: 'Google signup successful. Pending HR approval.',
           status: 'Pending'
         });
       }
     } else {
+      emp = await Employee.findOne({ userId: matchedUser._id });
+      if (!emp) {
+        const empRole = matchedUser.role === 'super_admin' ? 'Super Admin' : (matchedUser.role === 'hr' ? 'HR Partner' : 'Employee');
+        emp = await Employee.create({
+          userId: matchedUser._id,
+          name: matchedUser.name,
+          role: empRole,
+          department: 'General',
+          status: 'Active'
+        });
+      } else if (emp.name !== matchedUser.name) {
+        emp.name = matchedUser.name;
+        await emp.save();
+      }
+      
       if (matchedUser.role === 'employee') {
-        let emp = await Employee.findOne({ userId: matchedUser._id });
-        if (!emp) {
-          emp = await Employee.create({
-            userId: matchedUser._id,
-            name: matchedUser.name,
-            role: 'Employee',
-            department: 'General',
-            status: 'Active'
-          });
-        } else if (emp.name !== matchedUser.name) {
-          emp.name = matchedUser.name;
-          emp.role = emp.role || 'Employee';
-          emp.department = emp.department || 'General';
-          emp.status = 'Active';
-          await emp.save();
-        }
         if (emp && emp.status === 'Pending') {
           return res.status(403).json({ message: 'Your registration is pending HR/Admin approval.', status: 'Pending' });
         }
@@ -1219,8 +1397,59 @@ app.post('/api/auth/google', async (req, res) => {
     }
 
     res.json({
-      user: { id: matchedUser._id, name: matchedUser.name, email: matchedUser.email, role: matchedUser.role, token: generateToken(matchedUser._id) }
+      user: { id: emp._id, name: matchedUser.name, email: matchedUser.email, role: matchedUser.role, performanceScore: emp.performanceScore || 92, token: generateToken(emp._id, matchedUser.role, matchedUser._id) }
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.get('/api/tasks', protect, async (req, res) => {
+  try {
+    let query = {};
+    if (req.user.role === 'employee') {
+      query = { employee: req.user.id };
+    } else if (req.query.employeeId) {
+      query = { employee: req.query.employeeId };
+    }
+    const list = await Task.find(query).sort({ createdAt: -1 });
+    res.json(list);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/tasks', protect, async (req, res) => {
+  try {
+    const { title, due, priority } = req.body || {};
+    if (!title) return res.status(400).json({ message: 'Title is required' });
+
+    const newTask = new Task({
+      employee: req.user.id,
+      title,
+      due: due || 'Soon',
+      priority: priority || 'medium',
+      done: false
+    });
+    await newTask.save();
+    res.status(201).json(newTask);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/tasks/:id/toggle', protect, async (req, res) => {
+  try {
+    const task = await Task.findById(req.params.id);
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+
+    if (req.user.role === 'employee' && String(task.employee) !== String(req.user.id)) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+
+    task.done = !task.done;
+    await task.save();
+    res.json(task);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1229,3 +1458,4 @@ app.post('/api/auth/google', async (req, res) => {
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
 });
+// Real-time status update trigger

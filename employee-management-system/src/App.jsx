@@ -61,6 +61,18 @@ const NAV_ICONS = {
       <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
     </svg>
   ),
+  '/tasks': (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="9 11 12 14 22 4" />
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </svg>
+  ),
+  '/notifications': (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    </svg>
+  ),
   '/approvals': (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
@@ -113,7 +125,7 @@ function LiveClock() {
   return <span className="topbar-clock">{time}</span>
 }
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://192.168.29.105:5000'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
 
 const demoUsers = [
   { id: 1, name: 'Ava Chen', email: 'admin@ems.com', password: 'password123', role: 'super_admin' },
@@ -208,6 +220,7 @@ const navByRole = {
     { to: '/leave', label: 'Leave' },
     { to: '/payroll', label: 'Payroll' },
     { to: '/recruitment', label: 'Recruitment' },
+    { to: '/projects', label: 'Projects' },
     { to: '/chat', label: 'Chat' }
   ],
   employee: [
@@ -216,7 +229,9 @@ const navByRole = {
     { to: '/leave', label: 'Leave' },
     { to: '/payroll', label: 'Payroll' },
     { to: '/projects', label: 'Projects' },
-    { to: '/chat', label: 'Chat' }
+    { to: '/tasks', label: 'Tasks' },
+    { to: '/notifications', label: 'Notifications' },
+    { to: '/settings', label: 'My Profile' }
   ]
 }
 
@@ -449,7 +464,7 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
     setView('loading')
     setTimeout(() => {
       onSelectAccount(user)
-    }, 1500)
+    }, 200)
   }
 
   const handleCustomSubmit = (e) => {
@@ -465,7 +480,7 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
     setView('loading')
     setTimeout(() => {
       onSelectAccount(newUser)
-    }, 1500)
+    }, 200)
   }
 
   return (
@@ -1244,7 +1259,7 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
                 <h3>Super Admin System Control Panel</h3>
                 <span className="pill" style={{ background: '#fbcfe8', color: '#be185d', fontWeight: 'bold' }}>Live Console</span>
               </div>
-              
+
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', marginTop: '16px' }}>
                 {/* Broadcast Announcement */}
                 <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
@@ -1253,17 +1268,17 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
                     Sends a real-time notification alert instantly to all online employee dashboard headers.
                   </p>
                   <form onSubmit={handleBroadcastSubmit} style={{ display: 'flex', gap: '8px' }}>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={broadcastMsg}
                       onChange={(e) => setBroadcastMsg(e.target.value)}
                       placeholder="e.g. Server maintenance scheduled for 11:00 PM tonight..."
                       required
                       style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
                     />
-                    <button 
-                      type="submit" 
-                      className="primary-button" 
+                    <button
+                      type="submit"
+                      className="primary-button"
                       disabled={broadcastLoading}
                       style={{ marginTop: 0, padding: '10px 16px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
                     >
@@ -1280,7 +1295,7 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
                 {/* Simulated Cache / Database Controls */}
                 <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <h4 style={{ margin: '0', fontSize: '0.9rem', color: '#1e293b' }}>System Operations Simulation</h4>
-                  
+
                   {simSuccess && (
                     <div style={{ padding: '8px 12px', background: '#dcfce7', color: '#15803d', border: '1px solid #bbf7d0', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600 }}>
                       {simSuccess}
@@ -1288,8 +1303,8 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
                   )}
 
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="submit-button"
                       disabled={simulating !== ''}
                       onClick={() => handleSimulateAction('db')}
@@ -1297,8 +1312,8 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
                     >
                       {simulating === 'db' ? 'Optimizing DB Indexes...' : 'Optimize DB Indexes'}
                     </button>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       className="submit-button"
                       disabled={simulating !== ''}
                       onClick={() => handleSimulateAction('cache')}
@@ -1374,9 +1389,9 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
 
       {/* Broadcast Announcement Banner */}
       {(() => {
-        const latestBroadcast = notifications?.find(n => n.text?.startsWith('[Broadcast]')) || notifications?.[0];
+        const latestBroadcast = Array.isArray(notifications) ? (notifications.find(n => n.text?.startsWith('[Broadcast]') || n.title?.startsWith('[Broadcast]')) || notifications[0]) : null;
         if (!latestBroadcast) return null;
-        
+
         return (
           <div style={{
             background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%)',
@@ -1545,12 +1560,12 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
             <h3>HR Workspace Scratchpad & Reminders</h3>
             <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca', fontWeight: 'bold' }}>Persisted locally</span>
           </div>
-          
+
           <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '24px', marginTop: '16px' }}>
             {/* Memo Note-pad */}
             <div>
               <h4 style={{ margin: '0 0 10px 0', fontSize: '0.9rem', color: '#1e293b' }}>Interactive Memo Pad</h4>
-              <textarea 
+              <textarea
                 value={hrMemo}
                 onChange={handleMemoChange}
                 placeholder="Jot down general notes, phone numbers, interview schedules, or reminders here..."
@@ -1568,9 +1583,9 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {hrTasks.map(t => (
                   <label key={t.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.85rem', color: t.done ? '#94a3b8' : '#334155', cursor: 'pointer', textDecoration: t.done ? 'line-through' : 'none' }}>
-                    <input 
-                      type="checkbox" 
-                      checked={t.done} 
+                    <input
+                      type="checkbox"
+                      checked={t.done}
                       onChange={() => handleTaskToggle(t.id)}
                       style={{ cursor: 'pointer' }}
                     />
@@ -1684,23 +1699,65 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
     : Math.round(((POMO_BREAK - pomoSec) / POMO_BREAK) * 100)
 
   /*  Interactive tasks  */
-  const [tasks, setTasks] = useState([
-    { id: 1, title: 'Submit timesheet for June', due: 'Today', priority: 'high', done: false },
-    { id: 2, title: 'Complete onboarding module 3', due: 'Tomorrow', priority: 'medium', done: false },
-    { id: 3, title: 'Update project status report', due: 'Jul 12', priority: 'medium', done: true },
-    { id: 4, title: 'Team sync meeting notes', due: 'Jul 13', priority: 'low', done: false },
-    { id: 5, title: 'Review Q3 roadmap doc', due: 'Jul 14', priority: 'low', done: false },
-  ])
+  const [tasks, setTasks] = useState([])
   const [newTask, setNewTask] = useState('')
-  const toggleTask = (id) => setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t))
-  const addTask = (e) => {
+  const [tasksLoading, setTasksLoading] = useState(true)
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks`, { headers: authHeaders() })
+      if (response.ok) {
+        const data = await response.json()
+        setTasks(data.map(t => ({ id: t._id || t.id, title: t.title, due: t.due, priority: t.priority, done: t.done })))
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setTasksLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchTasks()
+  }, [])
+
+  const toggleTask = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks/${id}/toggle`, {
+        method: 'PUT',
+        headers: authHeaders()
+      })
+      if (response.ok) {
+        setTasks(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t))
+        if (triggerRefresh) triggerRefresh()
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const addTask = async (e) => {
     e.preventDefault()
     if (!newTask.trim()) return
-    setTasks(prev => [...prev, { id: Date.now(), title: newTask.trim(), due: 'Soon', priority: 'medium', done: false }])
-    setNewTask('')
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ title: newTask.trim() })
+      })
+      if (response.ok) {
+        const t = await response.json()
+        setTasks(prev => [...prev, { id: t._id || t.id, title: t.title, due: t.due, priority: t.priority, done: t.done }])
+        setNewTask('')
+        if (triggerRefresh) triggerRefresh()
+      }
+    } catch (err) {
+      console.error(err)
+    }
   }
+
   const doneTasks = tasks.filter(t => t.done).length
-  const taskPct = Math.round((doneTasks / tasks.length) * 100)
+  const taskPct = tasks.length > 0 ? Math.round((doneTasks / tasks.length) * 100) : 0
 
   /*  Live activity feed (auto-appends new items)  */
   const feedItems = [
@@ -1805,7 +1862,7 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
           borderRadius: '16px', padding: '14px 22px', textAlign: 'center',
           border: '1px solid rgba(255,255,255,0.22)', zIndex: 1, flexShrink: 0,
         }}>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1 }}>92%</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1 }}>{user.performanceScore || 92}%</div>
           <div style={{ fontSize: '0.72rem', opacity: 0.85, marginTop: '4px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Monthly Score</div>
           {socketConnected && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '6px', fontSize: '0.7rem', opacity: 0.9 }}>
@@ -2143,8 +2200,166 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
   )
 }
 
+function EmployeeDetailsModal({ employee, onClose, API_BASE }) {
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({
+    tasks: [],
+    projects: [],
+    leave: { balance: '0 days', requests: [] },
+    payroll: { status: 'Processed', items: [], payslips: [] }
+  });
 
+  useEffect(() => {
+    if (!employee) return;
+    const fetchAllDetails = async () => {
+      setLoading(true);
+      try {
+        const headers = authHeaders();
+        const empId = employee.id || employee._id;
+        const [tasksRes, projectsRes, leaveRes, payrollRes] = await Promise.all([
+          fetch(`${API_BASE}/api/tasks?employeeId=${empId}`, { headers }),
+          fetch(`${API_BASE}/api/projects?employeeId=${empId}`, { headers }),
+          fetch(`${API_BASE}/api/leave?employeeId=${empId}`, { headers }),
+          fetch(`${API_BASE}/api/payroll?employeeId=${empId}`, { headers })
+        ]);
 
+        setData({
+          tasks: tasksRes.ok ? await tasksRes.json() : [],
+          projects: projectsRes.ok ? await projectsRes.json() : [],
+          leave: leaveRes.ok ? await leaveRes.json() : { balance: '0 days', requests: [] },
+          payroll: payrollRes.ok ? await payrollRes.json() : { status: 'Processed', items: [], payslips: [] }
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAllDetails();
+  }, [employee, API_BASE]);
+
+  if (!employee) return null;
+
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(15, 23, 42, 0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }}>
+      <div style={{ background: '#fff', borderRadius: '24px', width: '100%', maxWidth: '800px', height: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+        {/* Header */}
+        <div style={{ padding: '24px 32px', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc' }}>
+          <div>
+            <span style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#6366f1', background: 'rgba(99,102,241,0.1)', padding: '3px 10px', borderRadius: '20px' }}>
+              Employee Dossier
+            </span>
+            <h3 style={{ margin: '4px 0 0', fontSize: '1.5rem', color: '#0f172a', fontWeight: 800 }}>{employee.name}</h3>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '6px' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
+        </div>
+
+        {/* Content Area */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '32px' }}>
+          {loading ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#64748b' }}>Loading employee details...</div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+              {/* Profile details */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', background: '#f8fafc', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                <div>
+                  <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 700 }}>Role / Designation</label>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.95rem', fontWeight: 600, color: '#1e293b' }}>{employee.role}</p>
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 700 }}>Department</label>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.95rem', fontWeight: 600, color: '#1e293b' }}>{employee.department}</p>
+                </div>
+                <div>
+                  <label style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: '#94a3b8', fontWeight: 700 }}>Status</label>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.95rem', fontWeight: 600, color: '#10b981' }}>{employee.status || 'Active'}</p>
+                </div>
+              </div>
+
+              {/* Leave Balance Section */}
+              <div>
+                <h4 style={{ margin: '0 0 12px', fontSize: '1rem', color: '#0f172a', fontWeight: 700 }}>Leave Balance</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                  <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginBottom: '2px' }}>Total Balance</span>
+                    <strong style={{ fontSize: '1.2rem', color: '#1e293b' }}>{data.leave.balance || '14 days'}</strong>
+                  </div>
+                  {data.leave.items?.map((item, i) => (
+                    <div key={i} style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', textAlign: 'center' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginBottom: '2px' }}>{item.label}</span>
+                      <strong style={{ fontSize: '1.2rem', color: '#64748b' }}>{item.value}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Projects Section */}
+              <div>
+                <h4 style={{ margin: '0 0 12px', fontSize: '1rem', color: '#0f172a', fontWeight: 700 }}>Assigned Projects</h4>
+                {data.projects.length === 0 ? (
+                  <div style={{ color: '#64748b', fontSize: '0.9rem', fontStyle: 'italic' }}>No projects assigned.</div>
+                ) : (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {data.projects.map((proj) => (
+                      <div key={proj._id || proj.id} style={{ border: '1px solid #e2e8f0', borderRadius: '14px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem' }}>{proj.name}</span>
+                          <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca', fontSize: '0.75rem' }}>{proj.progress || '0%'}</span>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b', lineHeight: 1.4 }}>{proj.summary}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Tasks Section */}
+              <div>
+                <h4 style={{ margin: '0 0 12px', fontSize: '1rem', color: '#0f172a', fontWeight: 700 }}>Checklist & Tasks</h4>
+                {data.tasks.length === 0 ? (
+                  <div style={{ color: '#64748b', fontSize: '0.9rem', fontStyle: 'italic' }}>No tasks created.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {data.tasks.map((task) => (
+                      <div key={task._id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px' }}>
+                        <span style={{ textDecoration: task.done ? 'line-through' : 'none', color: task.done ? '#94a3b8' : '#334155', fontSize: '0.85rem', fontWeight: 500 }}>
+                          {task.title}
+                        </span>
+                        <span style={{ marginLeft: 'auto', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '6px', background: task.done ? '#ecfdf5' : '#fff', color: task.done ? '#10b981' : '#64748b', border: '1px solid #e2e8f0', fontWeight: 600 }}>
+                          {task.done ? 'Completed' : 'Pending'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Payroll Section */}
+              <div>
+                <h4 style={{ margin: '0 0 12px', fontSize: '1rem', color: '#0f172a', fontWeight: 700 }}>Payroll Summary</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                  {data.payroll.items?.map((item, i) => (
+                    <div key={i} style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '14px', background: '#f8fafc' }}>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block' }}>{item.label}</span>
+                      <strong style={{ fontSize: '1.2rem', color: '#1e293b', display: 'block', marginTop: '4px' }}>{item.value}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '20px 32px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', background: '#f8fafc' }}>
+          <button type="button" className="primary-button" onClick={onClose}>Close Dossier</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function EmployeesPage({ employees, attendance, API_BASE, triggerRefresh, user }) {
   const [showModal, setShowModal] = useState(false);
@@ -2155,26 +2370,29 @@ function EmployeesPage({ employees, attendance, API_BASE, triggerRefresh, user }
   const [exporting, setExporting] = useState(false);
   const [newEmp, setNewEmp] = useState({ name: '', role: '', department: '', status: 'Active' });
   const [moveForm, setMoveForm] = useState({ department: '', role: '' });
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [detailsEmp, setDetailsEmp] = useState(null);
 
   const isHR = user?.role === 'hr' || user?.role === 'super_admin';
   const checkIns = attendance?.checkIns || {};
   const getLiveStatus = (employee) => {
     const userId = employee.userId || employee.user?._id || employee.user?.id;
-    const record = userId ? checkIns[String(userId)] : null;
+    const empId = employee._id || employee.id;
+    const record = (userId ? checkIns[String(userId)] : null) || (empId ? checkIns[String(empId)] : null);
     if (record?.checkedIn) {
       if (record.breakStartedAt) {
-        return { 
-          label: 'On break', 
-          tone: 'pending', 
+        return {
+          label: 'On break',
+          tone: 'pending',
           detail: 'On break since ' + record.breakStartedAt,
-          focus: record.currentFocus 
+          focus: record.currentFocus
         };
       }
-      return { 
-        label: 'Active now', 
-        tone: 'active', 
+      return {
+        label: 'Active now',
+        tone: 'active',
         detail: record.time ? 'Checked in at ' + record.time : 'Checked in',
-        focus: record.currentFocus 
+        focus: record.currentFocus
       };
     }
     if (employee.status === 'Pending' || employee.status === 'Rejected') return { label: employee.status, tone: employee.status.toLowerCase(), detail: 'Account status' };
@@ -2328,6 +2546,14 @@ function EmployeesPage({ employees, attendance, API_BASE, triggerRefresh, user }
                   <td style={{ textAlign: 'right' }}>
                     <button
                       type="button"
+                      className="primary-button"
+                      style={{ padding: '6px 12px', fontSize: '0.8rem', minHeight: 'unset', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '8px', marginRight: '6px', background: 'linear-gradient(135deg,#6366f1,#8b5cf6)' }}
+                      onClick={() => { setDetailsEmp(employee); setShowDetailsModal(true); }}
+                    >
+                      View
+                    </button>
+                    <button
+                      type="button"
                       className="ghost-button"
                       style={{ padding: '6px 12px', fontSize: '0.8rem', minHeight: 'unset', display: 'inline-flex', alignItems: 'center', cursor: 'pointer', borderRadius: '8px' }}
                       onClick={() => handleOpenMoveModal(employee)}
@@ -2454,6 +2680,14 @@ function EmployeesPage({ employees, attendance, API_BASE, triggerRefresh, user }
             </form>
           </div>
         </div>
+      )}
+
+      {showDetailsModal && detailsEmp && (
+        <EmployeeDetailsModal
+          employee={detailsEmp}
+          onClose={() => { setShowDetailsModal(false); setDetailsEmp(null); }}
+          API_BASE={API_BASE}
+        />
       )}
     </>
   );
@@ -2882,17 +3116,17 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
   const [status, setStatus] = useState({ checkedIn: false, time: '', breakStartedAt: null, totalBreakDuration: 0, currentFocus: '', history: [] });
   const [loading, setLoading] = useState(false);
   const [breakLoading, setBreakLoading] = useState(false);
-  
+
   // Digital Clock state
   const [clockTime, setClockTime] = useState(new Date());
-  
+
   // Real-time ticking stopwatch states (in seconds)
   const [activeWorkSeconds, setActiveWorkSeconds] = useState(0);
   const [activeBreakSeconds, setActiveBreakSeconds] = useState(0);
-  
+
   // Tab state
   const [activeTab, setActiveTab] = useState('history'); // 'history' | 'regularize' | 'approvals'
-  
+
   // Regularization requests state
   const [regRequests, setRegRequests] = useState([]);
   const [regDate, setRegDate] = useState('');
@@ -2901,12 +3135,12 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
   const [regReason, setRegReason] = useState('');
   const [regSubmitting, setRegSubmitting] = useState(false);
   const [regSuccessMessage, setRegSuccessMessage] = useState('');
-  
+
   // Live Work Focus state
   const [focusInput, setFocusInput] = useState('');
   const [focusUpdating, setFocusUpdating] = useState(false);
   const [focusSuccess, setFocusSuccess] = useState(false);
-  
+
   // HR Approval state
   const [pendingRegs, setPendingRegs] = useState([]);
   const [actioningId, setActioningId] = useState(null);
@@ -2921,7 +3155,7 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
         setStatus(data);
         setFocusInput(data.currentFocus || '');
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [user, API_BASE]);
 
   const loadRegularizations = useCallback(() => {
@@ -2943,7 +3177,7 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
           }
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [user, API_BASE, isHR]);
 
   useEffect(() => {
@@ -2961,7 +3195,7 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
       let [hours, minutes] = timeOnly.split(':').map(Number);
       if (modifier === 'pm' && hours < 12) hours += 12;
       if (modifier === 'am' && hours === 12) hours = 0;
-      
+
       const d = new Date();
       d.setHours(hours, minutes, 0, 0);
       return d;
@@ -2975,21 +3209,21 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
         const checkInDate = parseTimeToday(status.time);
         if (checkInDate) {
           const elapsedSec = Math.max(0, Math.floor((now - checkInDate) / 1000));
-          
+
           if (status.breakStartedAt) {
             const breakStartDate = parseTimeToday(status.breakStartedAt);
             if (breakStartDate) {
               const currentBreakSec = Math.max(0, Math.floor((now - breakStartDate) / 1000));
               const totalBreakSec = (status.totalBreakDuration || 0) * 60 + currentBreakSec;
               setActiveBreakSeconds(totalBreakSec);
-              
+
               const workedSec = Math.max(0, Math.floor((breakStartDate - checkInDate) / 1000) - (status.totalBreakDuration || 0) * 60);
               setActiveWorkSeconds(workedSec);
             }
           } else {
             const totalBreakSec = (status.totalBreakDuration || 0) * 60;
             setActiveBreakSeconds(totalBreakSec);
-            
+
             const workedSec = Math.max(0, elapsedSec - totalBreakSec);
             setActiveWorkSeconds(workedSec);
           }
@@ -3012,11 +3246,11 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
         body: JSON.stringify({ userId: user.id, name: user.name })
       });
       const data = await response.json();
-      setStatus(prev => ({ 
-        ...prev, 
-        checkedIn: data.checkedIn, 
-        time: data.time || '', 
-        breakStartedAt: null, 
+      setStatus(prev => ({
+        ...prev,
+        checkedIn: data.checkedIn,
+        time: data.time || '',
+        breakStartedAt: null,
         totalBreakDuration: 0,
         currentFocus: ''
       }));
@@ -3165,7 +3399,7 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
             </div>
           )}
         </div>
-        
+
         <div className="digital-clock-card">
           <span className="digital-clock-time">{formatClockTime(clockTime)}</span>
           <span className="digital-clock-date">{formatClockDate(clockTime)}</span>
@@ -3174,11 +3408,11 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
         <div className="checkin-container" style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '12px', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#64748b' }}>Status</span>
-            <span className="pill" style={{ 
-              background: status.checkedIn ? (status.breakStartedAt ? '#fef3c7' : '#dcfce7') : '#fee2e2', 
-              color: status.checkedIn ? (status.breakStartedAt ? '#b45309' : '#15803d') : '#b91c1c', 
-              fontWeight: 'bold', 
-              fontSize: '0.8rem' 
+            <span className="pill" style={{
+              background: status.checkedIn ? (status.breakStartedAt ? '#fef3c7' : '#dcfce7') : '#fee2e2',
+              color: status.checkedIn ? (status.breakStartedAt ? '#b45309' : '#15803d') : '#b91c1c',
+              fontWeight: 'bold',
+              fontSize: '0.8rem'
             }}>
               {status.checkedIn ? (status.breakStartedAt ? 'On Break' : 'Active / Working') : 'Not Checked In'}
             </span>
@@ -3208,10 +3442,10 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
                   <span>{workProgressPct.toFixed(1)}%</span>
                 </div>
                 <div style={{ width: '100%', height: '8px', background: '#e2e8f0', borderRadius: '99px', overflow: 'hidden', position: 'relative' }}>
-                  <div style={{ 
-                    width: `${workProgressPct}%`, 
-                    height: '100%', 
-                    background: status.breakStartedAt ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #6366f1, #a855f7)', 
+                  <div style={{
+                    width: `${workProgressPct}%`,
+                    height: '100%',
+                    background: status.breakStartedAt ? 'linear-gradient(90deg, #f59e0b, #fbbf24)' : 'linear-gradient(90deg, #6366f1, #a855f7)',
                     borderRadius: '99px',
                     transition: 'width 0.5s ease-out',
                     boxShadow: '0 0 8px rgba(99, 102, 241, 0.4)'
@@ -3228,16 +3462,16 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
               <form onSubmit={handleUpdateFocus} style={{ borderTop: '1px solid #e2e8f0', marginTop: '8px', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b' }}>What are you working on right now?</label>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  <input 
-                    type="text" 
-                    value={focusInput} 
+                  <input
+                    type="text"
+                    value={focusInput}
                     onChange={(e) => setFocusInput(e.target.value)}
-                    placeholder="e.g. Fixing design styles, writing tests..." 
+                    placeholder="e.g. Fixing design styles, writing tests..."
                     style={{ flex: 1, padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem' }}
                   />
-                  <button 
-                    type="submit" 
-                    className="primary-button" 
+                  <button
+                    type="submit"
+                    className="primary-button"
                     disabled={focusUpdating}
                     style={{ marginTop: 0, padding: '8px 14px', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
                   >
@@ -3252,8 +3486,8 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
           )}
 
           <div className="attendance-action-buttons">
-            <button 
-              type="button" 
+            <button
+              type="button"
               className={`submit-button ${status.checkedIn ? 'danger-btn' : ''}`}
               onClick={handleCheckInToggle}
               disabled={loading || status.breakStartedAt}
@@ -3293,24 +3527,24 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
 
       <div className="attendance-tabs-container">
         <div className="attendance-tab-headers">
-          <button 
-            type="button" 
-            className={`attendance-tab-btn ${activeTab === 'history' ? 'active' : ''}`} 
+          <button
+            type="button"
+            className={`attendance-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
             onClick={() => setActiveTab('history')}
           >
             My History Log
           </button>
-          <button 
-            type="button" 
-            className={`attendance-tab-btn ${activeTab === 'regularize' ? 'active' : ''}`} 
+          <button
+            type="button"
+            className={`attendance-tab-btn ${activeTab === 'regularize' ? 'active' : ''}`}
             onClick={() => setActiveTab('regularize')}
           >
             Corrections & Requests
           </button>
           {isHR && (
-            <button 
-              type="button" 
-              className={`attendance-tab-btn ${activeTab === 'approvals' ? 'active' : ''}`} 
+            <button
+              type="button"
+              className={`attendance-tab-btn ${activeTab === 'approvals' ? 'active' : ''}`}
               onClick={() => setActiveTab('approvals')}
               style={{ position: 'relative' }}
             >
@@ -3355,8 +3589,8 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
                           <td>{h.breakDuration} mins</td>
                           <td>{h.totalHours} hrs</td>
                           <td>
-                            <span className="pill" style={{ 
-                              background: h.status === 'On Time' ? '#dcfce7' : '#fef3c7', 
+                            <span className="pill" style={{
+                              background: h.status === 'On Time' ? '#dcfce7' : '#fef3c7',
                               color: h.status === 'On Time' ? '#16a34a' : '#d97706',
                               fontSize: '0.75rem',
                               padding: '4px 8px'
@@ -3383,7 +3617,7 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 2fr', gap: '24px' }}>
               <div style={{ background: 'rgba(248, 250, 252, 0.5)', padding: '20px', borderRadius: '12px', border: '1px solid #f1f5f9' }}>
                 <h4 style={{ marginTop: 0, marginBottom: '16px', fontSize: '0.95rem' }}>Request Clock Time Correction</h4>
-                
+
                 {regSuccessMessage && (
                   <div className="success-alert">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
@@ -3396,52 +3630,52 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
                 <form onSubmit={handleRegularizeSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   <div className="form-group">
                     <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '4px', display: 'block' }}>Date</label>
-                    <input 
-                      type="date" 
-                      value={regDate} 
-                      onChange={(e) => setRegDate(e.target.value)} 
-                      required 
+                    <input
+                      type="date"
+                      value={regDate}
+                      onChange={(e) => setRegDate(e.target.value)}
+                      required
                       style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', width: '100%' }}
                     />
                   </div>
                   <div className="regularize-grid">
                     <div className="form-group">
                       <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '4px', display: 'block' }}>Clock In</label>
-                      <input 
-                        type="text" 
-                        value={regCheckIn} 
-                        onChange={(e) => setRegCheckIn(e.target.value)} 
-                        placeholder="e.g. 09:15 am" 
-                        required 
+                      <input
+                        type="text"
+                        value={regCheckIn}
+                        onChange={(e) => setRegCheckIn(e.target.value)}
+                        placeholder="e.g. 09:15 am"
+                        required
                         style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', width: '100%' }}
                       />
                     </div>
                     <div className="form-group">
                       <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '4px', display: 'block' }}>Clock Out</label>
-                      <input 
-                        type="text" 
-                        value={regCheckOut} 
-                        onChange={(e) => setRegCheckOut(e.target.value)} 
-                        placeholder="e.g. 06:00 pm" 
-                        required 
+                      <input
+                        type="text"
+                        value={regCheckOut}
+                        onChange={(e) => setRegCheckOut(e.target.value)}
+                        placeholder="e.g. 06:00 pm"
+                        required
                         style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', width: '100%' }}
                       />
                     </div>
                   </div>
                   <div className="form-group">
                     <label style={{ fontSize: '0.75rem', fontWeight: 600, color: '#64748b', marginBottom: '4px', display: 'block' }}>Reason</label>
-                    <textarea 
-                      value={regReason} 
-                      onChange={(e) => setRegReason(e.target.value)} 
-                      placeholder="Why do you need correction?" 
-                      required 
+                    <textarea
+                      value={regReason}
+                      onChange={(e) => setRegReason(e.target.value)}
+                      placeholder="Why do you need correction?"
+                      required
                       rows="3"
                       style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '0.85rem', width: '100%', resize: 'none' }}
                     />
                   </div>
-                  <button 
-                    type="submit" 
-                    className="primary-button" 
+                  <button
+                    type="submit"
+                    className="primary-button"
                     disabled={regSubmitting}
                     style={{ marginTop: '8px', padding: '10px 16px', fontSize: '0.85rem' }}
                   >
@@ -3472,8 +3706,8 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
                             </td>
                             <td><p style={{ margin: 0, fontSize: '0.8rem', maxWidth: '150px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={r.reason}>{r.reason}</p></td>
                             <td>
-                              <span className="pill" style={{ 
-                                background: r.status === 'Approved' ? '#dcfce7' : (r.status === 'Rejected' ? '#fee2e2' : '#fef3c7'), 
+                              <span className="pill" style={{
+                                background: r.status === 'Approved' ? '#dcfce7' : (r.status === 'Rejected' ? '#fee2e2' : '#fef3c7'),
                                 color: r.status === 'Approved' ? '#16a34a' : (r.status === 'Rejected' ? '#dc2626' : '#b45309'),
                                 fontSize: '0.75rem'
                               }}>
@@ -3526,18 +3760,18 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
                           <td>{r.reason}</td>
                           <td style={{ textAlign: 'right' }}>
                             <div style={{ display: 'inline-flex', gap: '8px' }}>
-                              <button 
-                                type="button" 
-                                className="primary-button" 
+                              <button
+                                type="button"
+                                className="primary-button"
                                 onClick={() => handleApprovalDecision(r._id || r.id, 'Approved')}
                                 disabled={actioningId === (r._id || r.id)}
                                 style={{ padding: '6px 12px', background: '#16a34a', fontSize: '0.75rem', marginTop: 0 }}
                               >
                                 {actioningId === (r._id || r.id) ? '...' : 'Approve'}
                               </button>
-                              <button 
-                                type="button" 
-                                className="submit-button danger-btn" 
+                              <button
+                                type="button"
+                                className="submit-button danger-btn"
                                 onClick={() => handleApprovalDecision(r._id || r.id, 'Rejected')}
                                 disabled={actioningId === (r._id || r.id)}
                                 style={{ padding: '6px 12px', background: '#dc2626', fontSize: '0.75rem', marginTop: 0 }}
@@ -4342,7 +4576,7 @@ function RecruitmentPage({ recruitment, user, API_BASE, triggerRefresh }) {
   );
 }
 
-function ProjectsPage({ projects, user, API_BASE, triggerRefresh, socket }) {
+function ProjectsPage({ projects, employees = [], user, API_BASE, triggerRefresh, socket }) {
   const [showModal, setShowModal] = useState(false);
   const [name, setName] = useState('');
   const [summary, setSummary] = useState('');
@@ -4474,8 +4708,15 @@ function ProjectsPage({ projects, user, API_BASE, triggerRefresh, socket }) {
               </div>
 
               <div className="form-group">
-                <label>Project Owner</label>
-                <input type="text" value={owner} onChange={(e) => setOwner(e.target.value)} placeholder="e.g. Sarah Jenkins" />
+                <label>Project Owner <span style={{ color: '#ef4444' }}>*</span></label>
+                <select value={owner} onChange={(e) => setOwner(e.target.value)} required style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid #e2e8f0', background: '#f8fafc', fontSize: '0.9rem', color: '#334155' }}>
+                  <option value="">Select Employee</option>
+                  {employees.map((emp) => (
+                    <option key={emp._id || emp.id} value={emp.name}>
+                      {emp.name} ({emp.role || 'Employee'})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -4716,6 +4957,7 @@ function SettingsPage({ user, setUser, API_BASE }) {
   const [editName, setEditName] = useState(user.name || '');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
+  const [empProfile, setEmpProfile] = useState(null);
 
   // Local state for toggles (mocked for now, but UI reflects instant changes)
   const [controls, setControls] = useState({
@@ -4723,6 +4965,30 @@ function SettingsPage({ user, setUser, API_BASE }) {
     deviceManagement: true,
     auditLogs: true
   });
+
+  useEffect(() => {
+    if (user.role === 'employee') {
+      const fetchProfile = async () => {
+        try {
+          const token = window.localStorage.getItem('ems-token');
+          const response = await fetch(`${API_BASE}/api/employees`, {
+            headers: {
+              ...(token ? { Authorization: `Bearer ${token}` } : {})
+            }
+          });
+          if (response.ok) {
+            const list = await response.json();
+            if (list.length > 0) {
+              setEmpProfile(list[0]);
+            }
+          }
+        } catch (err) {
+          console.error('Failed to fetch employee details', err);
+        }
+      };
+      fetchProfile();
+    }
+  }, [user.role, API_BASE]);
 
   const handleToggle = (key) => {
     setControls(prev => ({ ...prev, [key]: !prev[key] }));
@@ -4843,6 +5109,33 @@ function SettingsPage({ user, setUser, API_BASE }) {
                 <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Timezone</label>
                 <div style={{ fontSize: '1rem', color: '#334155' }}>UTC+5:30 (IST)</div>
               </div>
+
+              {empProfile && (
+                <>
+                  <div style={{ height: '1px', background: '#f1f5f9', margin: '10px 0', gridColumn: '1 / -1' }}></div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', gridColumn: '1 / -1' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Department</label>
+                      <div style={{ fontSize: '1rem', color: '#334155', fontWeight: 500 }}>{empProfile.department || 'General'}</div>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Designation / Role Title</label>
+                      <div style={{ fontSize: '1rem', color: '#334155', fontWeight: 500 }}>{empProfile.role || 'Employee'}</div>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Leave Balance</label>
+                      <div style={{ fontSize: '1rem', color: '#334155', fontWeight: 500 }}>{empProfile.leaveBalance || 14} days</div>
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Employment Status</label>
+                      <div style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ width: 8, height: 8, background: empProfile.status === 'Active' ? '#10b981' : '#f59e0b', borderRadius: '50%' }} />
+                        <span style={{ color: '#334155', fontWeight: 500 }}>{empProfile.status || 'Active'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </article>
@@ -4883,6 +5176,230 @@ function SettingsPage({ user, setUser, API_BASE }) {
             ))}
           </div>
         </article>
+      </section>
+    </div>
+  );
+}
+
+function TasksPage({ user, API_BASE }) {
+  const [tasks, setTasks] = useState([]);
+  const [newTask, setNewTask] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const fetchTasks = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks`, { headers: authHeaders() });
+      if (response.ok) {
+        const data = await response.json();
+        setTasks(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const handleAddTask = async (e) => {
+    e.preventDefault();
+    if (!newTask.trim()) return;
+    setSubmitting(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ title: newTask.trim() })
+      });
+      if (response.ok) {
+        setNewTask('');
+        fetchTasks();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleToggleTask = async (id) => {
+    try {
+      const response = await fetch(`${API_BASE}/api/tasks/${id}/toggle`, {
+        method: 'PUT',
+        headers: authHeaders()
+      });
+      if (response.ok) {
+        fetchTasks();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' };
+  const priorityBg = { high: '#fee2e2', medium: '#fef3c7', low: '#dcfce7' };
+
+  return (
+    <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+      <section className="page-heading" style={{ paddingBottom: '10px', borderBottom: '1px solid #e2e8f0', marginBottom: '20px' }}>
+        <div>
+          <p className="eyebrow">Task Management</p>
+          <h2>My Tasks</h2>
+          <p className="helper-text" style={{ margin: 0 }}>
+            Manage and track your daily checklist.
+          </p>
+        </div>
+      </section>
+
+      <section className="panel-card" style={{ padding: '24px' }}>
+        <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+          <input
+            type="text"
+            value={newTask}
+            onChange={(e) => setNewTask(e.target.value)}
+            placeholder="Add a new task..."
+            style={{
+              flex: 1,
+              padding: '10px 14px',
+              border: '1px solid #cbd5e1',
+              borderRadius: '8px',
+              fontSize: '0.9rem',
+              outline: 'none',
+            }}
+            disabled={submitting}
+          />
+          <button type="submit" className="primary-button" disabled={submitting} style={{ whiteSpace: 'nowrap', padding: '10px 20px', borderRadius: '8px' }}>
+            {submitting ? 'Adding...' : 'Add Task'}
+          </button>
+        </form>
+
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>Loading tasks...</div>
+        ) : tasks.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+            <p style={{ margin: 0, fontWeight: 500 }}>All caught up!</p>
+            <p style={{ margin: '4px 0 0', fontSize: '0.8rem' }}>No tasks assigned to you.</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {tasks.map(task => (
+              <div key={task._id || task.id} style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+                textDecoration: task.done ? 'line-through' : 'none',
+                opacity: task.done ? 0.7 : 1,
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <input
+                    type="checkbox"
+                    checked={task.done}
+                    onChange={() => handleToggleTask(task._id || task.id)}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  <span style={{ fontSize: '0.9rem', color: task.done ? '#64748b' : '#0f172a', fontWeight: 500 }}>
+                    {task.title}
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    padding: '2px 8px',
+                    borderRadius: '6px',
+                    background: priorityBg[task.priority] || '#fee2e2',
+                    color: priorityColor[task.priority] || '#ef4444',
+                    fontWeight: 600,
+                    textTransform: 'uppercase',
+                  }}>{task.priority || 'medium'}</span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b' }}>Due {task.due || 'Soon'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function NotificationsPage({ user, API_BASE }) {
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/api/notifications`, { headers: authHeaders() });
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
+  return (
+    <div style={{ maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+      <section className="page-heading" style={{ paddingBottom: '10px', borderBottom: '1px solid #e2e8f0', marginBottom: '20px' }}>
+        <div>
+          <p className="eyebrow">Alerts & System Updates</p>
+          <h2>Notifications</h2>
+          <p className="helper-text" style={{ margin: 0 }}>
+            Stay updated with recent alerts and messages.
+          </p>
+        </div>
+      </section>
+
+      <section className="panel-card" style={{ padding: '24px' }}>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '20px', color: '#64748b' }}>Loading notifications...</div>
+        ) : notifications.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '30px', color: '#64748b' }}>
+            <p style={{ margin: 0, fontWeight: 500 }}>No notifications</p>
+            <p style={{ margin: '4px 0 0', fontSize: '0.8rem' }}>You're all caught up!</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {notifications.map(notif => (
+              <div key={notif._id || notif.id} style={{
+                display: 'flex',
+                alignItems: 'start',
+                gap: '12px',
+                padding: '14px 16px',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '12px',
+              }}>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  background: '#6366f1',
+                  borderRadius: '50%',
+                  marginTop: '6px',
+                  flexShrink: 0
+                }} />
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: '0.9rem', color: '#0f172a', margin: 0, fontWeight: 500 }}>{notif.title}</p>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b', display: 'block', marginTop: '4px' }}>{notif.time || 'Just now'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );
@@ -5203,8 +5720,10 @@ function App() {
           <Route path="/leave" element={<ProtectedRoute user={user}><LeavePage leaveData={leaveData} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/payroll" element={<ProtectedRoute user={user}><PayrollPage payroll={payroll} API_BASE={API_BASE} triggerRefresh={loadData} user={user} /></ProtectedRoute>} />
           <Route path="/recruitment" element={<ProtectedRoute user={user}><RecruitmentPage recruitment={recruitment} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
-          <Route path="/projects" element={<ProtectedRoute user={user}><ProjectsPage projects={projects} user={user} API_BASE={API_BASE} triggerRefresh={loadData} socket={socket} /></ProtectedRoute>} />
+          <Route path="/projects" element={<ProtectedRoute user={user}><ProjectsPage projects={projects} employees={employees} user={user} API_BASE={API_BASE} triggerRefresh={loadData} socket={socket} /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute user={user}><ChatPage notifications={notifications} user={user} API_BASE={API_BASE} socket={socket} /></ProtectedRoute>} />
+          <Route path="/tasks" element={<ProtectedRoute user={user}><TasksPage user={user} API_BASE={API_BASE} /></ProtectedRoute>} />
+          <Route path="/notifications" element={<ProtectedRoute user={user}><NotificationsPage user={user} API_BASE={API_BASE} /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute user={user}><SettingsPage user={user} setUser={setUser} API_BASE={API_BASE} /></ProtectedRoute>} />
           {/* Redirect /login and any unknown route to dashboard after login */}
           <Route path="/login" element={<Navigate to="/dashboard" replace />} />

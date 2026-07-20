@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const checkInSchema = new mongoose.Schema({
+  employee: { type: mongoose.Schema.Types.ObjectId, ref: 'Employee', required: true },
   userId: { type: String, required: true, unique: true },
   checkedIn: { type: Boolean, default: false },
   time: { type: String }, // current check-in time
