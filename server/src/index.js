@@ -14,6 +14,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { connectDB } from './config/db.js';
 import { protect } from './middleware/auth.js';
+import { sendEmail } from './utils/mailer.js';
 
 import User from './models/User.js';
 import Employee from './models/Employee.js';
@@ -97,6 +98,8 @@ let recruitmentData = {
 };
 
 // Socket.io Events Setup
+const activeUsers = new Map();
+
 io.on('connection', (socket) => {
   socket.on('join_room', (role) => {
     socket.join(role);
@@ -119,7 +122,16 @@ io.on('connection', (socket) => {
     socket.emit('notification', 'Live sync update: attendance and metrics refreshed');
   }, 30000);
 
-  socket.on('disconnect', () => clearInterval(timer));
+  socket.on('user_online', (user) => {
+    activeUsers.set(socket.id, { ...user, socketId: socket.id });
+    io.emit('active_users_update', Array.from(activeUsers.values()));
+  });
+
+  socket.on('disconnect', () => {
+    clearInterval(timer);
+    activeUsers.delete(socket.id);
+    io.emit('active_users_update', Array.from(activeUsers.values()));
+  });
 });
 
 async function addNotification(title, employeeId = null) {
@@ -1270,6 +1282,14 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(403).json({ message: 'Your registration request has been rejected. Please contact HR.', status: 'Rejected' });
           }
         }
+
+        // Send login notification email (non-blocking)
+        sendEmail(
+          matchedUser.email, 
+          'New Login Alert - HRMS', 
+          `<p>Hi ${matchedUser.name},</p><p>A new login was detected on your HRMS account.</p><p>If this wasn't you, please contact IT immediately.</p>`
+        ).catch(err => console.error(err));
+
         return res.json({
           user: { id: emp._id, name: matchedUser.name, email: matchedUser.email, role: matchedUser.role, performanceScore: emp.performanceScore || 92, token: generateToken(emp._id, matchedUser.role, matchedUser._id) }
         });
@@ -1330,11 +1350,24 @@ app.post('/api/auth/register', async (req, res) => {
 
     if (newUser.role === 'employee') {
       await addNotification(`New employee registration pending approval: ${name}`);
+
+      sendEmail(
+        newUser.email,
+        'Registration Received - HRMS',
+        `<p>Hi ${newUser.name},</p><p>Your registration is received and is pending HR approval.</p><p>We will notify you once approved.</p>`
+      ).catch(err => console.error(err));
+
       return res.status(202).json({
         message: 'Registration successful. Pending HR approval.',
         status: 'Pending'
       });
     }
+
+    sendEmail(
+      newUser.email,
+      'Welcome to HRMS',
+      `<p>Hi ${newUser.name},</p><p>Welcome to the Employee Management System! Your account is active.</p>`
+    ).catch(err => console.error(err));
 
     res.status(201).json({
       user: { id: newEmp._id, name: newUser.name, email: newUser.email, role: newUser.role, performanceScore: newEmp.performanceScore || 92, token: generateToken(newEmp._id, newUser.role, newUser._id) }

@@ -305,14 +305,29 @@ function ProtectedRoute({ user, children }) {
 }
 
 function AppLayout({ user, onLogout, children }) {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
   return (
     <div className="app-shell">
       <FloatingParticles />
 
       <header className="topbar">
         <div className="topbar-brand">
-          <p className="eyebrow">Enterprise HRMS</p>
-          <h1>Employee Management System</h1>
+          <button 
+            type="button" 
+            className="mobile-menu-toggle"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+          <div>
+            <p className="eyebrow">Enterprise HRMS</p>
+            <h1>Employee Management System</h1>
+          </div>
         </div>
         <div className="topbar-actions">
           <LiveClock />
@@ -334,12 +349,13 @@ function AppLayout({ user, onLogout, children }) {
         </div>
       </header>
 
-      <nav className="sidebar-nav">
+      <nav className={`sidebar-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-label">Menu</div>
         {navByRole[user.role]?.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
+            onClick={() => setIsMobileMenuOpen(false)}
             className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}
           >
             <span className="nav-icon">{NAV_ICONS[item.to]}</span>
@@ -636,22 +652,7 @@ function LoginPage({ form, setForm, authMode, setAuthMode, onSubmit, onGoogleLog
           </button>
         </div>
 
-        <button type="button" className="google-login-button" onClick={onGoogleLogin}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.0 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-          </svg>
-          Continue with Google
-        </button>
-        {googleEmail && (
-          <p className="google-email-label">Signing in with {googleEmail === 'admin@ems.com' ? '••••••••@ems.com' : googleEmail}</p>
-        )}
 
-        <div className="divider">
-          <span>Or continue with email</span>
-        </div>
 
 
         <form onSubmit={onSubmit} className="auth-form-new">
@@ -721,7 +722,7 @@ function SectionHeading({ title, subtitle, action }) {
   )
 }
 
-function DashboardPage({ user, dashboardData, liveActivity, socketConnected, employees, attendance, API_BASE, notifications }) {
+function DashboardPage({ user, dashboardData, liveActivity, socketConnected, employees, attendance, API_BASE, notifications, activeUsers }) {
   const isAdmin = user.role === 'super_admin'
 
   /*  Shared state  */
@@ -1602,7 +1603,7 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
 }
 
 /*  Employee Personal Dashboard  */
-function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActivity, socketConnected, triggerRefresh }) {
+function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActivity, socketConnected, triggerRefresh, activeUsers }) {
   /*  Real-time clock  */
   const [now, setNow] = useState(new Date())
   useEffect(() => {
@@ -1778,14 +1779,8 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
     return () => clearInterval(id)
   }, [])
 
-  /*  Team pulse (online members simulation)  */
-  const [team] = useState([
-    { name: 'Anika', role: 'Team Lead', status: 'active', color: '#6366f1' },
-    { name: 'Mina', role: 'HR Partner', status: 'active', color: '#8b5cf6' },
-    { name: 'Daniel', role: 'Engineer', status: 'idle', color: '#06b6d4' },
-    { name: 'Rina', role: 'Designer', status: 'offline', color: '#f59e0b' },
-    { name: 'Tom', role: 'Analyst', status: 'active', color: '#10b981' },
-  ])
+  /*  Team pulse (online members)  */
+  // Replaced static mock data with activeUsers prop from App
 
   /*  Derived  */
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening'
@@ -1991,18 +1986,19 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
 
           {/* Team online status */}
           <div style={{ marginTop: '6px', paddingTop: '12px', borderTop: '1px solid #f1f5f9' }}>
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Team Online</div>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Team Online ({activeUsers?.length || 0})</div>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {team.map(m => (
-                <div key={m.name} title={`${m.name}  ${m.status}`} style={{
+              {(!activeUsers || activeUsers.length === 0) && <span style={{ fontSize: '0.75rem', color: '#cbd5e1' }}>No one else online</span>}
+              {activeUsers?.map(m => (
+                <div key={m.socketId} title={`${m.name} — ${m.status}`} style={{
                   position: 'relative', width: 30, height: 30, borderRadius: '50%',
-                  background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '0.7rem', fontWeight: 800, color: '#fff', cursor: 'default',
                 }}>
-                  {m.name[0]}
+                  {m.name?.[0]?.toUpperCase() || '?'}
                   <span style={{
                     position: 'absolute', bottom: 0, right: 0, width: 8, height: 8,
-                    borderRadius: '50%', background: statusColor[m.status], border: '2px solid #fff',
+                    borderRadius: '50%', background: m.status === 'active' ? '#22c55e' : '#f59e0b', border: '2px solid #fff',
                   }} />
                 </div>
               ))}
@@ -2174,21 +2170,31 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
         <article className="panel-card">
           <div className="panel-header">
             <h3>Team Pulse</h3>
-            <span className="pill">{team.filter(m => m.status === 'active').length} online</span>
+            {(user.role === 'hr' || user.role === 'super_admin') && (
+              <button onClick={() => alert('Create Group functionality coming soon')} style={{
+                marginLeft: 'auto', marginRight: '10px', padding: '4px 8px', borderRadius: '6px', 
+                border: 'none', background: '#eef2ff', color: '#6366f1', fontSize: '0.75rem', 
+                fontWeight: 600, cursor: 'pointer'
+              }}>
+                Create Group
+              </button>
+            )}
+            <span className="pill">{activeUsers?.filter(m => m.status === 'active').length || 0} online</span>
           </div>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {team.map(m => (
-              <li key={m.name} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 10px', borderRadius: '10px', background: '#fafafe', border: '1px solid #f1f5f9' }}>
-                <div style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
-                  {m.name[0]}
-                  <span style={{ position: 'absolute', bottom: 0, right: 0, width: 9, height: 9, borderRadius: '50%', background: statusColor[m.status], border: '2px solid #fff' }} />
+            {!activeUsers || activeUsers.length === 0 ? <li style={{ fontSize: '0.8rem', color: '#94a3b8', textAlign: 'center', padding: '10px' }}>No one else online</li> : null}
+            {activeUsers?.map(m => (
+              <li key={m.socketId} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 10px', borderRadius: '10px', background: '#fafafe', border: '1px solid #f1f5f9' }}>
+                <div style={{ position: 'relative', width: 34, height: 34, borderRadius: '50%', background: '#6366f1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 800, color: '#fff', flexShrink: 0 }}>
+                  {m.name?.[0]?.toUpperCase() || '?'}
+                  <span style={{ position: 'absolute', bottom: 0, right: 0, width: 9, height: 9, borderRadius: '50%', background: m.status === 'active' ? '#22c55e' : '#f59e0b', border: '2px solid #fff' }} />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>{m.name}</div>
-                  <div style={{ fontSize: '0.73rem', color: '#94a3b8' }}>{m.role}</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>{m.name} {m.id === user.id ? '(You)' : ''}</div>
+                  <div style={{ fontSize: '0.73rem', color: '#94a3b8', textTransform: 'capitalize' }}>{m.role.replace('_', ' ')}</div>
                 </div>
-                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: statusColor[m.status], textTransform: 'capitalize' }}>
-                  {m.status === 'active' ? ' Active' : m.status === 'idle' ? ' Idle' : ' Away'}
+                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: m.status === 'active' ? '#22c55e' : '#f59e0b', textTransform: 'capitalize' }}>
+                  {m.status}
                 </span>
               </li>
             ))}
@@ -5421,6 +5427,7 @@ function App() {
   const [error, setError] = useState('')
   const [socketConnected, setSocketConnected] = useState(false)
   const [liveActivity, setLiveActivity] = useState(['Attendance sync complete', 'Payroll review scheduled', 'Recruitment funnel updated'])
+  const [activeUsers, setActiveUsers] = useState([])
   const [showGoogleModal, setShowGoogleModal] = useState(false)
   const [socket, setSocket] = useState(null)
   const [pendingApproval, setPendingApproval] = useState(false)
@@ -5504,7 +5511,11 @@ function App() {
     socketInstance.on('connect', () => {
       setSocketConnected(true)
       socketInstance.emit('join_room', user.role)
+      socketInstance.emit('user_online', { id: user.id, name: user.name, role: user.role, status: 'active' })
       setLiveActivity((current) => ['Real-time connection active', ...current].slice(0, 6))
+    })
+    socketInstance.on('active_users_update', (users) => {
+      setActiveUsers(users)
     })
     socketInstance.on('connect_error', () => {
       setSocketConnected(false)
@@ -5712,8 +5723,8 @@ function App() {
     <BrowserRouter>
       <AppLayout user={user} onLogout={handleLogout}>
         <Routes>
-          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} />}</ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} />}</ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} />}</ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} />}</ProtectedRoute>} />
           <Route path="/employees" element={<ProtectedRoute user={user}><EmployeesPage employees={employees} attendance={attendance} API_BASE={API_BASE} triggerRefresh={loadData} user={user} /></ProtectedRoute>} />
           <Route path="/approvals" element={<ProtectedRoute user={user}><ApprovalsPage user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/attendance" element={<ProtectedRoute user={user}><AttendancePage attendance={attendance} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
