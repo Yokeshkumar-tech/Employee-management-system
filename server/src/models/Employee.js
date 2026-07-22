@@ -11,7 +11,14 @@ const employeeSchema = new mongoose.Schema({
     enum: ['Pending', 'HR Approved', 'HR Rejected', 'Admin Approved', 'Admin Rejected'],
     default: null
   },
-  requestedAt: { type: Date, default: Date.now }
+  requestedAt: { type: Date, default: Date.now },
+  // Bank & Salary details for payroll
+  bankName: { type: String },
+  accountNumber: { type: String },
+  ifsc: { type: String },
+  baseSalary: { type: Number },
+  bonus: { type: Number },
+  deductions: { type: Number }
 }, { timestamps: true });
 
 export default mongoose.model('Employee', employeeSchema);

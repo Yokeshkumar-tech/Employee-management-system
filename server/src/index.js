@@ -118,6 +118,11 @@ io.on('connection', (socket) => {
     io.emit('chat_message', chatMsg);
   });
 
+  socket.on('typing', (data) => {
+    // data: { name, isTyping }
+    socket.broadcast.emit('typing_status', data);
+  });
+
   const timer = setInterval(() => {
     socket.emit('notification', 'Live sync update: attendance and metrics refreshed');
   }, 30000);
@@ -170,11 +175,15 @@ function hashText(text) {
 
 function buildEmployeePayroll(employee) {
   const seed = hashText(employee._id || employee.id || employee.name);
-  const baseSalary = 3600 + (seed % 7) * 420;
-  const bonus = 250 + (seed % 5) * 75;
-  const deductions = Math.round(baseSalary * 0.08) + (seed % 4) * 35;
+  const baseSalary = employee.baseSalary !== undefined && employee.baseSalary !== null ? employee.baseSalary : (3600 + (seed % 7) * 420);
+  const bonus = employee.bonus !== undefined && employee.bonus !== null ? employee.bonus : (250 + (seed % 5) * 75);
+  const deductions = employee.deductions !== undefined && employee.deductions !== null ? employee.deductions : (Math.round(baseSalary * 0.08) + (seed % 4) * 35);
   const netSalary = baseSalary + bonus - deductions;
   const accountSuffix = String(1000 + (seed % 9000));
+
+  const bankName = employee.bankName || ['HDFC Bank', 'ICICI Bank', 'Axis Bank', 'SBI'][seed % 4];
+  const accountNumber = employee.accountNumber || `XXXX-${accountSuffix}`;
+  const ifsc = employee.ifsc || `EMS${String(seed % 10000).padStart(4, '0')}`;
 
   return {
     id: String(employee._id || employee.id),
@@ -182,9 +191,9 @@ function buildEmployeePayroll(employee) {
     role: employee.role,
     department: employee.department,
     status: employee.status,
-    bankName: ['HDFC Bank', 'ICICI Bank', 'Axis Bank', 'SBI'][seed % 4],
-    accountNumber: `XXXX-${accountSuffix}`,
-    ifsc: `EMS${String(seed % 10000).padStart(4, '0')}`,
+    bankName,
+    accountNumber,
+    ifsc,
     baseSalary,
     bonus,
     deductions,
@@ -202,6 +211,90 @@ app.get('/api/dashboard', protect, async (req, res) => {
     const totalEmployeesCount = await Employee.countDocuments();
     const pendingLeavesCount = await LeaveRequest.countDocuments({ status: 'Pending' });
 
+    // Dynamic Attendance Rate Calculation
+    const checkIns = await CheckIn.find();
+    let totalPossibleDays = 0;
+    let totalPresentDays = 0;
+    
+    // Group check-in history entries by day of the week for Performance Pulse
+    const dayCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 0: 0 }; // 1=Mon, 2=Tue, ..., 0=Sun
+    let maxCount = 0;
+
+    checkIns.forEach(c => {
+      totalPossibleDays += c.history.length + (c.checkedIn ? 1 : 0);
+      totalPresentDays += c.history.filter(h => h.status === 'On Time' || h.status === 'Late').length + (c.checkedIn ? 1 : 0);
+
+      c.history.forEach(h => {
+        if (!h.date) return;
+        const day = new Date(h.date).getDay();
+        if (dayCounts[day] !== undefined) {
+          dayCounts[day]++;
+        }
+      });
+      if (c.checkedIn && c.updatedAt) {
+        const day = new Date(c.updatedAt).getDay();
+        if (dayCounts[day] !== undefined) {
+          dayCounts[day]++;
+        }
+      }
+    });
+    const attendanceRate = totalPossibleDays > 0 ? `${Math.round((totalPresentDays / totalPossibleDays) * 100)}%` : '100%';
+
+    // Find the max day count to scale values
+    Object.values(dayCounts).forEach(val => {
+      if (val > maxCount) maxCount = val;
+    });
+
+    const weekdayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const descriptions = [
+      'Support and maintenance shift updates.',
+      'Normal workload, strong check-in consistency.',
+      'High collaboration peak during team sprint reviews.',
+      'Mid-week focus day with slightly lower check-ins.',
+      'Maximum activity and cross-department pull requests.',
+      'Consistent performance, steady weekend wind-down.',
+      'Weekend shift, voluntary coverage.'
+    ];
+
+    const pulseData = [1, 2, 3, 4, 5, 6, 0].map(day => {
+      const count = dayCounts[day];
+      const percent = maxCount > 0 ? Math.round(20 + (count / maxCount) * 75) : 70;
+      return {
+        day: weekdayLabels[day],
+        value: percent,
+        desc: `${count} total check-in log${count === 1 ? '' : 's'} recorded on this day. ${descriptions[day]}`
+      };
+    });
+
+    // Dynamic SLA Trend calculation (based on projects created per month)
+    const projectsList = await Project.find();
+    const monthCounts = Array(12).fill(0);
+    projectsList.forEach(p => {
+      if (p.createdAt) {
+        const month = new Date(p.createdAt).getMonth();
+        monthCounts[month]++;
+      }
+    });
+
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonthIdx = new Date().getMonth();
+    const trendData = [];
+    for (let i = 6; i >= 0; i--) {
+      const mIdx = (currentMonthIdx - i + 12) % 12;
+      const projectCount = monthCounts[mIdx];
+      const slaVal = 85 + Math.min(13, projectCount * 2);
+      trendData.push({
+        label: monthLabels[mIdx],
+        val: slaVal,
+        projects: projectCount,
+        SLA: `${slaVal}%`
+      });
+    }
+
+    // Dynamic Payroll Batches Calculation
+    const totalPayslips = await PayrollRecord.countDocuments({ type: 'payslip' });
+    const payrollStatus = totalPayslips > 0 ? `${totalPayslips} release${totalPayslips === 1 ? '' : 's'}` : '0 batches';
+
     if (role === 'employee') {
       const emp = await Employee.findById(req.user.id);
       const attendanceRecord = await CheckIn.findOne({ employee: req.user.id });
@@ -210,16 +303,16 @@ app.get('/api/dashboard', protect, async (req, res) => {
       const completedTasks = await Task.countDocuments({ employee: req.user.id, done: true });
       const totalTasks = await Task.countDocuments({ employee: req.user.id });
       
-      let attendanceRate = '100%';
+      let empAttendanceRate = '100%';
       if (attendanceRecord && attendanceRecord.history.length > 0) {
         const onTimeCount = attendanceRecord.history.filter(h => h.status === 'On Time').length;
-        attendanceRate = `${Math.round((onTimeCount / attendanceRecord.history.length) * 100)}%`;
+        empAttendanceRate = `${Math.round((onTimeCount / attendanceRecord.history.length) * 100)}%`;
       }
 
       const payload = {
         employee: {
           totalEmployees: totalEmployeesCount,
-          attendance: attendanceRate,
+          attendance: empAttendanceRate,
           pendingLeaves: pendingLeavesCount,
           payrollStatus: 'Current month',
           leaveBalance: `${emp?.leaveBalance || 14} days`,
@@ -233,8 +326,8 @@ app.get('/api/dashboard', protect, async (req, res) => {
     }
 
     const payload = {
-      super_admin: { totalEmployees: totalEmployeesCount, attendance: '92%', pendingLeaves: pendingLeavesCount, payrollStatus: '8 batches' },
-      hr: { totalEmployees: totalEmployeesCount, attendance: '95%', pendingLeaves: pendingLeavesCount, payrollStatus: '5 batches' }
+      super_admin: { totalEmployees: totalEmployeesCount, attendance: attendanceRate, pendingLeaves: pendingLeavesCount, payrollStatus, pulseData, trendData },
+      hr: { totalEmployees: totalEmployeesCount, attendance: attendanceRate, pendingLeaves: pendingLeavesCount, payrollStatus, pulseData, trendData }
     };
 
     res.json(payload[role] ? { [role]: payload[role] } : payload);
@@ -326,7 +419,7 @@ app.put('/api/employees/:id/move', protect, async (req, res) => {
 app.get('/api/approvals', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
-    if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin' && user.role !== 'admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
 
@@ -359,7 +452,7 @@ app.get('/api/approvals', protect, async (req, res) => {
 app.put('/api/approvals/:id/approve', protect, async (req, res) => {
   try {
     const hrUser = await User.findById(req.user.userId);
-    if (!hrUser || (hrUser.role !== 'hr' && hrUser.role !== 'super_admin')) {
+    if (!hrUser || (hrUser.role !== 'hr' && hrUser.role !== 'super_admin' && hrUser.role !== 'admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
 
@@ -393,7 +486,7 @@ app.put('/api/approvals/:id/approve', protect, async (req, res) => {
 app.put('/api/approvals/:id/reject', protect, async (req, res) => {
   try {
     const hrUser = await User.findById(req.user.userId);
-    if (!hrUser || (hrUser.role !== 'hr' && hrUser.role !== 'super_admin')) {
+    if (!hrUser || (hrUser.role !== 'hr' && hrUser.role !== 'super_admin' && hrUser.role !== 'admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
 
@@ -416,7 +509,7 @@ app.put('/api/approvals/:id/reject', protect, async (req, res) => {
 app.put('/api/approvals/:id/admin-approve', protect, async (req, res) => {
   try {
     const adminUser = await User.findById(req.user.userId);
-    if (!adminUser || adminUser.role !== 'super_admin') {
+    if (!adminUser || (adminUser.role !== 'super_admin' && adminUser.role !== 'admin')) {
       return res.status(403).json({ message: 'Forbidden. Super Admin access required.' });
     }
 
@@ -444,7 +537,7 @@ app.put('/api/approvals/:id/admin-approve', protect, async (req, res) => {
 app.put('/api/approvals/:id/admin-reject', protect, async (req, res) => {
   try {
     const adminUser = await User.findById(req.user.userId);
-    if (!adminUser || adminUser.role !== 'super_admin') {
+    if (!adminUser || (adminUser.role !== 'super_admin' && adminUser.role !== 'admin')) {
       return res.status(403).json({ message: 'Forbidden. Super Admin access required.' });
     }
 
@@ -498,7 +591,8 @@ app.get('/api/attendance', protect, async (req, res) => {
         breakStartedAt: c.breakStartedAt,
         totalBreakDuration: c.totalBreakDuration,
         currentFocus: c.currentFocus,
-        history: c.history
+        history: c.history,
+        updatedAt: c.updatedAt
       };
       if (c.userId) {
         checkInsMap[c.userId] = payload;
@@ -743,7 +837,7 @@ app.post('/api/attendance/regularize/approve', protect, async (req, res) => {
     }
 
     const user = await User.findById(req.user.userId);
-    if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin' && user.role !== 'admin')) {
       return res.status(403).json({ message: 'Not authorized to approve requests' });
     }
 
@@ -955,10 +1049,41 @@ app.get('/api/payroll/employees', protect, async (_req, res) => {
   }
 });
 
+app.put('/api/payroll/employees/:id', protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin' && user.role !== 'admin')) {
+      return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
+    }
+
+    const { bankName, accountNumber, ifsc, baseSalary, bonus, deductions } = req.body || {};
+    const employee = await Employee.findById(req.params.id);
+    if (!employee) return res.status(404).json({ message: 'Employee not found' });
+
+    if (bankName !== undefined) employee.bankName = bankName;
+    if (accountNumber !== undefined) employee.accountNumber = accountNumber;
+    if (ifsc !== undefined) employee.ifsc = ifsc;
+    if (baseSalary !== undefined) employee.baseSalary = Number(baseSalary);
+    if (bonus !== undefined) employee.bonus = Number(bonus);
+    if (deductions !== undefined) employee.deductions = Number(deductions);
+
+    await employee.save();
+
+    const updatedPayroll = buildEmployeePayroll(employee);
+
+    await addNotification(`Payroll details updated for ${employee.name}`);
+    io.emit('payroll_updated', `Payroll details updated for ${employee.name}`);
+
+    res.json(updatedPayroll);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 app.post('/api/payroll/transfer', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
-    if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin' && user.role !== 'admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
 
@@ -1077,7 +1202,7 @@ app.get('/api/recruitment', async (_req, res) => {
 app.post('/api/recruitment', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
-    if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin' && user.role !== 'admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
 
@@ -1098,7 +1223,7 @@ app.post('/api/recruitment', protect, async (req, res) => {
 app.put('/api/recruitment/:id/stage', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
-    if (!user || (user.role !== 'hr' && user.role !== 'super_admin')) {
+    if (!user || (user.role !== 'hr' && user.role !== 'super_admin' && user.role !== 'admin')) {
       return res.status(403).json({ message: 'Forbidden. HR/Admin access required.' });
     }
 

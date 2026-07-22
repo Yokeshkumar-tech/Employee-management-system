@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { BrowserRouter, Link, Navigate, NavLink, Route, Routes } from 'react-router-dom'
 import { io } from 'socket.io-client'
 import './App.css'
@@ -136,71 +136,63 @@ const demoUsers = [
 const fallbackEmployees = []
 
 const fallbackAttendance = {
-  summary: '97% weekly',
+  summary: '0% presence',
   items: [
-    { label: 'Check-ins', value: '221' },
-    { label: 'Late entries', value: '8' },
-    { label: 'OT approved', value: '12h' }
+    { label: 'Check-ins', value: '0' },
+    { label: 'Late entries', value: '0' },
+    { label: 'OT approved', value: '0h' }
   ],
-  schedule: [
-    { title: 'Team sync', time: '09:30' },
-    { title: 'Payroll review', time: '12:00' },
-    { title: 'Interview panel', time: '15:30' }
-  ]
+  schedule: []
 }
 
 const fallbackLeaveData = {
-  balance: '14 days',
+  balance: '0 days',
   items: [
-    { label: 'Casual', value: '6 left' },
-    { label: 'Sick', value: '4 left' },
-    { label: 'Annual', value: '4 left' }
+    { label: 'Casual', value: '0 left' },
+    { label: 'Sick', value: '0 left' },
+    { label: 'Annual', value: '0 left' }
   ],
-  requests: [
-    { name: 'Rina Shah', type: 'Sick leave', status: 'Pending' },
-    { name: 'Tom Lewis', type: 'Casual leave', status: 'Approved' }
-  ]
+  requests: []
 }
 
 const fallbackPayroll = {
-  status: 'Processed',
+  status: 'Draft',
   items: [
-    { label: 'Net salary', value: '$4,820' },
-    { label: 'Bonus', value: '$480' },
-    { label: 'Deductions', value: '$170' }
+    { label: 'Net salary', value: '$0' },
+    { label: 'Bonus', value: '$0' },
+    { label: 'Deductions', value: '$0' }
   ],
-  payslips: [
-    { name: 'June payslip', date: '2026-06-25' },
-    { name: 'May payslip', date: '2026-05-27' }
-  ]
+  payslips: []
 }
 
 const fallbackRecruitment = {
-  openRoles: 6,
-  positions: [
-    { title: 'Senior Frontend Engineer', stage: 'Screening' },
-    { title: 'People Operations Manager', stage: 'HR Round' }
-  ],
+  openRoles: 0,
+  positions: [],
   pipeline: [
-    { label: 'Applicants', value: '38' },
-    { label: 'Interviews', value: '12' },
-    { label: 'Offers', value: '4' }
+    { label: 'Applicants', value: '0' },
+    { label: 'Interviews', value: '0' },
+    { label: 'Offers', value: '0' }
   ]
 }
 
-const fallbackProjects = [
-  { name: 'Northwind rollout', progress: '82%', summary: 'Coordinate implementation with finance and operations.', owner: 'Anika', deadline: '2026-07-15', budget: '$180k' },
-  { name: 'Global onboarding revamp', progress: '64%', summary: 'Streamline new-hire documentation and access provisioning.', owner: 'Mina', deadline: '2026-08-02', budget: '$96k' }
-]
+const fallbackProjects = []
 
-const fallbackNotifications = [
-  { title: 'Leave approval requested', time: '2m ago' },
-  { title: 'New interview scheduled', time: '15m ago' },
-  { title: 'Payroll batch released', time: '31m ago' }
-]
+const fallbackNotifications = []
 
 const navByRole = {
   super_admin: [
+    { to: '/dashboard', label: 'Overview' },
+    { to: '/employees', label: 'Employees' },
+    { to: '/approvals', label: 'Approvals' },
+    { to: '/attendance', label: 'Attendance' },
+    { to: '/leave', label: 'Leave' },
+    { to: '/payroll', label: 'Payroll' },
+    { to: '/recruitment', label: 'Recruitment' },
+    { to: '/projects', label: 'Projects' },
+    { to: '/chat', label: 'Chat' },
+    { to: '/settings', label: 'Settings' }
+  ],
+  admin: [
     { to: '/dashboard', label: 'Overview' },
     { to: '/employees', label: 'Employees' },
     { to: '/approvals', label: 'Approvals' },
@@ -317,12 +309,20 @@ function AppLayout({ user, onLogout, children }) {
             type="button" 
             className="mobile-menu-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="3" y1="12" x2="21" y2="12"></line>
-              <line x1="3" y1="6" x2="21" y2="6"></line>
-              <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
+            {isMobileMenuOpen ? (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            ) : (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            )}
           </button>
           <div>
             <p className="eyebrow">Enterprise HRMS</p>
@@ -349,6 +349,15 @@ function AppLayout({ user, onLogout, children }) {
         </div>
       </header>
 
+      {/* Sidebar overlay — tapping closes the drawer on mobile */}
+      {isMobileMenuOpen && (
+        <div
+          className="sidebar-overlay visible"
+          onClick={() => setIsMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       <nav className={`sidebar-nav ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-label">Menu</div>
         {navByRole[user.role]?.map((item) => (
@@ -373,6 +382,7 @@ function AppLayout({ user, onLogout, children }) {
     </div>
   )
 }
+
 
 function LandingPage() {
   return (
@@ -723,7 +733,7 @@ function SectionHeading({ title, subtitle, action }) {
 }
 
 function DashboardPage({ user, dashboardData, liveActivity, socketConnected, employees, attendance, API_BASE, notifications, activeUsers }) {
-  const isAdmin = user.role === 'super_admin'
+  const isAdmin = user.role === 'super_admin' || user.role === 'admin'
 
   /*  Shared state  */
   const [hoveredBarIndex, setHoveredBarIndex] = useState(null)
@@ -883,27 +893,31 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
     { feature: 'View Reports', admin: true, hr: true, employee: false },
   ]
 
-  /*  HR/Shared: Performance Pulse  */
-  const pulseData = [
-    { day: 'Mon', value: 78, desc: 'Normal workload, strong check-in consistency.' },
-    { day: 'Tue', value: 84, desc: 'High collaboration peak during team sprint reviews.' },
-    { day: 'Wed', value: 69, desc: 'Mid-week focus day with slightly lower check-ins.' },
-    { day: 'Thu', value: 92, desc: 'Maximum activity and cross-department pull requests.' },
-    { day: 'Fri', value: 76, desc: 'Consistent performance, steady weekend wind-down.' },
-    { day: 'Sat', value: 34, desc: 'Weekend shift, voluntary coverage.' },
-    { day: 'Sun', value: 42, desc: 'Support and maintenance shift updates.' },
-  ]
+  /*  HR/Shared: Performance Pulse (Dynamic fallback) */
+  const pulseData = dashboardData?.pulseData && dashboardData.pulseData.length > 0
+    ? dashboardData.pulseData
+    : [
+      { day: 'Mon', value: 78, desc: 'Normal workload, strong check-in consistency.' },
+      { day: 'Tue', value: 84, desc: 'High collaboration peak during team sprint reviews.' },
+      { day: 'Wed', value: 69, desc: 'Mid-week focus day with slightly lower check-ins.' },
+      { day: 'Thu', value: 92, desc: 'Maximum activity and cross-department pull requests.' },
+      { day: 'Fri', value: 76, desc: 'Consistent performance, steady weekend wind-down.' },
+      { day: 'Sat', value: 34, desc: 'Weekend shift, voluntary coverage.' },
+      { day: 'Sun', value: 42, desc: 'Support and maintenance shift updates.' },
+    ]
 
-  /*  HR/Shared: SLA SVG Trend  */
-  const trendData = [
-    { label: 'Jan', val: 65, projects: 12, SLA: '92%' },
-    { label: 'Feb', val: 78, projects: 19, SLA: '95%' },
-    { label: 'Mar', val: 72, projects: 15, SLA: '94%' },
-    { label: 'Apr', val: 89, projects: 26, SLA: '97%' },
-    { label: 'May', val: 85, projects: 22, SLA: '96%' },
-    { label: 'Jun', val: 95, projects: 31, SLA: '98%' },
-    { label: 'Jul', val: 90, projects: 28, SLA: '97%' },
-  ]
+  /*  HR/Shared: SLA SVG Trend (Dynamic fallback) */
+  const trendData = dashboardData?.trendData && dashboardData.trendData.length > 0
+    ? dashboardData.trendData
+    : [
+      { label: 'Jan', val: 65, projects: 12, SLA: '92%' },
+      { label: 'Feb', val: 78, projects: 19, SLA: '95%' },
+      { label: 'Mar', val: 72, projects: 15, SLA: '94%' },
+      { label: 'Apr', val: 89, projects: 26, SLA: '97%' },
+      { label: 'May', val: 85, projects: 22, SLA: '96%' },
+      { label: 'Jun', val: 95, projects: 31, SLA: '98%' },
+      { label: 'Jul', val: 90, projects: 28, SLA: '97%' },
+    ]
   const svgW = 450, svgH = 110, padX = 40, padY = 20
   const points = trendData.map((d, i) => ({
     x: padX + (i * (svgW - 2 * padX)) / (trendData.length - 1),
@@ -1603,7 +1617,7 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
 }
 
 /*  Employee Personal Dashboard  */
-function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActivity, socketConnected, triggerRefresh, activeUsers }) {
+function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActivity, socketConnected, triggerRefresh, activeUsers, dashboardData, socket }) {
   /*  Real-time clock  */
   const [now, setNow] = useState(new Date())
   useEffect(() => {
@@ -1611,27 +1625,74 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
     return () => clearInterval(id)
   }, [])
 
-  /*  Work session timer  */
+  /*  Work session timer states  */
   const [checkedIn, setCheckedIn] = useState(false)
-  const [checkInTime, setCheckInTime] = useState(null)
-  const [elapsed, setElapsed] = useState(0) // seconds
+  const [onBreak, setOnBreak] = useState(false)
+  const [elapsed, setElapsed] = useState(0) // seconds (worked time excluding breaks)
+  const [breakDuration, setBreakDuration] = useState(0) // seconds
   const [checkInLoading, setCheckInLoading] = useState(false)
+  const [breakLoading, setBreakLoading] = useState(false)
+
+  const activeRecord = attendance?.checkIns?.[String(user.id)]
+
   useEffect(() => {
-    if (!checkedIn || !checkInTime) return
-    const id = setInterval(() => setElapsed(Math.floor((Date.now() - checkInTime) / 1000)), 1000)
-    return () => clearInterval(id)
-  }, [checkedIn, checkInTime])
-  useEffect(() => {
-    const activeRecord = attendance?.checkIns?.[String(user.id)]
-    if (activeRecord?.checkedIn) {
-      setCheckedIn(true)
-      setCheckInTime((current) => current || Date.now())
+    if (!activeRecord) {
+      setCheckedIn(false)
+      setOnBreak(false)
+      setElapsed(0)
+      setBreakDuration(0)
       return
     }
-    setCheckedIn(false)
-    setCheckInTime(null)
-    setElapsed(0)
-  }, [attendance?.checkIns, user.id])
+    setCheckedIn(activeRecord.checkedIn)
+    setOnBreak(!!activeRecord.breakStartedAt)
+  }, [activeRecord])
+
+  // Real-time ticking timer loop
+  useEffect(() => {
+    const parseTimeToday = (timeStr) => {
+      if (!timeStr) return null;
+      const cleanStr = timeStr.trim().toLowerCase();
+      const modifier = cleanStr.endsWith('pm') ? 'pm' : 'am';
+      const timeOnly = cleanStr.replace(/[ap]m/, '').trim();
+      let [hours, minutes] = timeOnly.split(':').map(Number);
+      if (modifier === 'pm' && hours < 12) hours += 12;
+      if (modifier === 'am' && hours === 12) hours = 0;
+
+      const d = new Date();
+      d.setHours(hours, minutes, 0, 0);
+      return d;
+    };
+
+    if (!activeRecord || !activeRecord.checkedIn || !activeRecord.time) {
+      setElapsed(0)
+      setBreakDuration(0)
+      return
+    }
+
+    const intervalId = setInterval(() => {
+      const now = new Date();
+      const checkInDate = parseTimeToday(activeRecord.time);
+      if (checkInDate) {
+        const totalElapsedSec = Math.max(0, Math.floor((now - checkInDate) / 1000));
+
+        if (activeRecord.breakStartedAt) {
+          const breakStartDate = parseTimeToday(activeRecord.breakStartedAt);
+          if (breakStartDate) {
+            const currentBreakSec = Math.max(0, Math.floor((now - breakStartDate) / 1000));
+            const totalBreakSec = (activeRecord.totalBreakDuration || 0) * 60 + currentBreakSec;
+            setBreakDuration(totalBreakSec);
+            setElapsed(Math.max(0, Math.floor((breakStartDate - checkInDate) / 1000) - (activeRecord.totalBreakDuration || 0) * 60));
+          }
+        } else {
+          const totalBreakSec = (activeRecord.totalBreakDuration || 0) * 60;
+          setBreakDuration(totalBreakSec);
+          setElapsed(Math.max(0, totalElapsedSec - totalBreakSec));
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [activeRecord]);
 
   const handleWorkSessionToggle = async () => {
     if (checkInLoading) return
@@ -1644,21 +1705,34 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
       })
       const data = await response.json()
       if (!response.ok) throw new Error(data.message || 'Unable to update check-in status')
-      setCheckedIn(data.checkedIn)
-      setCheckInTime(data.checkedIn ? Date.now() : null)
-      setElapsed(0)
       if (triggerRefresh) triggerRefresh()
-    } catch {
-      setCheckedIn((current) => {
-        const next = !current
-        setCheckInTime(next ? Date.now() : null)
-        setElapsed(0)
-        return next
-      })
+    } catch (err) {
+      console.error(err)
     } finally {
       setCheckInLoading(false)
     }
   }
+
+  const handleBreakToggle = async () => {
+    if (breakLoading) return
+    setBreakLoading(true)
+    const action = activeRecord?.breakStartedAt ? 'end' : 'start'
+    try {
+      const response = await fetch(`${API_BASE}/api/attendance/break`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ userId: user.id, action })
+      })
+      if (response.ok) {
+        if (triggerRefresh) triggerRefresh()
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setBreakLoading(false)
+    }
+  }
+
   const fmtElapsed = (s) => {
     const h = String(Math.floor(s / 3600)).padStart(2, '0')
     const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0')
@@ -1760,38 +1834,39 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
   const doneTasks = tasks.filter(t => t.done).length
   const taskPct = tasks.length > 0 ? Math.round((doneTasks / tasks.length) * 100) : 0
 
-  /*  Live activity feed (auto-appends new items)  */
-  const feedItems = [
-    'Attendance sync complete',
-    'Payroll batch released',
-    'Leave request submitted',
-    'Project milestone updated',
-    'Team chat message received',
-    'Schedule reminder triggered',
-  ]
-  const [feed, setFeed] = useState(liveActivity.length ? liveActivity : feedItems.slice(0, 3))
-  useEffect(() => {
-    const id = setInterval(() => {
-      const next = feedItems[Math.floor(Math.random() * feedItems.length)]
-      const ts = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      setFeed(prev => [`${next}  ${ts}`, ...prev].slice(0, 6))
-    }, 12000)
-    return () => clearInterval(id)
-  }, [])
+  /* Real-time dynamic meetings from DB */
+  const [meetings, setMeetings] = useState([])
+  const [meetingsLoading, setMeetingsLoading] = useState(true)
 
-  /*  Team pulse (online members)  */
-  // Replaced static mock data with activeUsers prop from App
+  const fetchMeetings = useCallback(() => {
+    fetch(`${API_BASE}/api/meetings`, { headers: authHeaders() })
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setMeetings(data);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setMeetingsLoading(false));
+  }, [API_BASE]);
+
+  useEffect(() => {
+    fetchMeetings()
+  }, [fetchMeetings])
+
+  useEffect(() => {
+    if (!socket) return
+    socket.on('meeting_updated', fetchMeetings)
+    return () => {
+      socket.off('meeting_updated', fetchMeetings)
+    }
+  }, [socket, fetchMeetings])
 
   /*  Derived  */
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening'
   const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
   const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  const mySchedule = [
-    { time: '09:30 AM', event: 'Daily standup', type: 'meeting' },
-    { time: '11:00 AM', event: 'Project review with Anika', type: 'review' },
-    { time: '02:00 PM', event: 'HR orientation session', type: 'training' },
-    { time: '04:30 PM', event: 'Submit weekly report', type: 'task' },
-  ]
+  
   const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' }
   const priorityBg = { high: '#fee2e2', medium: '#fef3c7', low: '#dcfce7' }
   const typeColor = { meeting: '#6366f1', review: '#8b5cf6', training: '#06b6d4', task: '#f59e0b' }
@@ -1857,7 +1932,7 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
           borderRadius: '16px', padding: '14px 22px', textAlign: 'center',
           border: '1px solid rgba(255,255,255,0.22)', zIndex: 1, flexShrink: 0,
         }}>
-          <div style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1 }}>{user.performanceScore || 92}%</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 800, lineHeight: 1 }}>{dashboardData?.monthlyScore || '92%'}</div>
           <div style={{ fontSize: '0.72rem', opacity: 0.85, marginTop: '4px', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Monthly Score</div>
           {socketConnected && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', marginTop: '6px', fontSize: '0.7rem', opacity: 0.9 }}>
@@ -1871,9 +1946,9 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
       {/* -- ROW 1: Stats cards ----------------------------------- */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px' }}>
         {[
-          { label: 'My Attendance', value: attendance?.summary || '97% weekly', detail: 'this week', icon: '-', grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
-          { label: 'Leave Balance', value: leaveData?.balance || '14 days', detail: 'remaining this year', icon: '*', grad: 'linear-gradient(135deg,#34d399,#059669)' },
-          { label: 'Net Salary', value: payroll?.items?.[0]?.value || '4,820', detail: 'current month', icon: '*', grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
+          { label: 'My Attendance', value: dashboardData?.attendance || attendance?.summary || '100%', detail: 'this week', icon: '-', grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+          { label: 'Leave Balance', value: dashboardData?.leaveBalance || leaveData?.balance || '14 days', detail: 'remaining this year', icon: '*', grad: 'linear-gradient(135deg,#34d399,#059669)' },
+          { label: 'Net Salary', value: dashboardData?.salary || payroll?.items?.[0]?.value || '$4,820', detail: 'current month', icon: '*', grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
           { label: 'Tasks Done', value: `${doneTasks}/${tasks.length}`, detail: 'completed today', icon: '*', grad: 'linear-gradient(135deg,#38bdf8,#6366f1)' },
         ].map(card => (
           <article key={card.label} className="stat-card">
@@ -1892,33 +1967,56 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
         <article className="panel-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px' }}>
           <div className="panel-header" style={{ width: '100%' }}>
             <h3>Work Session</h3>
-            <span className="pill" style={{ background: checkedIn ? '#dcfce7' : '#f1f5f9', color: checkedIn ? '#16a34a' : '#64748b' }}>
-              {checkedIn ? ' Active' : ' Idle'}
+            <span className="pill" style={{
+              background: onBreak ? '#fef3c7' : checkedIn ? '#dcfce7' : '#f1f5f9',
+              color: onBreak ? '#b45309' : checkedIn ? '#16a34a' : '#64748b'
+            }}>
+              {onBreak ? ' On Break' : checkedIn ? ' Active' : ' Idle'}
             </span>
           </div>
-          <CircleProgress pct={workHoursPct} size={90} color={checkedIn ? '#6366f1' : '#cbd5e1'}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: checkedIn ? '#6366f1' : '#94a3b8' }}>{workHoursPct}%</span>
+          <CircleProgress pct={workHoursPct} size={90} color={onBreak ? '#f59e0b' : checkedIn ? '#6366f1' : '#cbd5e1'}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: onBreak ? '#f59e0b' : checkedIn ? '#6366f1' : '#94a3b8' }}>{workHoursPct}%</span>
           </CircleProgress>
           <div style={{ fontFamily: 'monospace', fontSize: '1.6rem', fontWeight: 800, color: '#1e293b', letterSpacing: '0.06em' }}>
             {fmtElapsed(elapsed)}
           </div>
-          <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px' }}>of 8h target</div>
-          <button
-            type="button"
-            onClick={handleWorkSessionToggle}
-            disabled={checkInLoading}
-
-            style={{
-              width: '100%', padding: '10px', borderRadius: '12px', border: 'none', cursor: 'pointer',
-              fontWeight: 700, fontSize: '0.88rem', letterSpacing: '0.02em',
-              background: checkedIn ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#6366f1,#8b5cf6)',
-              color: '#fff', transition: 'opacity 0.2s',
-            }}
-            onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
-            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-          >
-            {checkInLoading ? ' Processing...' : (checkedIn ? ' Check Out' : ' Check In')}
-          </button>
+          <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '-8px' }}>
+            {onBreak ? 'On break' : breakDuration > 0 ? `Break: ${fmtElapsed(breakDuration)}` : 'of 8h target'}
+          </div>
+          <div style={{ display: 'flex', gap: '8px', width: '100%' }}>
+            <button
+              type="button"
+              onClick={handleWorkSessionToggle}
+              disabled={checkInLoading || onBreak}
+              style={{
+                flex: 1, padding: '10px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                fontWeight: 700, fontSize: '0.88rem',
+                background: checkedIn ? 'linear-gradient(135deg,#ef4444,#dc2626)' : 'linear-gradient(135deg,#6366f1,#8b5cf6)',
+                color: '#fff', transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              {checkInLoading ? '...' : (checkedIn ? 'Check Out' : 'Check In')}
+            </button>
+            {checkedIn && (
+              <button
+                type="button"
+                onClick={handleBreakToggle}
+                disabled={breakLoading}
+                style={{
+                  flex: 1, padding: '10px', borderRadius: '12px', border: 'none', cursor: 'pointer',
+                  fontWeight: 700, fontSize: '0.88rem',
+                  background: onBreak ? 'linear-gradient(135deg,#10b981,#059669)' : 'linear-gradient(135deg,#f59e0b,#fbbf24)',
+                  color: '#fff', transition: 'opacity 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+                onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+              >
+                {breakLoading ? '...' : (onBreak ? 'End Break' : 'Go on Break')}
+              </button>
+            )}
+          </div>
         </article>
 
         {/* Pomodoro Focus Timer */}
@@ -1949,7 +2047,7 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
             </button>
             <button type="button" onClick={() => { setPomoRunning(false); setPomoSec(POMO_WORK); setPomoMode('work') }} style={{
               padding: '10px 14px', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#f8fafc', cursor: 'pointer', fontSize: '0.88rem',
-            }}></button>
+            }}>🔄</button>
           </div>
           <div style={{ display: 'flex', gap: '4px' }}>
             {[...Array(4)].map((_, i) => (
@@ -1966,7 +2064,7 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
           {[
             { label: 'Work Hours', pct: workHoursPct, color: '#6366f1', value: `${Math.floor(elapsed / 3600)}h ${Math.floor((elapsed % 3600) / 60)}m` },
             { label: 'Tasks Done', pct: taskPct, color: '#10b981', value: `${doneTasks}/${tasks.length}` },
-            { label: 'Attendance', pct: 97, color: '#f59e0b', value: '97%' },
+            { label: 'Attendance', pct: parseFloat(dashboardData?.attendance || '100'), color: '#f59e0b', value: dashboardData?.attendance || '100%' },
             { label: 'Focus Time', pct: Math.min(100, pomoCycles * 25), color: '#8b5cf6', value: `${pomoCycles * 25} min` },
           ].map(bar => (
             <div key={bar.label}>
@@ -2073,42 +2171,44 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
         <article className="panel-card">
           <div className="panel-header">
             <h3>Today's Schedule</h3>
-            <span className="pill">4 events</span>
+            <span className="pill">{meetings.length} events</span>
           </div>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {mySchedule.map((s, i) => {
-              const [hStr, rest] = s.time.split(':')
-              const [mStr, ampm] = rest.split(' ')
-              let hr = parseInt(hStr)
-              if (ampm === 'PM' && hr !== 12) hr += 12
-              if (ampm === 'AM' && hr === 12) hr = 0
-              const eventDate = new Date(); eventDate.setHours(hr, parseInt(mStr), 0, 0)
-              const isPast = now > eventDate
-              const isCurrent = Math.abs(now - eventDate) < 60 * 60 * 1000 && !isPast
-              return (
-                <li key={i} style={{
-                  display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
-                  borderRadius: '10px', border: `1px solid ${isCurrent ? '#c7d2fe' : '#f1f5f9'}`,
-                  background: isCurrent ? '#eef2ff' : isPast ? '#f8fafc' : '#fafafe',
-                  opacity: isPast ? 0.6 : 1,
-                  transition: 'all 0.3s',
-                }}>
-                  {isCurrent && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', flexShrink: 0, animation: 'pulse 1.5s infinite' }} />}
-                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6366f1', minWidth: '68px', background: '#eef2ff', padding: '4px 8px', borderRadius: '6px', textAlign: 'center' }}>
-                    {s.time}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '0.87rem', fontWeight: 600, color: isPast ? '#94a3b8' : '#1e293b' }}>{s.event}</div>
-                    {isCurrent && <div style={{ fontSize: '0.72rem', color: '#6366f1', fontWeight: 600, marginTop: '2px' }}>Happening now</div>}
-                    {isPast && <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '2px' }}>Completed</div>}
-                  </div>
-                  <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', color: typeColor[s.type], background: typeBg[s.type], flexShrink: 0, textTransform: 'capitalize' }}>
-                    {s.type}
-                  </span>
-                </li>
-              )
-            })}
-          </ul>
+          {meetingsLoading ? (
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem', textAlign: 'center', margin: '20px 0' }}>Loading schedule...</p>
+          ) : meetings.length > 0 ? (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '240px', overflowY: 'auto' }}>
+              {meetings.map((s) => {
+                const isOngoing = s.status === 'Ongoing';
+                const meetingTime = new Date(s.startedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                return (
+                  <li key={s._id} style={{
+                    display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 12px',
+                    borderRadius: '10px', border: `1px solid ${isOngoing ? '#c7d2fe' : '#f1f5f9'}`,
+                    background: isOngoing ? '#eef2ff' : '#f8fafc',
+                    opacity: s.status === 'Completed' ? 0.6 : 1,
+                    transition: 'all 0.3s',
+                  }}>
+                    {isOngoing && <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', flexShrink: 0, animation: 'pulse 1.5s infinite' }} />}
+                    <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#6366f1', minWidth: '68px', background: '#eef2ff', padding: '4px 8px', borderRadius: '6px', textAlign: 'center' }}>
+                      {meetingTime}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.87rem', fontWeight: 600, color: s.status === 'Completed' ? '#94a3b8' : '#1e293b' }}>{s.title}</div>
+                      <div style={{ fontSize: '0.72rem', color: '#94a3b8', marginTop: '2px' }}>Hosted by {s.organizer}</div>
+                    </div>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 700, padding: '2px 8px', borderRadius: '6px', color: isOngoing ? '#047857' : '#475569', background: isOngoing ? '#ecfdf5' : '#f1f5f9', flexShrink: 0, textTransform: 'capitalize' }}>
+                      {s.status}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '20px 0', color: '#94a3b8' }}>
+              <p style={{ margin: 0, fontSize: '0.9rem' }}>No meetings scheduled.</p>
+              <p style={{ margin: '4px 0 0', fontSize: '0.78rem' }}>Check back later or start a call in Team Chat.</p>
+            </div>
+          )}
         </article>
       </div>
 
@@ -2150,20 +2250,27 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
               ? <span className="pill" style={{ background: '#dcfce7', color: '#16a34a' }}> Live</span>
               : <span className="pill" style={{ background: '#f1f5f9', color: '#94a3b8' }}>Offline</span>}
           </div>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {feed.map((item, i) => (
-              <li key={i} style={{
-                padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', color: '#475569',
-                display: 'flex', alignItems: 'flex-start', gap: '8px',
-                background: i === 0 ? '#eef2ff' : '#f8fafc',
-                border: `1px solid ${i === 0 ? '#c7d2fe' : '#f1f5f9'}`,
-                transition: 'all 0.4s',
-              }}>
-                <span style={{ color: '#6366f1', fontSize: '0.7rem', marginTop: '2px', flexShrink: 0 }}></span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+          {liveActivity && liveActivity.length > 0 ? (
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {liveActivity.map((item, i) => (
+                <li key={i} style={{
+                  padding: '9px 12px', borderRadius: '10px', fontSize: '0.82rem', color: '#475569',
+                  display: 'flex', alignItems: 'flex-start', gap: '8px',
+                  background: i === 0 ? '#eef2ff' : '#f8fafc',
+                  border: `1px solid ${i === 0 ? '#c7d2fe' : '#f1f5f9'}`,
+                  transition: 'all 0.4s',
+                }}>
+                  <span style={{ color: '#6366f1', fontSize: '0.7rem', marginTop: '2px', flexShrink: 0 }}></span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '20px 0', color: '#94a3b8' }}>
+              <p style={{ margin: 0, fontSize: '0.9rem' }}>No recent activity.</p>
+              <p style={{ margin: '4px 0 0', fontSize: '0.78rem' }}>Check-ins and system logs will sync here.</p>
+            </div>
+          )}
         </article>
 
         {/* Team Pulse */}
@@ -3949,6 +4056,13 @@ function PayrollPage({ payroll, API_BASE, triggerRefresh, user }) {
   const [payrollActionLoading, setPayrollActionLoading] = useState('')
   const [employeePayroll, setEmployeePayroll] = useState([])
   const [selectedPayrollId, setSelectedPayrollId] = useState('')
+  const [isEditingPayroll, setIsEditingPayroll] = useState(false)
+  const [editBankName, setEditBankName] = useState('')
+  const [editAccountNumber, setEditAccountNumber] = useState('')
+  const [editIfsc, setEditIfsc] = useState('')
+  const [editBaseSalary, setEditBaseSalary] = useState(0)
+  const [editBonus, setEditBonus] = useState(0)
+  const [editDeductions, setEditDeductions] = useState(0)
 
   const isAdmin = user?.role === 'super_admin' || user?.role === 'hr'
 
@@ -4000,6 +4114,49 @@ function PayrollPage({ payroll, API_BASE, triggerRefresh, user }) {
 
   const selectedPayroll = employeePayroll.find((item) => item.id === selectedPayrollId) || employeePayroll[0]
   const canTransferPayroll = user?.role === 'hr' || user?.role === 'super_admin'
+
+  useEffect(() => {
+    if (selectedPayroll) {
+      setEditBankName(selectedPayroll.bankName || '')
+      setEditAccountNumber(selectedPayroll.accountNumber || '')
+      setEditIfsc(selectedPayroll.ifsc || '')
+      setEditBaseSalary(selectedPayroll.baseSalary || 0)
+      setEditBonus(selectedPayroll.bonus || 0)
+      setEditDeductions(selectedPayroll.deductions || 0)
+      setIsEditingPayroll(false)
+    }
+  }, [selectedPayroll])
+
+  const handleSavePayrollDetails = async () => {
+    if (!selectedPayroll) return
+    setPayrollActionLoading(`save-${selectedPayroll.id}`)
+    setPayrollActionMessage('')
+    setPayrollActionError('')
+    try {
+      const response = await fetch(`${API_BASE}/api/payroll/employees/${selectedPayroll.id}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          bankName: editBankName,
+          accountNumber: editAccountNumber,
+          ifsc: editIfsc,
+          baseSalary: editBaseSalary,
+          bonus: editBonus,
+          deductions: editDeductions
+        })
+      })
+      const payload = await response.json()
+      if (!response.ok) throw new Error(payload.message || 'Failed to update payroll details')
+
+      setPayrollActionMessage(`Payroll details updated successfully for ${payload.name}!`)
+      setEmployeePayroll((rows) => rows.map((row) => row.id === selectedPayroll.id ? payload : row))
+      setIsEditingPayroll(false)
+    } catch (error) {
+      setPayrollActionError(error.message)
+    } finally {
+      setPayrollActionLoading('')
+    }
+  }
 
   const handleSalaryTransfer = async () => {
     if (!selectedPayroll) return
@@ -4218,19 +4375,82 @@ function PayrollPage({ payroll, API_BASE, triggerRefresh, user }) {
         <article className="panel-card">
           <div className="panel-header">
             <h3>Employee salary transfer</h3>
-            <span className="pill">{employeePayroll.length} employees</span>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+              {selectedPayroll && canTransferPayroll && (
+                <button
+                  type="button"
+                  onClick={() => setIsEditingPayroll(!isEditingPayroll)}
+                  style={{
+                    border: 'none',
+                    background: 'none',
+                    color: '#6366f1',
+                    fontSize: '0.85rem',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '4px 8px',
+                    borderRadius: '8px',
+                    transition: 'background 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.target.style.background = 'rgba(99, 102, 241, 0.08)'}
+                  onMouseLeave={(e) => e.target.style.background = 'none'}
+                >
+                  {isEditingPayroll ? 'Cancel' : '✏️ Edit details'}
+                </button>
+              )}
+              <span className="pill">{employeePayroll.length} employees</span>
+            </div>
           </div>
           {employeePayroll.length ? (
             <div style={{ display: 'grid', gap: '14px' }}>
               <div className="form-group">
                 <label>Select employee</label>
-                <select value={selectedPayroll?.id || ''} onChange={(event) => setSelectedPayrollId(event.target.value)}>
+                <select value={selectedPayroll?.id || ''} onChange={(event) => setSelectedPayrollId(event.target.value)} disabled={isEditingPayroll}>
                   {employeePayroll.map((item) => (
                     <option key={item.id} value={item.id}>{item.name} - {item.department}</option>
                   ))}
                 </select>
               </div>
-              {selectedPayroll && (
+
+              {selectedPayroll && isEditingPayroll ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
+                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                    <label style={{ fontSize: '0.78rem' }}>Bank Name</label>
+                    <input type="text" value={editBankName} onChange={(e) => setEditBankName(e.target.value)} style={{ padding: '8px 12px', fontSize: '0.9rem' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.78rem' }}>Account Number</label>
+                    <input type="text" value={editAccountNumber} onChange={(e) => setEditAccountNumber(e.target.value)} style={{ padding: '8px 12px', fontSize: '0.9rem' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.78rem' }}>IFSC Code</label>
+                    <input type="text" value={editIfsc} onChange={(e) => setEditIfsc(e.target.value)} style={{ padding: '8px 12px', fontSize: '0.9rem' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.78rem' }}>Base Salary</label>
+                    <input type="number" value={editBaseSalary} onChange={(e) => setEditBaseSalary(Number(e.target.value))} style={{ padding: '8px 12px', fontSize: '0.9rem' }} />
+                  </div>
+                  <div className="form-group">
+                    <label style={{ fontSize: '0.78rem' }}>Bonus</label>
+                    <input type="number" value={editBonus} onChange={(e) => setEditBonus(Number(e.target.value))} style={{ padding: '8px 12px', fontSize: '0.9rem' }} />
+                  </div>
+                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                    <label style={{ fontSize: '0.78rem' }}>Deductions</label>
+                    <input type="number" value={editDeductions} onChange={(e) => setEditDeductions(Number(e.target.value))} style={{ padding: '8px 12px', fontSize: '0.9rem' }} />
+                  </div>
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={handleSavePayrollDetails}
+                    disabled={payrollActionLoading === `save-${selectedPayroll.id}`}
+                    style={{ gridColumn: 'span 2', justifyContent: 'center', borderRadius: '12px', marginTop: '5px', background: 'linear-gradient(135deg, #10b981, #059669)' }}
+                  >
+                    {payrollActionLoading === `save-${selectedPayroll.id}` ? 'Saving...' : '💾 Save Changes'}
+                  </button>
+                </div>
+              ) : selectedPayroll ? (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '10px' }}>
                   <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>Role <strong>{selectedPayroll.role}</strong></div>
                   <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>Bank <strong>{selectedPayroll.bankName}</strong></div>
@@ -4239,10 +4459,13 @@ function PayrollPage({ payroll, API_BASE, triggerRefresh, user }) {
                   <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>Gross <strong>{selectedPayroll.currency}{selectedPayroll.baseSalary + selectedPayroll.bonus}</strong></div>
                   <div className="subtle-pill" style={{ justifyContent: 'space-between', borderRadius: '12px' }}>Net <strong>{selectedPayroll.currency}{selectedPayroll.netSalary}</strong></div>
                 </div>
+              ) : null}
+
+              {!isEditingPayroll && (
+                <button type="button" className="primary-button" onClick={handleSalaryTransfer} disabled={!canTransferPayroll || !selectedPayroll || payrollActionLoading === `transfer-${selectedPayroll?.id}`} style={{ justifyContent: 'center', borderRadius: '12px' }}>
+                  {payrollActionLoading === `transfer-${selectedPayroll?.id}` ? 'Transferring...' : 'Transfer Salary'}
+                </button>
               )}
-              <button type="button" className="primary-button" onClick={handleSalaryTransfer} disabled={!canTransferPayroll || !selectedPayroll || payrollActionLoading === `transfer-${selectedPayroll?.id}`} style={{ justifyContent: 'center', borderRadius: '12px' }}>
-                {payrollActionLoading === `transfer-${selectedPayroll?.id}` ? 'Transferring...' : 'Transfer Salary'}
-              </button>
               {!canTransferPayroll && <p className="helper-text" style={{ margin: 0 }}>Only HR and Super Admin can transfer salary.</p>}
             </div>
           ) : (
@@ -4750,12 +4973,15 @@ function ProjectsPage({ projects, employees = [], user, API_BASE, triggerRefresh
   );
 }
 
-function ChatPage({ notifications, user, API_BASE, socket }) {
+function ChatPage({ notifications, user, API_BASE, socket, activeUsers }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [inCall, setInCall] = useState(false);
   const [meetings, setMeetings] = useState([]);
   const [currentMeetingId, setCurrentMeetingId] = useState(null);
+  const [typingUsers, setTypingUsers] = useState({});
+  const [isTypingLocal, setIsTypingLocal] = useState(false);
+  const typingTimeoutRef = useRef(null);
 
   const fetchMeetings = useCallback(() => {
     fetch(`${API_BASE}/api/meetings`, { headers: authHeaders() })
@@ -4787,14 +5013,50 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
       fetchMeetings();
     };
 
+    const handleTypingStatus = ({ name, isTyping }) => {
+      if (name === user.name) return;
+      setTypingUsers((prev) => {
+        const updated = { ...prev };
+        if (isTyping) {
+          updated[name] = true;
+        } else {
+          delete updated[name];
+        }
+        return updated;
+      });
+    };
+
     socket.on('chat_message', handleChatMessage);
     socket.on('meeting_updated', handleMeetingUpdate);
+    socket.on('typing_status', handleTypingStatus);
 
     return () => {
       socket.off('chat_message', handleChatMessage);
       socket.off('meeting_updated', handleMeetingUpdate);
+      socket.off('typing_status', handleTypingStatus);
     };
-  }, [socket, fetchMeetings]);
+  }, [socket, fetchMeetings, user.name]);
+
+  const handleInputChange = (e) => {
+    const val = e.target.value;
+    setNewMessage(val);
+
+    if (!socket) return;
+
+    if (!isTypingLocal && val.trim().length > 0) {
+      setIsTypingLocal(true);
+      socket.emit('typing', { name: user.name, isTyping: true });
+    }
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTypingLocal(false);
+      socket.emit('typing', { name: user.name, isTyping: false });
+    }, 2000);
+  };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
@@ -4804,6 +5066,15 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
       sender: user.name,
       text: newMessage
     });
+
+    if (isTypingLocal) {
+      setIsTypingLocal(false);
+      socket.emit('typing', { name: user.name, isTyping: false });
+    }
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
     setNewMessage('');
   };
 
@@ -4862,13 +5133,19 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
               </div>
             );
           })}
+          {Object.keys(typingUsers).length > 0 && (
+            <div style={{ alignSelf: 'flex-start', display: 'flex', alignItems: 'center', gap: '6px', color: '#6366f1', fontSize: '0.85rem', fontStyle: 'italic', padding: '5px 10px' }}>
+              <span className="glow-dot" style={{ width: '6px', height: '6px', margin: 0 }} />
+              <span>{Object.keys(typingUsers).join(', ')} {Object.keys(typingUsers).length === 1 ? 'is' : 'are'} typing...</span>
+            </div>
+          )}
         </div>
 
         <form onSubmit={handleSendMessage} style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
           <input
             type="text"
             value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
+            onChange={handleInputChange}
             placeholder="Type your message..."
             required
             style={{ flexGrow: 1, padding: '10px 14px', border: '1px solid #e2e8f0', borderRadius: '10px', outline: 'none', fontSize: '0.95rem' }}
@@ -4927,31 +5204,79 @@ function ChatPage({ notifications, user, API_BASE, socket }) {
         </article>
 
         {!inCall && (
-          <article className="panel-card" style={{ flexGrow: 1 }}>
-            <div className="panel-header">
-              <h3>Meeting History</h3>
-              <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca' }}>{meetings.length} Total</span>
-            </div>
-            {meetings.length > 0 ? (
-              <ul className="list" style={{ maxHeight: '200px', overflowY: 'auto', margin: 0, padding: 0 }}>
-                {meetings.map((meeting) => (
-                  <li key={meeting._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
-                    <div>
-                      <div style={{ color: '#0f172a', fontWeight: '500' }}>{meeting.title}</div>
-                      <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Hosted by {meeting.organizer} • {new Date(meeting.startedAt).toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: meeting.status === 'Ongoing' ? '#dcfce7' : '#f1f5f9', color: meeting.status === 'Ongoing' ? '#16a34a' : '#475569', fontWeight: 'bold' }}>
-                        {meeting.status}
+          <>
+            <article className="panel-card">
+              <div className="panel-header">
+                <h3>Active Team Members</h3>
+                <span className="pill" style={{ background: '#dcfce7', color: '#16a34a' }}>
+                  {activeUsers?.length || 0} Online
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
+                {activeUsers && activeUsers.length > 0 ? (
+                  activeUsers.map((activeUser) => (
+                    <div
+                      key={activeUser.socketId}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '6px 12px',
+                        borderRadius: '999px',
+                        background: '#f8fafc',
+                        border: '1px solid rgba(99, 102, 241, 0.15)',
+                        fontSize: '0.85rem',
+                        color: '#1e293b',
+                        fontWeight: '600'
+                      }}
+                    >
+                      <span
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          background: '#22c55e',
+                          boxShadow: '0 0 8px #22c55e'
+                        }}
+                      />
+                      {activeUser.name}
+                      <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: '500', textTransform: 'capitalize' }}>
+                        ({activeUser.role.replace('_', ' ')})
                       </span>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p style={{ color: '#94a3b8', fontSize: '0.9rem', textAlign: 'center', marginTop: '20px' }}>No past meetings recorded.</p>
-            )}
-          </article>
+                  ))
+                ) : (
+                  <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: '5px 0' }}>No other active team members online.</p>
+                )}
+              </div>
+            </article>
+
+            <article className="panel-card" style={{ flexGrow: 1 }}>
+              <div className="panel-header">
+                <h3>Meeting History</h3>
+                <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca' }}>{meetings.length} Total</span>
+              </div>
+              {meetings.length > 0 ? (
+                <ul className="list" style={{ maxHeight: '200px', overflowY: 'auto', margin: 0, padding: 0 }}>
+                  {meetings.map((meeting) => (
+                    <li key={meeting._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                      <div>
+                        <div style={{ color: '#0f172a', fontWeight: '500' }}>{meeting.title}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Hosted by {meeting.organizer} • {new Date(meeting.startedAt).toLocaleString()}</div>
+                      </div>
+                      <div>
+                        <span style={{ fontSize: '0.75rem', padding: '4px 8px', borderRadius: '12px', background: meeting.status === 'Ongoing' ? '#dcfce7' : '#f1f5f9', color: meeting.status === 'Ongoing' ? '#16a34a' : '#475569', fontWeight: 'bold' }}>
+                          {meeting.status}
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p style={{ color: '#94a3b8', fontSize: '0.9rem', textAlign: 'center', marginTop: '20px' }}>No past meetings recorded.</p>
+              )}
+            </article>
+          </>
         )}
       </div>
     </section>
@@ -5413,7 +5738,7 @@ function NotificationsPage({ user, API_BASE }) {
 
 function App() {
   const [user, setUser] = useState(getStoredUser)
-  const [dashboardData, setDashboardData] = useState({ totalEmployees: 248, attendance: '92%', pendingLeaves: 7, payrollStatus: '8 batches' })
+  const [dashboardData, setDashboardData] = useState({ totalEmployees: 0, attendance: '0%', pendingLeaves: 0, payrollStatus: '0 releases' })
   const [employees, setEmployees] = useState(fallbackEmployees)
   const [attendance, setAttendance] = useState(fallbackAttendance)
   const [leaveData, setLeaveData] = useState(fallbackLeaveData)
@@ -5426,7 +5751,7 @@ function App() {
   const [googleEmail, setGoogleEmail] = useState('')
   const [error, setError] = useState('')
   const [socketConnected, setSocketConnected] = useState(false)
-  const [liveActivity, setLiveActivity] = useState(['Attendance sync complete', 'Payroll review scheduled', 'Recruitment funnel updated'])
+  const [liveActivity, setLiveActivity] = useState([])
   const [activeUsers, setActiveUsers] = useState([])
   const [showGoogleModal, setShowGoogleModal] = useState(false)
   const [socket, setSocket] = useState(null)
@@ -5447,32 +5772,32 @@ function App() {
       fetch(`${API_BASE}/api/notifications`, { headers })
     ])
       .then(async (responses) => {
-        const [dashboardRes, employeesRes, attendanceRes, leaveRes, payrollRes, recruitmentRes, projectsRes, notificationsRes] = responses
-        return {
-          dashboard: await dashboardRes.json(),
-          employees: await employeesRes.json(),
-          attendance: await attendanceRes.json(),
-          leave: await leaveRes.json(),
-          payroll: await payrollRes.json(),
-          recruitment: await recruitmentRes.json(),
-          projects: await projectsRes.json(),
-          notifications: await notificationsRes.json()
+        const unauthorized = responses.find(r => r.status === 401)
+        if (unauthorized) {
+          handleLogout()
+          throw new Error('Unauthorized')
         }
-      })
-      .then((payload) => {
-        if (payload.dashboard?.[user.role]) {
-          setDashboardData(payload.dashboard[user.role])
+        const failed = responses.find(r => !r.ok)
+        if (failed) {
+          throw new Error(`Request failed with status: ${failed.status}`)
         }
-        setEmployees(payload.employees)
-        setAttendance(payload.attendance)
-        setLeaveData(payload.leave)
-        setPayroll(payload.payroll)
-        setRecruitment(payload.recruitment)
-        setProjects(payload.projects)
-        setNotifications(payload.notifications)
+        return Promise.all(responses.map(r => r.json()))
       })
-      .catch(() => {
-        setDashboardData({ totalEmployees: 248, attendance: '92%', pendingLeaves: 7, payrollStatus: '8 batches' })
+      .then(([dashboard, employees, attendance, leave, payroll, recruitment, projects, notifications]) => {
+        if (dashboard?.[user.role]) {
+          setDashboardData(dashboard[user.role])
+        }
+        if (Array.isArray(employees)) setEmployees(employees)
+        if (attendance) setAttendance(attendance)
+        if (leave) setLeaveData(leave)
+        if (payroll) setPayroll(payroll)
+        if (recruitment) setRecruitment(recruitment)
+        if (Array.isArray(projects)) setProjects(projects)
+        if (Array.isArray(notifications)) setNotifications(notifications)
+      })
+      .catch((err) => {
+        console.error('Failed to load data:', err)
+        setDashboardData({ totalEmployees: 0, attendance: '0%', pendingLeaves: 0, payrollStatus: '0 releases' })
         setEmployees([])
         setAttendance(fallbackAttendance)
         setLeaveData(fallbackLeaveData)
@@ -5502,8 +5827,8 @@ function App() {
 
     const handleRealtimeRefresh = (message) => {
       if (message) {
-        setLiveActivity((current) => [message, ...current].slice(0, 6))
-        setNotifications((current) => [{ title: message, time: 'just now' }, ...current].slice(0, 6))
+        setLiveActivity((current) => [message, ...(Array.isArray(current) ? current : [])].slice(0, 6))
+        setNotifications((current) => [{ title: message, time: 'just now' }, ...(Array.isArray(current) ? current : [])].slice(0, 6))
       }
       loadData()
     }
@@ -5512,7 +5837,7 @@ function App() {
       setSocketConnected(true)
       socketInstance.emit('join_room', user.role)
       socketInstance.emit('user_online', { id: user.id, name: user.name, role: user.role, status: 'active' })
-      setLiveActivity((current) => ['Real-time connection active', ...current].slice(0, 6))
+      setLiveActivity((current) => ['Real-time connection active', ...(Array.isArray(current) ? current : [])].slice(0, 6))
     })
     socketInstance.on('active_users_update', (users) => {
       setActiveUsers(users)
@@ -5630,7 +5955,7 @@ function App() {
             setUser({ id: matchingUser.id, name: matchingUser.name, email: matchingUser.email, role: matchingUser.role })
             if (matchingUser.role === 'employee') {
               setEmployees((current) => [
-                ...current,
+                ...(Array.isArray(current) ? current : []),
                 { id: matchingUser.id, name: matchingUser.name, role: 'Employee', department: 'General', status: 'Active' }
               ])
             }
@@ -5681,7 +6006,7 @@ function App() {
         setUser({ id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role })
         if (newUser.role === 'employee') {
           setEmployees((current) => [
-            ...current,
+            ...(Array.isArray(current) ? current : []),
             { id: newUser.id, name: newUser.name, role: 'Employee', department: 'General', status: 'Active' }
           ])
         }
@@ -5723,8 +6048,8 @@ function App() {
     <BrowserRouter>
       <AppLayout user={user} onLogout={handleLogout}>
         <Routes>
-          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} />}</ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} />}</ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} />}</ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} />}</ProtectedRoute>} />
           <Route path="/employees" element={<ProtectedRoute user={user}><EmployeesPage employees={employees} attendance={attendance} API_BASE={API_BASE} triggerRefresh={loadData} user={user} /></ProtectedRoute>} />
           <Route path="/approvals" element={<ProtectedRoute user={user}><ApprovalsPage user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/attendance" element={<ProtectedRoute user={user}><AttendancePage attendance={attendance} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
@@ -5732,7 +6057,7 @@ function App() {
           <Route path="/payroll" element={<ProtectedRoute user={user}><PayrollPage payroll={payroll} API_BASE={API_BASE} triggerRefresh={loadData} user={user} /></ProtectedRoute>} />
           <Route path="/recruitment" element={<ProtectedRoute user={user}><RecruitmentPage recruitment={recruitment} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/projects" element={<ProtectedRoute user={user}><ProjectsPage projects={projects} employees={employees} user={user} API_BASE={API_BASE} triggerRefresh={loadData} socket={socket} /></ProtectedRoute>} />
-          <Route path="/chat" element={<ProtectedRoute user={user}><ChatPage notifications={notifications} user={user} API_BASE={API_BASE} socket={socket} /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute user={user}><ChatPage notifications={notifications} user={user} API_BASE={API_BASE} socket={socket} activeUsers={activeUsers} /></ProtectedRoute>} />
           <Route path="/tasks" element={<ProtectedRoute user={user}><TasksPage user={user} API_BASE={API_BASE} /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute user={user}><NotificationsPage user={user} API_BASE={API_BASE} /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute user={user}><SettingsPage user={user} setUser={setUser} API_BASE={API_BASE} /></ProtectedRoute>} />

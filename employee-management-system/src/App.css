@@ -1668,90 +1668,6 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.10);
 }
 
-/* ══════════════════════════════════════════════════════════════
-   RESPONSIVE
-   ══════════════════════════════════════════════════════════════ */
-@media (max-width: 980px) {
-  .landing-hero {
-    grid-template-columns: 1fr;
-    padding: 32px 24px;
-    gap: 28px;
-    min-height: auto;
-  }
-
-  .hero-main-title {
-    font-size: 2.2rem;
-  }
-
-  .illustration-svg {
-    max-width: 300px;
-  }
-
-  .app-shell {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      'topbar'
-      'content';
-  }
-
-  .hero-section,
-  .stats-grid,
-  .content-grid,
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-actions-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  }
-
-  .admin-hero {
-    grid-template-columns: 1fr !important;
-    min-height: auto;
-  }
-
-  .sidebar-nav {
-    position: fixed;
-    top: 0;
-    left: -300px;
-    height: 100vh;
-    width: 260px;
-    z-index: 1000;
-    flex-direction: column;
-    margin: 0;
-    border-radius: 0;
-    transition: left 0.3s var(--ease-spring);
-    box-shadow: var(--glass-shadow);
-  }
-
-  .sidebar-nav.mobile-open {
-    left: 0;
-  }
-
-  .mobile-menu-toggle {
-    display: block;
-  }
-
-  .sidebar-nav::before {
-    display: none;
-  }
-
-  .page-heading,
-  .topbar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .topbar-actions {
-    justify-content: flex-start;
-    width: 100%;
-  }
-
-  .content-area {
-    padding: 0 var(--shell-gutter) var(--shell-gutter);
-  }
-}
-
 .approval-list {
   display: flex;
   flex-direction: column;
@@ -1769,23 +1685,6 @@
 .approval-list li:hover {
   background: rgba(99, 102, 241, 0.05);
 }
-
-@media (max-width: 640px) {
-  .approval-list li {
-    grid-template-columns: 1fr !important;
-    row-gap: 10px;
-  }
-
-  .approval-list li>div:last-child {
-    justify-content: flex-start !important;
-    flex-wrap: wrap;
-  }
-}
-
-
-
-
-
 
 .attendance-status {
   display: inline-flex;
@@ -2039,8 +1938,13 @@
   gap: 8px;
 }
 
-/* ── MOBILE RESPONSIVENESS ─────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   MOBILE RESPONSIVENESS — Comprehensive
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Tablet (≤ 900px) ─────────────────────────────────────── */
 @media (max-width: 900px) {
+  /* App shell collapses sidebar into offscreen drawer */
   .app-shell {
     grid-template-columns: 1fr;
     grid-template-rows: auto 1fr;
@@ -2051,35 +1955,54 @@
     --shell-gap: 8px;
   }
 
+  /* Always show hamburger toggle on tablet */
   .mobile-menu-toggle {
-    display: block !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.15);
   }
 
+  /* Sidebar becomes a slide-in drawer */
   .sidebar-nav {
     position: fixed;
-    top: 72px; /* Adjust based on topbar height */
-    left: -280px; /* Hide off-screen by default */
-    bottom: 8px;
-    width: 250px;
-    z-index: 1000;
+    top: 0;
+    left: -290px;
+    bottom: 0;
+    width: 260px;
+    height: 100dvh;
+    z-index: 1100;
     transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 10px 0 30px rgba(15, 23, 42, 0.15);
+    box-shadow: 10px 0 40px rgba(15, 23, 42, 0.18);
     margin: 0;
+    border-radius: 0 20px 20px 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .sidebar-nav.mobile-open {
-    left: 8px; /* Show on screen */
+    left: 0;
   }
 
+  /* Topbar compact layout */
   .topbar {
     margin: 8px 8px 0 8px;
-    padding: 10px 16px;
-    flex-wrap: wrap;
+    padding: 10px 14px;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
   }
 
+  /* Hide non-essential badges on tablet */
   .topbar-actions .pill,
-  .topbar-actions .google-signed-in-badge {
-    display: none; /* Hide non-essential badges to save space */
+  .topbar-actions .google-signed-in-badge,
+  .topbar-clock {
+    display: none;
   }
 
   .topbar-brand h1 {
@@ -2090,25 +2013,347 @@
     font-size: 0.6rem;
   }
 
+  .topbar-actions {
+    justify-content: flex-end;
+    width: auto;
+    flex-wrap: nowrap;
+  }
+
+  /* Content area */
   .content-area {
     margin: 8px;
+    padding: 0;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  /* Stat cards → 2 columns */
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Content grid → single column */
+  .content-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Feature grid → 2 columns */
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Admin quick actions → 3 columns */
+  .admin-actions-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  /* Page heading wraps */
+  .page-heading {
+    flex-wrap: wrap;
+    gap: 10px;
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  /* Panel cards — slightly less padding */
+  .panel-card,
+  .stat-card {
     padding: 16px;
-    min-width: 0; /* Prevent overflow */
+  }
+
+  /* Data tables — horizontal scroll */
+  .data-table,
+  .premium-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  /* Attendance layout stacks */
+  .attendance-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .attendance-tab-headers {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Panel header wraps */
+  .panel-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* Prevent overflow globally */
+  html, body, #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  .panel-card {
+    overflow-x: hidden;
   }
 }
 
-@media (max-width: 480px) {
-  .metric-card {
+/* ── Small Mobile (≤ 640px) ───────────────────────────────── */
+@media (max-width: 640px) {
+  /* Topbar on very small screens */
+  .topbar {
+    margin: 6px 6px 0 6px;
+    padding: 8px 12px;
+    border-radius: 14px;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  /* Stat cards → 1 column */
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Feature grid → 1 column */
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Admin quick actions → 2 columns */
+  .admin-actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .stat-card h3 {
+    font-size: 1.35rem;
+  }
+
+  .page-heading h2 {
+    font-size: 1.2rem;
+  }
+
+  .panel-card,
+  .stat-card {
+    padding: 14px;
+  }
+
+  /* Landing hero */
+  .hero-main-title {
+    font-size: 1.8rem;
+  }
+
+  .landing-hero {
+    grid-template-columns: 1fr;
+    padding: 20px 16px;
+    gap: 20px;
+  }
+
+  .hero-illustration {
+    display: none;
+  }
+
+  /* Auth card */
+  .auth-card-new {
+    border-radius: 20px;
+    padding: 24px 18px;
+  }
+
+  .login-container {
     padding: 16px;
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+
+  /* Buttons — full width */
+  .primary-button,
+  .ghost-button,
+  .cta-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* Attendance buttons stack */
+  .attendance-action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .digital-clock-time {
+    font-size: 1.7rem;
+  }
+
+  .regularize-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Approval list items stack */
+  .approval-list li {
+    grid-template-columns: 1fr !important;
+    row-gap: 10px;
+  }
+
+  .approval-list li > div:last-child {
+    justify-content: flex-start !important;
+    flex-wrap: wrap;
+  }
+
+  .metric-card {
+    padding: 14px;
   }
 
   .metric-value {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
+  .attendance-tab-headers {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .attendance-tab-btn {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+
+  /* Google modal — bottom sheet on mobile */
+  .google-modal-container {
+    max-width: 100%;
+    min-height: auto;
+    padding: 24px 20px;
+    border-radius: 20px 20px 0 0;
+    margin: 0;
+  }
+
+  .google-modal-overlay {
+    align-items: flex-end;
+  }
+
+  .topbar-brand {
+    gap: 8px;
+  }
+
+  /* Bar charts reduce height */
+  .bars {
+    height: 100px;
+    gap: 6px;
+  }
+
+  /* Premium table horizontal scroll */
   .premium-table {
     display: block;
     overflow-x: auto;
     white-space: nowrap;
+  }
+}
+
+/* ── Extra Small (≤ 400px) ────────────────────────────────── */
+@media (max-width: 400px) {
+  .topbar {
+    padding: 8px 10px;
+    border-radius: 12px;
+  }
+
+  .topbar-brand h1 {
+    font-size: 0.88rem;
+  }
+
+  .hero-main-title {
+    font-size: 1.55rem;
+  }
+
+  .auth-card-new {
+    padding: 20px 14px;
+    border-radius: 16px;
+  }
+
+  .panel-card,
+  .stat-card {
+    padding: 12px;
+  }
+
+  .admin-actions-grid > a {
+    min-height: 72px;
+    padding: 8px;
+    font-size: 0.8rem;
+  }
+
+  .nav-link {
+    padding: 9px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+/* ── Safe area insets (notch / home bar) ──────────────────── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .content-area {
+    padding-bottom: calc(var(--shell-gutter) + env(safe-area-inset-bottom));
+  }
+
+  .sidebar-nav {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* ── Mobile overlay backdrop for sidebar drawer ───────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  z-index: 1050;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+@media (max-width: 900px) {
+  .sidebar-overlay.visible {
+    display: block;
+  }
+}
+
+/* ── Touch-friendly tap targets (coarse pointer = touch) ─── */
+@media (pointer: coarse) {
+  .nav-link {
+    padding: 12px 14px;
+    min-height: 44px;
+  }
+
+  .primary-button,
+  .ghost-button,
+  .submit-button,
+  .cta-button {
+    min-height: 44px;
+    padding: 12px 22px;
+  }
+
+  .tab-button {
+    min-height: 44px;
+  }
+
+  .data-table td,
+  .premium-table td {
+    padding: 14px 10px;
+  }
+
+  /* Prevents iOS auto-zoom on inputs */
+  .form-group input,
+  .form-group select,
+  .auth-form input,
+  .auth-form select,
+  .google-input-group input,
+  .google-input-group select {
+    min-height: 48px;
+    font-size: 1rem;
+  }
+
+  .mobile-menu-toggle {
+    min-width: 44px;
+    min-height: 44px;
   }
 }
