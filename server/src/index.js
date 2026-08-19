@@ -28,6 +28,13 @@ import PayrollRecord from './models/PayrollRecord.js';
 import RecruitmentRole from './models/RecruitmentRole.js';
 import Meeting from './models/Meeting.js';
 import Task from './models/Task.js';
+import ProgressUpdate from './models/ProgressUpdate.js';
+import Shift from './models/Shift.js';
+import PerformanceReview from './models/PerformanceReview.js';
+import ExpenseClaim from './models/ExpenseClaim.js';
+import Asset from './models/Asset.js';
+import Announcement from './models/Announcement.js';
+import Document from './models/Document.js';
 dotenv.config();
 
 const app = express();
@@ -1593,6 +1600,7 @@ app.post('/api/tasks', protect, async (req, res) => {
       done: false
     });
     await newTask.save();
+    io.emit('task_updated');
     res.status(201).json(newTask);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -1610,7 +1618,268 @@ app.put('/api/tasks/:id/toggle', protect, async (req, res) => {
 
     task.done = !task.done;
     await task.save();
+    io.emit('task_updated');
     res.json(task);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.get('/api/progress-updates', protect, async (req, res) => {
+  try {
+    const list = await ProgressUpdate.find().sort({ createdAt: -1 }).limit(30);
+    res.json(list);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/progress-updates', protect, async (req, res) => {
+  try {
+    const { text, percentage, status } = req.body || {};
+    if (!text) {
+      return res.status(400).json({ message: 'Progress update text is required' });
+    }
+
+    const employeeProfile = await Employee.findOne({ userId: req.user.id });
+    const employeeId = employeeProfile ? employeeProfile._id : null;
+    const userName = req.user.name || (employeeProfile ? employeeProfile.name : 'Unknown User');
+
+    // If employee profile is missing, throw error
+    if (!employeeId) {
+      return res.status(404).json({ message: 'Employee profile not found for this user' });
+    }
+
+    const newUpdate = new ProgressUpdate({
+      employee: employeeId,
+      userId: req.user.id,
+      userName: userName,
+      text: text.trim(),
+      percentage: Number(percentage) || 0,
+      status: status || 'On Track'
+    });
+
+    await newUpdate.save();
+
+    io.emit('progress_updated', newUpdate);
+
+    await addNotification(`${userName} updated: ${text.trim().substring(0, 45)}${text.trim().length > 45 ? '...' : ''} (${percentage || 0}%, ${status || 'On Track'})`);
+
+    res.status(201).json(newUpdate);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/progress-updates/:id', protect, async (req, res) => {
+  try {
+    const { text, percentage, status } = req.body;
+    const update = await ProgressUpdate.findById(req.params.id);
+    if (!update) return res.status(404).json({ message: 'Progress update not found' });
+
+    // Restrict editing to the original author
+    if (update.userId !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to edit this update' });
+    }
+
+    if (text) update.text = text.trim();
+    if (percentage !== undefined) update.percentage = Number(percentage);
+    if (status) update.status = status;
+
+    await update.save();
+    io.emit('progress_edited', update);
+    res.json(update);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete('/api/progress-updates/:id', protect, async (req, res) => {
+  try {
+    const update = await ProgressUpdate.findById(req.params.id);
+    if (!update) return res.status(404).json({ message: 'Progress update not found' });
+
+    // Restrict deletion to original author or admin
+    if (update.userId !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'hr') {
+      return res.status(403).json({ message: 'Not authorized to delete this update' });
+    }
+
+    await update.deleteOne();
+    io.emit('progress_deleted', req.params.id);
+    res.json({ message: 'Progress update deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// --- NEW FEATURES ROUTES ---
+
+// 1. Shifts
+app.get('/api/shifts', protect, async (req, res) => {
+  try {
+    const shifts = await Shift.find().populate('employeeId');
+    res.json(shifts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.post('/api/shifts', protect, async (req, res) => {
+  try {
+    const shift = new Shift(req.body);
+    await shift.save();
+    io.emit('shift_updated');
+    res.status(201).json(shift);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/shifts/:id', protect, async (req, res) => {
+  try {
+    const shift = await Shift.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!shift) return res.status(404).json({ message: 'Shift not found' });
+    io.emit('shift_updated');
+    res.json(shift);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 2. Performance Reviews
+app.get('/api/reviews', protect, async (req, res) => {
+  try {
+    const reviews = await PerformanceReview.find().populate('employeeId reviewerId');
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.post('/api/reviews', protect, async (req, res) => {
+  try {
+    const review = new PerformanceReview(req.body);
+    await review.save();
+    io.emit('review_updated');
+    res.status(201).json(review);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 3. Expense Claims
+app.get('/api/expenses', protect, async (req, res) => {
+  try {
+    const expenses = await ExpenseClaim.find().populate('employeeId approvedBy');
+    res.json(expenses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.post('/api/expenses', protect, async (req, res) => {
+  try {
+    const expense = new ExpenseClaim(req.body);
+    await expense.save();
+    io.emit('expense_updated');
+    res.status(201).json(expense);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.put('/api/expenses/:id', protect, async (req, res) => {
+  try {
+    const expense = await ExpenseClaim.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!expense) return res.status(404).json({ message: 'Expense not found' });
+    io.emit('expense_updated');
+    res.json(expense);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 4. Assets
+app.get('/api/assets', protect, async (req, res) => {
+  try {
+    const assets = await Asset.find().populate('assignedTo');
+    res.json(assets);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.post('/api/assets', protect, async (req, res) => {
+  try {
+    const asset = new Asset(req.body);
+    await asset.save();
+    io.emit('asset_updated');
+    res.status(201).json(asset);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.put('/api/assets/:id', protect, async (req, res) => {
+  try {
+    const asset = await Asset.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!asset) return res.status(404).json({ message: 'Asset not found' });
+    io.emit('asset_updated');
+    res.json(asset);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 5. Announcements
+app.get('/api/announcements', protect, async (req, res) => {
+  try {
+    const announcements = await Announcement.find().populate('authorId').sort({ createdAt: -1 });
+    res.json(announcements);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.post('/api/announcements', protect, async (req, res) => {
+  try {
+    const announcement = new Announcement(req.body);
+    await announcement.save();
+    io.emit('announcement_added');
+    res.status(201).json(announcement);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.delete('/api/announcements/:id', protect, async (req, res) => {
+  try {
+    const announcement = await Announcement.findByIdAndDelete(req.params.id);
+    if (!announcement) return res.status(404).json({ message: 'Announcement not found' });
+    io.emit('announcement_added');
+    res.json({ message: 'Announcement deleted' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 6. Documents
+app.get('/api/documents', protect, async (req, res) => {
+  try {
+    const documents = await Document.find().populate('uploadedBy employeeId');
+    res.json(documents);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.post('/api/documents', protect, async (req, res) => {
+  try {
+    const document = new Document(req.body);
+    await document.save();
+    io.emit('document_added');
+    res.status(201).json(document);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+app.delete('/api/documents/:id', protect, async (req, res) => {
+  try {
+    const document = await Document.findByIdAndDelete(req.params.id);
+    if (!document) return res.status(404).json({ message: 'Document not found' });
+    io.emit('document_added');
+    res.json({ message: 'Document deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

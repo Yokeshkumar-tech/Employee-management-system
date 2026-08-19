@@ -1,7 +1,15 @@
+/* eslint-disable react-hooks/exhaustive-deps, react-hooks/set-state-in-effect, no-unused-vars */
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { BrowserRouter, Link, Navigate, NavLink, Route, Routes } from 'react-router-dom'
 import { io } from 'socket.io-client'
 import './App.css'
+import ShiftsPage from './pages/ShiftsPage'
+import PerformancePage from './pages/PerformancePage'
+import ExpensesPage from './pages/ExpensesPage'
+import AssetsPage from './pages/AssetsPage'
+import AnnouncementsPage from './pages/AnnouncementsPage'
+import DocumentsPage from './pages/DocumentsPage'
+import SettingsPage from './pages/SettingsPage'
 
 /*  Feather nav icons map  */
 const NAV_ICONS = {
@@ -79,7 +87,135 @@ const NAV_ICONS = {
       <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
   ),
+  '/shifts': (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  '/reviews': (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+    </svg>
+  ),
+  '/expenses': (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  ),
+  '/assets': (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+    </svg>
+  ),
+  '/announcements': (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M2 12h20M2 12l5-5M2 12l5 5" />
+    </svg>
+  ),
+  '/documents': (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" />
+    </svg>
+  ),
 }
+
+const ADMIN_ICONS = {
+  Users: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+  UserPlus: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <line x1="19" y1="8" x2="19" y2="14" />
+      <line x1="22" y1="11" x2="16" y2="11" />
+    </svg>
+  ),
+  Clock: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  CalendarMinus: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+      <line x1="10" y1="16" x2="14" y2="16" />
+    </svg>
+  ),
+  Dollar: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="12" y1="1" x2="12" y2="23" />
+      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </svg>
+  ),
+  CheckCircle: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+      <polyline points="22 4 12 14.01 9 11.01" />
+    </svg>
+  ),
+  Briefcase: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+    </svg>
+  ),
+  BarChart: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10" />
+      <line x1="12" y1="20" x2="12" y2="4" />
+      <line x1="6" y1="20" x2="6" y2="14" />
+    </svg>
+  ),
+  Settings: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  ),
+  Activity: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+    </svg>
+  ),
+  Database: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <ellipse cx="12" cy="5" rx="9" ry="3" />
+      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+    </svg>
+  ),
+  Zap: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  ),
+  AlertTriangle: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+  FileText: (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  )
+};
 
 /*  Floating Particles  */
 function FloatingParticles() {
@@ -179,6 +315,15 @@ const fallbackProjects = []
 
 const fallbackNotifications = []
 
+const newLinks = [
+  { to: '/shifts', label: 'Shifts' },
+  { to: '/reviews', label: 'Performance' },
+  { to: '/expenses', label: 'Expenses' },
+  { to: '/assets', label: 'Assets' },
+  { to: '/announcements', label: 'News' },
+  { to: '/documents', label: 'Documents' }
+];
+
 const navByRole = {
   super_admin: [
     { to: '/dashboard', label: 'Overview' },
@@ -190,6 +335,7 @@ const navByRole = {
     { to: '/recruitment', label: 'Recruitment' },
     { to: '/projects', label: 'Projects' },
     { to: '/chat', label: 'Chat' },
+    ...newLinks,
     { to: '/settings', label: 'Settings' }
   ],
   admin: [
@@ -202,6 +348,7 @@ const navByRole = {
     { to: '/recruitment', label: 'Recruitment' },
     { to: '/projects', label: 'Projects' },
     { to: '/chat', label: 'Chat' },
+    ...newLinks,
     { to: '/settings', label: 'Settings' }
   ],
   hr: [
@@ -213,7 +360,8 @@ const navByRole = {
     { to: '/payroll', label: 'Payroll' },
     { to: '/recruitment', label: 'Recruitment' },
     { to: '/projects', label: 'Projects' },
-    { to: '/chat', label: 'Chat' }
+    { to: '/chat', label: 'Chat' },
+    ...newLinks
   ],
   employee: [
     { to: '/dashboard', label: 'Home' },
@@ -223,6 +371,7 @@ const navByRole = {
     { to: '/projects', label: 'Projects' },
     { to: '/tasks', label: 'Tasks' },
     { to: '/notifications', label: 'Notifications' },
+    ...newLinks,
     { to: '/settings', label: 'My Profile' }
   ]
 }
@@ -305,8 +454,8 @@ function AppLayout({ user, onLogout, children }) {
 
       <header className="topbar">
         <div className="topbar-brand">
-          <button 
-            type="button" 
+          <button
+            type="button"
             className="mobile-menu-toggle"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
@@ -732,7 +881,7 @@ function SectionHeading({ title, subtitle, action }) {
   )
 }
 
-function DashboardPage({ user, dashboardData, liveActivity, socketConnected, employees, attendance, API_BASE, notifications, activeUsers }) {
+function DashboardPage({ user, dashboardData, liveActivity, socketConnected, employees, attendance, API_BASE, notifications, activeUsers, progressUpdates }) {
   const isAdmin = user.role === 'super_admin' || user.role === 'admin'
 
   /*  Shared state  */
@@ -839,47 +988,47 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
   /*  Stats cards  */
   const cards = isAdmin
     ? [
-      { label: 'Total Employees', value: dashboardData.totalEmployees, detail: 'across all departments', icon: 'EMP', grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
-      { label: 'Attendance Rate', value: dashboardData.attendance, detail: 'system-wide today', icon: 'ATT', grad: 'linear-gradient(135deg,#0ea5e9,#6366f1)' },
-      { label: 'Pending Leave', value: dashboardData.pendingLeaves, detail: 'awaiting approval', icon: 'LV', grad: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
-      { label: 'Payroll Batches', value: dashboardData.payrollStatus, detail: 'ready for processing', icon: 'PAY', grad: 'linear-gradient(135deg,#10b981,#059669)' },
+      { label: 'Total Employees', value: dashboardData.totalEmployees, detail: 'across all departments', icon: ADMIN_ICONS.Users, grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+      { label: 'Attendance Rate', value: dashboardData.attendance, detail: 'system-wide today', icon: ADMIN_ICONS.Clock, grad: 'linear-gradient(135deg,#0ea5e9,#6366f1)' },
+      { label: 'Pending Leave', value: dashboardData.pendingLeaves, detail: 'awaiting approval', icon: ADMIN_ICONS.CalendarMinus, grad: 'linear-gradient(135deg,#f59e0b,#ef4444)' },
+      { label: 'Payroll Batches', value: dashboardData.payrollStatus, detail: 'ready for processing', icon: ADMIN_ICONS.Dollar, grad: 'linear-gradient(135deg,#10b981,#059669)' },
     ]
     : [
-      { label: 'Employees', value: dashboardData.totalEmployees, detail: 'across 12 departments', icon: 'EMP', grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
-      { label: 'Attendance', value: dashboardData.attendance, detail: 'today live rate', icon: 'ATT', grad: 'linear-gradient(135deg,#38bdf8,#6366f1)' },
-      { label: 'Pending Leave', value: dashboardData.pendingLeaves, detail: 'awaiting approval', icon: 'LV', grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
-      { label: 'Payroll', value: dashboardData.payrollStatus, detail: 'ready for release', icon: 'PAY', grad: 'linear-gradient(135deg,#34d399,#059669)' },
+      { label: 'Employees', value: dashboardData.totalEmployees, detail: 'across 12 departments', icon: ADMIN_ICONS.Users, grad: 'linear-gradient(135deg,#6366f1,#8b5cf6)' },
+      { label: 'Attendance', value: dashboardData.attendance, detail: 'today live rate', icon: ADMIN_ICONS.Clock, grad: 'linear-gradient(135deg,#38bdf8,#6366f1)' },
+      { label: 'Pending Leave', value: dashboardData.pendingLeaves, detail: 'awaiting approval', icon: ADMIN_ICONS.CalendarMinus, grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)' },
+      { label: 'Payroll', value: dashboardData.payrollStatus, detail: 'ready for release', icon: ADMIN_ICONS.Dollar, grad: 'linear-gradient(135deg,#34d399,#059669)' },
     ]
 
   /*  Admin: System Health Gauges  */
   const systemHealth = [
-    { label: 'API Uptime', value: 99.7, color: '#10b981', icon: 'OK', detail: '99.7% over last 30 days' },
-    { label: 'DB Health', value: 94, color: '#6366f1', icon: 'DB', detail: 'MongoDB response: 12ms avg' },
-    { label: 'Socket Load', value: 62, color: '#f59e0b', icon: 'IO', detail: '62% capacity used' },
-    { label: 'Error Rate', value: 2, color: '#ef4444', icon: 'ERR', detail: '2 errors in last 24h', invert: true },
+    { label: 'API Uptime', value: 99.7, color: '#10b981', icon: ADMIN_ICONS.Activity, detail: '99.7% over last 30 days' },
+    { label: 'DB Health', value: 94, color: '#6366f1', icon: ADMIN_ICONS.Database, detail: 'MongoDB response: 12ms avg' },
+    { label: 'Socket Load', value: 62, color: '#f59e0b', icon: ADMIN_ICONS.Zap, detail: '62% capacity used' },
+    { label: 'Error Rate', value: 2, color: '#ef4444', icon: ADMIN_ICONS.AlertTriangle, detail: '2 errors in last 24h', invert: true },
   ]
 
   /*  Admin: Audit Log  */
   const auditLog = [
-    { time: '14:32', action: 'Employee approved', actor: 'Ava Chen', target: 'Leo Brooks', type: 'approval', icon: '*' },
-    { time: '14:15', action: 'Leave rejected', actor: 'Mina Patel', target: 'Tom Lewis', type: 'leave', icon: '*' },
-    { time: '13:48', action: 'Payroll batch released', actor: 'Ava Chen', target: 'Finance Dept', type: 'payroll', icon: '*' },
-    { time: '13:21', action: 'Employee moved dept', actor: 'Ava Chen', target: 'Daniel Kim  Engineering', type: 'move', icon: '*' },
-    { time: '12:55', action: 'New user registered', actor: 'System', target: 'register@demo.com', type: 'auth', icon: '-' },
-    { time: '12:30', action: 'Role changed', actor: 'Ava Chen', target: 'Nadia Flores  HR', type: 'auth', icon: '*' },
-    { time: '11:47', action: 'Project created', actor: 'Mina Patel', target: 'EMS Revamp v2', type: 'project', icon: '*' },
-    { time: '11:10', action: 'Payroll approved', actor: 'Ava Chen', target: 'July batch', type: 'payroll', icon: '*' },
+    { time: '14:32', action: 'Employee approved', actor: 'Ava Chen', target: 'Leo Brooks', type: 'approval', icon: ADMIN_ICONS.CheckCircle },
+    { time: '14:15', action: 'Leave rejected', actor: 'Mina Patel', target: 'Tom Lewis', type: 'leave', icon: ADMIN_ICONS.AlertTriangle },
+    { time: '13:48', action: 'Payroll batch released', actor: 'Ava Chen', target: 'Finance Dept', type: 'payroll', icon: ADMIN_ICONS.Dollar },
+    { time: '13:21', action: 'Employee moved dept', actor: 'Ava Chen', target: 'Daniel Kim  Engineering', type: 'move', icon: ADMIN_ICONS.Users },
+    { time: '12:55', action: 'New user registered', actor: 'System', target: 'register@demo.com', type: 'auth', icon: ADMIN_ICONS.UserPlus },
+    { time: '12:30', action: 'Role changed', actor: 'Ava Chen', target: 'Nadia Flores  HR', type: 'auth', icon: ADMIN_ICONS.Briefcase },
+    { time: '11:47', action: 'Project created', actor: 'Mina Patel', target: 'EMS Revamp v2', type: 'project', icon: ADMIN_ICONS.FileText },
+    { time: '11:10', action: 'Payroll approved', actor: 'Ava Chen', target: 'July batch', type: 'payroll', icon: ADMIN_ICONS.CheckCircle },
   ]
   const filteredAudit = auditFilter === 'all' ? auditLog : auditLog.filter(e => e.type === auditFilter)
 
   /*  Admin: Quick Actions  */
   const adminActions = [
-    { label: 'Add Employee', icon: '-', color: '#6366f1', bg: '#eef2ff', href: '/employees' },
-    { label: 'Review Approvals', icon: '*', color: '#10b981', bg: '#ecfdf5', href: '/approvals' },
-    { label: 'Release Payroll', icon: '*', color: '#f59e0b', bg: '#fef3c7', href: '/payroll' },
-    { label: 'Manage Recruitment', icon: '*', color: '#8b5cf6', bg: '#f5f3ff', href: '/recruitment' },
-    { label: 'View Reports', icon: '*', color: '#0ea5e9', bg: '#e0f2fe', href: '/dashboard' },
-    { label: 'System Settings', icon: '*', color: '#64748b', bg: '#f8fafc', href: '/settings' },
+    { label: 'Add Employee', icon: ADMIN_ICONS.UserPlus, color: '#6366f1', bg: '#eef2ff', href: '/employees' },
+    { label: 'Review Approvals', icon: ADMIN_ICONS.CheckCircle, color: '#10b981', bg: '#ecfdf5', href: '/approvals' },
+    { label: 'Release Payroll', icon: ADMIN_ICONS.Dollar, color: '#f59e0b', bg: '#fef3c7', href: '/payroll' },
+    { label: 'Manage Recruitment', icon: ADMIN_ICONS.Briefcase, color: '#8b5cf6', bg: '#f5f3ff', href: '/recruitment' },
+    { label: 'View Reports', icon: ADMIN_ICONS.BarChart, color: '#0ea5e9', bg: '#e0f2fe', href: '/dashboard' },
+    { label: 'System Settings', icon: ADMIN_ICONS.Settings, color: '#64748b', bg: '#f8fafc', href: '/settings' },
   ]
 
   /*  Admin: Role Access Matrix  */
@@ -992,7 +1141,7 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
                 key={tab}
                 onClick={() => setAdminTab(tab)}
                 style={{
-                  padding: '8px 20px', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                  padding: '8px 20px', borderRadius: '10px', cursor: 'pointer',
                   fontWeight: 700, fontSize: '0.8rem', letterSpacing: '0.04em', textTransform: 'capitalize',
                   background: adminTab === tab ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.05)',
                   color: adminTab === tab ? '#fff' : 'rgba(255,255,255,0.55)',
@@ -1568,6 +1717,158 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
         </article>
       </section>
 
+      {/* Real-time Company Work Process / Progress updates */}
+      <section className="content-grid" style={{ marginTop: '24px' }}>
+        <article className="panel-card" style={{ gridColumn: '1 / -1' }}>
+          <div className="panel-header">
+            <h3>Company-wide Real-time Work Progress</h3>
+            <span className="pill" style={{ background: '#dcfce7', color: '#16a34a' }}>Live Feed</span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '16px', marginTop: '16px' }}>
+            {!progressUpdates || progressUpdates.length === 0 ? (
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '30px 0', color: '#94a3b8', fontSize: '0.9rem' }}>
+                No progress updates have been posted by employees today.
+              </div>
+            ) : (
+              progressUpdates.map((item) => {
+                const statusColors = {
+                  'On Track': { text: '#2563eb', bg: '#dbeafe', dot: '#3b82f6' },
+                  'Completed': { text: '#15803d', bg: '#dcfce7', dot: '#22c55e' },
+                  'Delayed': { text: '#b45309', bg: '#fef3c7', dot: '#f59e0b' },
+                  'Blocked': { text: '#b91c1c', bg: '#fee2e2', dot: '#ef4444' }
+                };
+                const colors = statusColors[item.status] || statusColors['On Track'];
+                const formattedTime = new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const formattedDate = new Date(item.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' });
+
+                return (
+                  <div key={item._id || item.id} style={{
+                    padding: '14px', borderRadius: '12px', background: '#f8fafc',
+                    border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '10px',
+                    transition: 'transform 0.2s, box-shadow 0.2s'
+                  }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 15px rgba(0,0,0,0.04)' }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: 32, height: 32, borderRadius: '50%',
+                          background: 'linear-gradient(135deg, #8b5cf6, #ec4899)',
+                          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: '0.8rem', fontWeight: 800
+                        }}>
+                          {item.userName?.[0]?.toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <span style={{ fontSize: '0.88rem', fontWeight: 700, color: '#1e293b', display: 'block' }}>
+                            {item.userName}
+                          </span>
+                          <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                            {formattedDate} at {formattedTime}
+                          </span>
+                        </div>
+                      </div>
+
+                      <span style={{
+                        fontSize: '0.68rem', fontWeight: 700, padding: '3px 8px', borderRadius: '99px',
+                        color: colors.text, background: colors.bg, display: 'inline-flex', alignItems: 'center', gap: '4px'
+                      }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: colors.dot }} />
+                        {item.status}
+                      </span>
+                    </div>
+
+                    <p style={{ margin: 0, fontSize: '0.82rem', color: '#475569', lineHeight: 1.4, wordBreak: 'break-word', flex: 1 }}>
+                      {item.text}
+                    </p>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                      <div style={{ flex: 1, height: 6, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
+                        <div style={{
+                          height: '100%', width: `${item.percentage}%`,
+                          background: item.status === 'Blocked' ? '#ef4444' : 'linear-gradient(90deg, #8b5cf6, #ec4899)',
+                          borderRadius: 99
+                        }} />
+                      </div>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#8b5cf6', minWidth: '28px', textAlign: 'right' }}>
+                        {item.percentage}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </article>
+      </section>
+
+      {/* Live Workforce Active Processes */}
+      <section className="content-grid" style={{ marginTop: '24px' }}>
+        <article className="panel-card" style={{ gridColumn: '1 / -1' }}>
+          <div className="panel-header">
+            <h3>Live Workforce Active Processes</h3>
+            <span className="pill" style={{ background: '#eef2ff', color: '#6366f1' }}>Live Feed</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px', marginTop: '16px' }}>
+            {(() => {
+              const uniqueCheckIns = [];
+              const seen = new Set();
+              Object.entries(attendance?.checkIns || {}).forEach(([key, c]) => {
+                if (c.checkedIn && c.currentFocus) {
+                  const emp = employees?.find(e => e.id === key || e.userId === key || e._id === key);
+                  const name = emp ? emp.name : 'Unknown Employee';
+                  const id = emp ? emp.id : key;
+                  if (!seen.has(id)) {
+                    seen.add(id);
+                    uniqueCheckIns.push({ ...c, empName: name });
+                  }
+                }
+              });
+
+              if (uniqueCheckIns.length === 0) {
+                return (
+                  <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '30px 0', color: '#94a3b8', fontSize: '0.9rem' }}>
+                    No employees are currently tracking an active work process.
+                  </div>
+                );
+              }
+
+              return uniqueCheckIns.map((c, i) => (
+                <div key={i} style={{
+                  padding: '14px', borderRadius: '12px', background: '#f8fafc',
+                  border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #10b981, #059669)',
+                      color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '0.8rem', fontWeight: 800
+                    }}>
+                      {c.empName[0]?.toUpperCase() || '?'}
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b', display: 'block' }}>
+                        {c.empName}
+                      </span>
+                      <span style={{ fontSize: '0.7rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', animation: 'pulse 1.5s infinite', display: 'inline-block' }} />
+                        Active Now
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ padding: '8px 10px', background: '#eef2ff', borderRadius: '8px', border: '1px solid #c7d2fe', color: '#4338ca', fontSize: '0.82rem', fontWeight: 600 }}>
+                    💻 {c.currentFocus}
+                  </div>
+                </div>
+              ));
+            })()}
+          </div>
+        </article>
+      </section>
+
       {/* Persisted HR Reminders Note-Pad */}
       <section className="content-grid" style={{ marginTop: '24px', marginBottom: '24px' }}>
         <article className="panel-card" style={{ gridColumn: '1 / -1' }}>
@@ -1616,8 +1917,28 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
   )
 }
 
+/* Circular SVG progress helper */
+const CircleProgress = ({ pct, size = 80, stroke = 7, color = '#6366f1', children }) => {
+  const r = (size - stroke) / 2
+  const circ = 2 * Math.PI * r
+  const dash = circ * pct / 100
+  return (
+    <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={stroke} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+          strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"
+          style={{ transition: 'stroke-dasharray 0.6s ease' }} />
+      </svg>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        {children}
+      </div>
+    </div>
+  )
+}
+
 /*  Employee Personal Dashboard  */
-function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActivity, socketConnected, triggerRefresh, activeUsers, dashboardData, socket }) {
+function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActivity, socketConnected, triggerRefresh, activeUsers, dashboardData, socket, progressUpdates, setProgressUpdates, API_BASE }) {
   /*  Real-time clock  */
   const [now, setNow] = useState(new Date())
   useEffect(() => {
@@ -1632,6 +1953,111 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
   const [breakDuration, setBreakDuration] = useState(0) // seconds
   const [checkInLoading, setCheckInLoading] = useState(false)
   const [breakLoading, setBreakLoading] = useState(false)
+  const [focusInput, setFocusInput] = useState('')
+  const [focusLoading, setFocusLoading] = useState(false)
+
+  /* Daily Progress Updates States */
+  const [updateText, setUpdateText] = useState('')
+  const [editingProgressId, setEditingProgressId] = useState(null)
+  const [editProgressText, setEditProgressText] = useState('')
+  const [editProgressPct, setEditProgressPct] = useState(0)
+  const [editProgressStatus, setEditProgressStatus] = useState('On Track')
+  const [progressPct, setProgressPct] = useState(0)
+  const [updateStatus, setUpdateStatus] = useState('On Track')
+  const [submittingProgress, setSubmittingProgress] = useState(false)
+  const [progressError, setProgressError] = useState('')
+  const [progressSuccess, setProgressSuccess] = useState(false)
+
+  const handleProgressSubmit = async (e) => {
+    e.preventDefault();
+    if (!updateText.trim()) {
+      setProgressError('Please write what you accomplished.');
+      return;
+    }
+    setSubmittingProgress(true);
+    setProgressError('');
+    setProgressSuccess(false);
+    try {
+      const response = await fetch(`${API_BASE}/api/progress-updates`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          text: updateText.trim(),
+          percentage: Number(progressPct),
+          status: updateStatus
+        })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to submit progress update');
+      }
+      setUpdateText('');
+      setProgressPct(0);
+      setUpdateStatus('On Track');
+      setProgressSuccess(true);
+      setTimeout(() => setProgressSuccess(false), 3000);
+
+      setProgressUpdates((prev) => {
+        if (prev.some(u => u._id === data._id || u.id === data.id)) return prev;
+        return [data, ...prev].slice(0, 30);
+      });
+      if (triggerRefresh) triggerRefresh();
+    } catch (err) {
+      setProgressError(err.message);
+    } finally {
+      setSubmittingProgress(false);
+    }
+  };
+
+  const handleProgressDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this update?')) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/progress-updates/${id}`, {
+        method: 'DELETE',
+        headers: authHeaders()
+      });
+      if (res.ok) {
+        setProgressUpdates(prev => prev.filter(p => p._id !== id && p.id !== id));
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Failed to delete update');
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
+  const startProgressEdit = (item) => {
+    setEditingProgressId(item._id || item.id);
+    setEditProgressText(item.text);
+    setEditProgressPct(item.percentage);
+    setEditProgressStatus(item.status);
+  };
+
+  const handleProgressEditSubmit = async (id) => {
+    if (!editProgressText.trim()) return alert('Please write what you accomplished.');
+    try {
+      const res = await fetch(`${API_BASE}/api/progress-updates/${id}`, {
+        method: 'PUT',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          text: editProgressText.trim(),
+          percentage: Number(editProgressPct),
+          status: editProgressStatus
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProgressUpdates(prev => prev.map(p => (p._id === id || p.id === id) ? data : p));
+        setEditingProgressId(null);
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Failed to edit update');
+      }
+    } catch (err) {
+      alert(err.message);
+    }
+  };
 
   const activeRecord = attendance?.checkIns?.[String(user.id)]
 
@@ -1645,6 +2071,7 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
     }
     setCheckedIn(activeRecord.checkedIn)
     setOnBreak(!!activeRecord.breakStartedAt)
+    setFocusInput(activeRecord.currentFocus || '')
   }, [activeRecord])
 
   // Real-time ticking timer loop
@@ -1733,6 +2160,26 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
     }
   }
 
+  const handleFocusUpdate = async (e) => {
+    e?.preventDefault()
+    if (focusLoading || !checkedIn) return
+    setFocusLoading(true)
+    try {
+      const response = await fetch(`${API_BASE}/api/attendance/focus`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ userId: user.id, focus: focusInput })
+      })
+      if (response.ok) {
+        if (triggerRefresh) triggerRefresh()
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setFocusLoading(false)
+    }
+  }
+
   const fmtElapsed = (s) => {
     const h = String(Math.floor(s / 3600)).padStart(2, '0')
     const m = String(Math.floor((s % 3600) / 60)).padStart(2, '0')
@@ -1796,6 +2243,13 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
     fetchTasks()
   }, [])
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleUpdate = () => fetchTasks();
+    socket.on('task_updated', handleUpdate);
+    return () => socket.off('task_updated', handleUpdate);
+  }, [socket])
+
   const toggleTask = async (id) => {
     try {
       const response = await fetch(`${API_BASE}/api/tasks/${id}/toggle`, {
@@ -1846,7 +2300,7 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
           setMeetings(data);
         }
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setMeetingsLoading(false));
   }, [API_BASE]);
 
@@ -1866,32 +2320,14 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
   const greeting = now.getHours() < 12 ? 'Good morning' : now.getHours() < 17 ? 'Good afternoon' : 'Good evening'
   const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
   const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-  
+
   const priorityColor = { high: '#ef4444', medium: '#f59e0b', low: '#22c55e' }
   const priorityBg = { high: '#fee2e2', medium: '#fef3c7', low: '#dcfce7' }
   const typeColor = { meeting: '#6366f1', review: '#8b5cf6', training: '#06b6d4', task: '#f59e0b' }
   const typeBg = { meeting: '#eef2ff', review: '#f5f3ff', training: '#ecfeff', task: '#fefce8' }
   const statusColor = { active: '#22c55e', idle: '#f59e0b', offline: '#94a3b8' }
 
-  /* Circular SVG progress helper */
-  const CircleProgress = ({ pct, size = 80, stroke = 7, color = '#6366f1', children }) => {
-    const r = (size - stroke) / 2
-    const circ = 2 * Math.PI * r
-    const dash = circ * pct / 100
-    return (
-      <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
-        <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e2e8f0" strokeWidth={stroke} />
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color} strokeWidth={stroke}
-            strokeDasharray={`${dash} ${circ - dash}`} strokeLinecap="round"
-            style={{ transition: 'stroke-dasharray 0.6s ease' }} />
-        </svg>
-        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {children}
-        </div>
-      </div>
-    )
-  }
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -2017,6 +2453,24 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
               </button>
             )}
           </div>
+          {checkedIn && (
+            <form onSubmit={handleFocusUpdate} style={{ display: 'flex', gap: '8px', width: '100%', marginTop: '6px' }}>
+              <input
+                type="text"
+                value={focusInput}
+                onChange={e => setFocusInput(e.target.value)}
+                placeholder="What are you working on?"
+                style={{ flex: 1, padding: '10px 12px', border: '1px solid #e2e8f0', borderRadius: '12px', fontSize: '0.85rem', outline: 'none' }}
+              />
+              <button
+                type="submit"
+                disabled={focusLoading}
+                style={{ padding: '0 16px', borderRadius: '12px', border: 'none', background: '#6366f1', color: '#fff', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem' }}
+              >
+                {focusLoading ? '...' : 'Set Focus'}
+              </button>
+            </form>
+          )}
         </article>
 
         {/* Pomodoro Focus Timer */}
@@ -2277,10 +2731,10 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
         <article className="panel-card">
           <div className="panel-header">
             <h3>Team Pulse</h3>
-            {(user.role === 'hr' || user.role === 'super_admin') && (
+            {(['hr', 'super_admin', 'admin'].includes(user.role)) && (
               <button onClick={() => alert('Create Group functionality coming soon')} style={{
-                marginLeft: 'auto', marginRight: '10px', padding: '4px 8px', borderRadius: '6px', 
-                border: 'none', background: '#eef2ff', color: '#6366f1', fontSize: '0.75rem', 
+                marginLeft: 'auto', marginRight: '10px', padding: '4px 8px', borderRadius: '6px',
+                border: 'none', background: '#eef2ff', color: '#6366f1', fontSize: '0.75rem',
                 fontWeight: 600, cursor: 'pointer'
               }}>
                 Create Group
@@ -2306,6 +2760,215 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
               </li>
             ))}
           </ul>
+        </article>
+      </div>
+
+      {/* -- ROW 5: Daily Progress Updates & Team Progress Feed -- */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '4px' }}>
+
+        {/* Submit Progress Update Form */}
+        <article className="panel-card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="panel-header">
+            <h3>Daily Work Process Log</h3>
+            <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca' }}>Submit Progress</span>
+          </div>
+
+          <form onSubmit={handleProgressSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>What did you accomplish today?</label>
+              <textarea
+                value={updateText}
+                onChange={e => setUpdateText(e.target.value)}
+                placeholder="e.g. Created Mongoose models, wired socket events for real-time progress broadcast..."
+                rows={3}
+                style={{
+                  padding: '10px 12px', borderRadius: '10px', border: '1px solid #cbd5e1',
+                  fontSize: '0.85rem', color: '#1e293b', resize: 'none', outline: 'none',
+                  fontFamily: 'inherit'
+                }}
+              />
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>Progress completion: {progressPct}%</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: '100%', paddingTop: '4px' }}>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={progressPct}
+                    onChange={e => setProgressPct(Number(e.target.value))}
+                    style={{ flex: 1, accentColor: '#6366f1', cursor: 'pointer' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#475569' }}>Current Status</label>
+                <select
+                  value={updateStatus}
+                  onChange={e => setUpdateStatus(e.target.value)}
+                  style={{
+                    padding: '8px 10px', borderRadius: '10px', border: '1px solid #cbd5e1',
+                    fontSize: '0.85rem', color: '#1e293b', outline: 'none', background: '#fff',
+                    height: '38px', cursor: 'pointer'
+                  }}
+                >
+                  <option value="On Track">🟢 On Track</option>
+                  <option value="Completed">🔵 Completed</option>
+                  <option value="Delayed">🟡 Delayed</option>
+                  <option value="Blocked">🔴 Blocked</option>
+                </select>
+              </div>
+            </div>
+
+            {progressError && (
+              <p style={{ color: '#ef4444', fontSize: '0.75rem', margin: 0, fontWeight: 600 }}>⚠️ {progressError}</p>
+            )}
+            {progressSuccess && (
+              <p style={{ color: '#10b981', fontSize: '0.75rem', margin: 0, fontWeight: 600 }}>✓ Progress update posted successfully!</p>
+            )}
+
+            <button
+              type="submit"
+              disabled={submittingProgress}
+              style={{
+                marginTop: '10px', padding: '12px', borderRadius: '12px', border: 'none',
+                background: 'linear-gradient(135deg,#6366f1,#8b5cf6)', color: '#fff',
+                fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem', transition: 'opacity 0.2s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.88'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              {submittingProgress ? 'Publishing...' : 'Publish Update'}
+            </button>
+          </form>
+        </article>
+
+        {/* Team Progress Feed */}
+        <article className="panel-card" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div className="panel-header">
+            <h3>Team Progress Updates</h3>
+            <span className="pill" style={{ background: '#dcfce7', color: '#16a34a' }}>Real-time Feed</span>
+          </div>
+
+          <div className="custom-scroll" style={{ flex: 1, maxHeight: '276px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '10px', paddingRight: '4px' }}>
+            {!progressUpdates || progressUpdates.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#94a3b8' }}>
+                <p style={{ margin: 0, fontSize: '0.88rem' }}>No progress updates yet today.</p>
+                <p style={{ margin: '4px 0 0', fontSize: '0.75rem' }}>Be the first to publish your progress update!</p>
+              </div>
+            ) : (
+              progressUpdates.map((item) => {
+                const statusColors = {
+                  'On Track': { text: '#2563eb', bg: '#dbeafe', dot: '#3b82f6' },
+                  'Completed': { text: '#15803d', bg: '#dcfce7', dot: '#22c55e' },
+                  'Delayed': { text: '#b45309', bg: '#fef3c7', dot: '#f59e0b' },
+                  'Blocked': { text: '#b91c1c', bg: '#fee2e2', dot: '#ef4444' }
+                };
+                const colors = statusColors[item.status] || statusColors['On Track'];
+
+                const formattedTime = new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                const itemId = item._id || item.id;
+                const isEditing = editingProgressId === itemId;
+
+                return (
+                  <div key={itemId} style={{
+                    padding: '12px', borderRadius: '12px', background: '#fff',
+                    border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.015)', position: 'relative'
+                  }}>
+                    {isEditing ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <textarea
+                          value={editProgressText}
+                          onChange={e => setEditProgressText(e.target.value)}
+                          rows={2}
+                          style={{
+                            padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1',
+                            fontSize: '0.85rem', color: '#1e293b', resize: 'none', outline: 'none',
+                            fontFamily: 'inherit'
+                          }}
+                        />
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <input type="range" min="0" max="100" step="5" value={editProgressPct} onChange={e => setEditProgressPct(Number(e.target.value))} style={{flex: 1, accentColor: '#6366f1'}} />
+                          <span style={{ fontSize: '0.78rem', width: '30px' }}>{editProgressPct}%</span>
+                          <select value={editProgressStatus} onChange={e => setEditProgressStatus(e.target.value)} style={{ padding: '4px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}>
+                            <option value="On Track">On Track</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Delayed">Delayed</option>
+                            <option value="Blocked">Blocked</option>
+                          </select>
+                        </div>
+                        <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end', marginTop: '4px' }}>
+                          <button onClick={() => setEditingProgressId(null)} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '0.75rem', cursor: 'pointer' }}>Cancel</button>
+                          <button onClick={() => handleProgressEditSubmit(itemId)} style={{ padding: '6px 12px', borderRadius: '6px', border: 'none', background: '#6366f1', color: '#fff', fontSize: '0.75rem', cursor: 'pointer' }}>Save</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{
+                              width: 28, height: 28, borderRadius: '50%',
+                              background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+                              color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: '0.75rem', fontWeight: 800
+                            }}>
+                              {item.userName?.[0]?.toUpperCase() || '?'}
+                            </div>
+                            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e293b' }}>
+                              {item.userName}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{
+                              fontSize: '0.68rem', fontWeight: 700, padding: '3px 8px', borderRadius: '99px',
+                              color: colors.text, background: colors.bg, display: 'inline-flex', alignItems: 'center', gap: '4px'
+                            }}>
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: colors.dot }} />
+                              {item.status}
+                            </span>
+                            <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                              {formattedTime}
+                            </span>
+                          </div>
+                        </div>
+
+                        <p style={{ margin: 0, fontSize: '0.82rem', color: '#475569', lineHeight: 1.4, wordBreak: 'break-word' }}>
+                          {item.text}
+                        </p>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                          <div style={{ flex: 1, height: 6, background: '#f1f5f9', borderRadius: 99, overflow: 'hidden' }}>
+                            <div style={{
+                              height: '100%', width: `${item.percentage}%`,
+                              background: item.status === 'Blocked' ? '#ef4444' : 'linear-gradient(90deg, #6366f1, #8b5cf6)',
+                              borderRadius: 99
+                            }} />
+                          </div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#6366f1', minWidth: '28px', textAlign: 'right' }}>
+                            {item.percentage}%
+                          </span>
+                        </div>
+
+                        {(item.userId === user.id) && (
+                          <div style={{ position: 'absolute', bottom: '12px', right: '12px', display: 'flex', gap: '6px' }}>
+                            <button onClick={() => startProgressEdit(item)} style={{ background: '#f1f5f9', border: '1px solid #cbd5e1', color: '#475569', cursor: 'pointer', fontSize: '0.7rem', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' }}>Edit</button>
+                            <button onClick={() => handleProgressDelete(itemId)} style={{ background: '#fee2e2', border: '1px solid #fca5a5', color: '#ef4444', cursor: 'pointer', fontSize: '0.7rem', padding: '4px 8px', borderRadius: '4px', fontWeight: 'bold' }}>Delete</button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
         </article>
       </div>
 
@@ -2808,7 +3471,7 @@ function EmployeesPage({ employees, attendance, API_BASE, triggerRefresh, user }
 
 function ApprovalsPage({ user, API_BASE, triggerRefresh }) {
   const isHR = user.role === 'hr';
-  const isAdmin = user.role === 'super_admin';
+  const isAdmin = user.role === 'super_admin' || user.role === 'admin';
   const canApprove = isHR || isAdmin;
 
   // ─── Local demo state (used when backend is offline) ──────────────────────
@@ -3258,7 +3921,7 @@ function AttendancePage({ attendance, user, API_BASE, triggerRefresh }) {
   const [pendingRegs, setPendingRegs] = useState([]);
   const [actioningId, setActioningId] = useState(null);
 
-  const isHR = user.role === 'hr' || user.role === 'super_admin';
+  const isHR = ['hr', 'super_admin', 'admin'].includes(user.role);
 
   const loadStatus = useCallback(() => {
     if (!user || !API_BASE) return;
@@ -3955,7 +4618,7 @@ function LeavePage({ leaveData, user, API_BASE, triggerRefresh }) {
     }
   };
 
-  const isHR = user.role === 'hr' || user.role === 'super_admin';
+  const isHR = ['hr', 'super_admin', 'admin'].includes(user.role);
 
   return (
     <section className="content-grid">
@@ -4858,7 +5521,7 @@ function ProjectsPage({ projects, employees = [], user, API_BASE, triggerRefresh
     }
   };
 
-  const isHR = user.role === 'hr' || user.role === 'super_admin';
+  const isHR = ['hr', 'super_admin', 'admin'].includes(user.role);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', position: 'relative' }}>
@@ -5283,236 +5946,9 @@ function ChatPage({ notifications, user, API_BASE, socket, activeUsers }) {
   );
 }
 
-function SettingsPage({ user, setUser, API_BASE }) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editName, setEditName] = useState(user.name || '');
-  const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [empProfile, setEmpProfile] = useState(null);
 
-  // Local state for toggles (mocked for now, but UI reflects instant changes)
-  const [controls, setControls] = useState({
-    twoFactor: true,
-    deviceManagement: true,
-    auditLogs: true
-  });
 
-  useEffect(() => {
-    if (user.role === 'employee') {
-      const fetchProfile = async () => {
-        try {
-          const token = window.localStorage.getItem('ems-token');
-          const response = await fetch(`${API_BASE}/api/employees`, {
-            headers: {
-              ...(token ? { Authorization: `Bearer ${token}` } : {})
-            }
-          });
-          if (response.ok) {
-            const list = await response.json();
-            if (list.length > 0) {
-              setEmpProfile(list[0]);
-            }
-          }
-        } catch (err) {
-          console.error('Failed to fetch employee details', err);
-        }
-      };
-      fetchProfile();
-    }
-  }, [user.role, API_BASE]);
-
-  const handleToggle = (key) => {
-    setControls(prev => ({ ...prev, [key]: !prev[key] }));
-  };
-
-  const handleSaveProfile = async () => {
-    if (!editName.trim()) return;
-    if (editName === user.name) {
-      setIsEditing(false);
-      return;
-    }
-
-    setIsSaving(true);
-    setError('');
-
-    try {
-      const token = window.localStorage.getItem('ems-token');
-      const response = await fetch(`${API_BASE}/api/users/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {})
-        },
-        body: JSON.stringify({ name: editName })
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Failed to update profile');
-
-      setUser(prev => ({ ...prev, name: data.user.name }));
-      setIsEditing(false);
-    } catch (err) {
-      setError(err.message === 'Failed to fetch' ? 'Backend unavailable.' : err.message);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
-      <section className="page-heading" style={{ paddingBottom: '10px', borderBottom: '1px solid #e2e8f0', marginBottom: '10px' }}>
-        <div>
-          <p className="eyebrow">Account Configuration</p>
-          <h2>Settings</h2>
-          <p className="helper-text" style={{ margin: 0 }}>
-            Manage your personal profile and security preferences.
-          </p>
-        </div>
-      </section>
-
-      {error && <div className="feather-badge danger">{error}</div>}
-
-      <section className="content-grid" style={{ gridTemplateColumns: '1fr' }}>
-        <article className="panel-card" style={{ padding: '30px' }}>
-          <div className="panel-header" style={{ marginBottom: '24px' }}>
-            <h3>Profile Information</h3>
-            <span className="pill" style={{ background: '#e0e7ff', color: '#4338ca' }}>{user.role}</span>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: getAvatarColor(user.name), color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', fontWeight: 'bold' }}>
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-              <div style={{ flexGrow: 1 }}>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Display Name</label>
-                {isEditing ? (
-                  <div style={{ display: 'flex', gap: '10px' }}>
-                    <input
-                      type="text"
-                      value={editName}
-                      onChange={e => setEditName(e.target.value)}
-                      style={{ padding: '8px 14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1rem', flexGrow: 1 }}
-                      autoFocus
-                    />
-                    <button className="primary-button" onClick={handleSaveProfile} disabled={isSaving} style={{ padding: '8px 16px', borderRadius: '8px' }}>
-                      {isSaving ? 'Saving...' : 'Save'}
-                    </button>
-                    <button className="ghost-button" onClick={() => { setIsEditing(false); setEditName(user.name); }} style={{ padding: '8px 16px' }}>
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '1.1rem', color: '#0f172a', fontWeight: 600 }}>{user.name}</span>
-                    <button
-                      onClick={() => setIsEditing(true)}
-                      style={{ background: 'none', border: 'none', color: '#6366f1', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}
-                      title="Edit Name"
-                    >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div style={{ height: '1px', background: '#f1f5f9', margin: '10px 0' }}></div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Email Address</label>
-                <div style={{ fontSize: '1rem', color: '#334155' }}>
-                  {user.role === 'super_admin' ? '••••••••@ems.com' : user.email}
-                </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Authentication Method</label>
-                <div style={{ fontSize: '1rem', color: '#334155', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {user.isGoogle ? (
-                    <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ea4335" strokeWidth="2"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" /><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" /><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" /><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" /></svg> Connected via Google</>
-                  ) : (
-                    <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg> Email & Password</>
-                  )}
-                </div>
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Timezone</label>
-                <div style={{ fontSize: '1rem', color: '#334155' }}>UTC+5:30 (IST)</div>
-              </div>
-
-              {empProfile && (
-                <>
-                  <div style={{ height: '1px', background: '#f1f5f9', margin: '10px 0', gridColumn: '1 / -1' }}></div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', gridColumn: '1 / -1' }}>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Department</label>
-                      <div style={{ fontSize: '1rem', color: '#334155', fontWeight: 500 }}>{empProfile.department || 'General'}</div>
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Designation / Role Title</label>
-                      <div style={{ fontSize: '1rem', color: '#334155', fontWeight: 500 }}>{empProfile.role || 'Employee'}</div>
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Leave Balance</label>
-                      <div style={{ fontSize: '1rem', color: '#334155', fontWeight: 500 }}>{empProfile.leaveBalance || 14} days</div>
-                    </div>
-                    <div>
-                      <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '6px', fontWeight: 600 }}>Employment Status</label>
-                      <div style={{ fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ width: 8, height: 8, background: empProfile.status === 'Active' ? '#10b981' : '#f59e0b', borderRadius: '50%' }} />
-                        <span style={{ color: '#334155', fontWeight: 500 }}>{empProfile.status || 'Active'}</span>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </article>
-
-        <article className="panel-card" style={{ padding: '30px' }}>
-          <div className="panel-header" style={{ marginBottom: '24px' }}>
-            <h3>Security Controls</h3>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {[
-              { key: 'twoFactor', title: 'Two-Factor Authentication (2FA)', desc: 'Require a security code in addition to your password.' },
-              { key: 'deviceManagement', title: 'Device Management', desc: 'Monitor and manage devices logged into your account.' },
-              { key: 'auditLogs', title: 'Activity Audit Logs', desc: 'Keep a record of all sensitive actions performed on this account.' }
-            ].map(setting => (
-              <div key={setting.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
-                <div>
-                  <h4 style={{ margin: '0 0 4px 0', color: '#0f172a', fontSize: '1rem' }}>{setting.title}</h4>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.85rem' }}>{setting.desc}</p>
-                </div>
-
-                {/* Toggle Switch */}
-                <button
-                  onClick={() => handleToggle(setting.key)}
-                  style={{
-                    position: 'relative', width: '44px', height: '24px', borderRadius: '12px',
-                    background: controls[setting.key] ? '#10b981' : '#cbd5e1',
-                    border: 'none', cursor: 'pointer', transition: 'background 0.3s'
-                  }}
-                >
-                  <div style={{
-                    position: 'absolute', top: '2px', left: controls[setting.key] ? '22px' : '2px',
-                    width: '20px', height: '20px', background: 'white', borderRadius: '50%',
-                    transition: 'left 0.3s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
-                  }} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </article>
-      </section>
-    </div>
-  );
-}
-
-function TasksPage({ user, API_BASE }) {
+function TasksPage({ user, API_BASE, socket }) {
   const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
   const [loading, setLoading] = useState(true);
@@ -5535,6 +5971,13 @@ function TasksPage({ user, API_BASE }) {
   useEffect(() => {
     fetchTasks();
   }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handleUpdate = () => fetchTasks();
+    socket.on('task_updated', handleUpdate);
+    return () => socket.off('task_updated', handleUpdate);
+  }, [socket]);
 
   const handleAddTask = async (e) => {
     e.preventDefault();
@@ -5753,6 +6196,7 @@ function App() {
   const [socketConnected, setSocketConnected] = useState(false)
   const [liveActivity, setLiveActivity] = useState([])
   const [activeUsers, setActiveUsers] = useState([])
+  const [progressUpdates, setProgressUpdates] = useState([])
   const [showGoogleModal, setShowGoogleModal] = useState(false)
   const [socket, setSocket] = useState(null)
   const [pendingApproval, setPendingApproval] = useState(false)
@@ -5769,7 +6213,8 @@ function App() {
       fetch(`${API_BASE}/api/payroll`, { headers }),
       fetch(`${API_BASE}/api/recruitment`, { headers }),
       fetch(`${API_BASE}/api/projects`, { headers }),
-      fetch(`${API_BASE}/api/notifications`, { headers })
+      fetch(`${API_BASE}/api/notifications`, { headers }),
+      fetch(`${API_BASE}/api/progress-updates`, { headers })
     ])
       .then(async (responses) => {
         const unauthorized = responses.find(r => r.status === 401)
@@ -5783,7 +6228,7 @@ function App() {
         }
         return Promise.all(responses.map(r => r.json()))
       })
-      .then(([dashboard, employees, attendance, leave, payroll, recruitment, projects, notifications]) => {
+      .then(([dashboard, employees, attendance, leave, payroll, recruitment, projects, notifications, progressUpdatesRes]) => {
         if (dashboard?.[user.role]) {
           setDashboardData(dashboard[user.role])
         }
@@ -5794,6 +6239,9 @@ function App() {
         if (recruitment) setRecruitment(recruitment)
         if (Array.isArray(projects)) setProjects(projects)
         if (Array.isArray(notifications)) setNotifications(notifications)
+        if (Array.isArray(progressUpdatesRes)) {
+          setProgressUpdates(progressUpdatesRes)
+        }
       })
       .catch((err) => {
         console.error('Failed to load data:', err)
@@ -5805,6 +6253,7 @@ function App() {
         setRecruitment(fallbackRecruitment)
         setProjects(fallbackProjects)
         setNotifications(fallbackNotifications)
+        setProgressUpdates([])
       })
   }
 
@@ -5823,7 +6272,7 @@ function App() {
       reconnectionDelay: 1000,
       timeout: 10000
     })
-    setSocket(socketInstance)
+    setTimeout(() => setSocket(socketInstance), 0)
 
     const handleRealtimeRefresh = (message) => {
       if (message) {
@@ -5858,6 +6307,19 @@ function App() {
     socketInstance.on('payroll_updated', (message) => handleRealtimeRefresh(message || 'Payroll updated'))
     socketInstance.on('leave_updated', () => handleRealtimeRefresh('Leave requests updated'))
     socketInstance.on('recruitment_updated', () => handleRealtimeRefresh('Recruitment list updated'))
+    socketInstance.on('progress_updated', (newUpdate) => {
+      setProgressUpdates((prev) => {
+        if (prev.some(u => u._id === newUpdate._id || u.id === newUpdate.id)) return prev;
+        return [newUpdate, ...prev].slice(0, 30);
+      });
+      setLiveActivity((current) => [`${newUpdate.userName} posted progress update: ${newUpdate.percentage}%`, ...(Array.isArray(current) ? current : [])].slice(0, 6));
+    })
+    socketInstance.on('progress_edited', (editedUpdate) => {
+      setProgressUpdates((prev) => prev.map(u => (u._id === editedUpdate._id || u.id === editedUpdate.id) ? editedUpdate : u));
+    })
+    socketInstance.on('progress_deleted', (deletedId) => {
+      setProgressUpdates((prev) => prev.filter(u => u._id !== deletedId && u.id !== deletedId));
+    })
 
     const fallbackRefresh = setInterval(() => {
       if (!socketInstance.connected) loadData()
@@ -6016,7 +6478,7 @@ function App() {
     }
   }
 
-  const handleLogout = () => {
+  function handleLogout() {
     window.localStorage.removeItem('ems-user')
     window.localStorage.removeItem('ems-token')
     setUser(null)
@@ -6048,8 +6510,8 @@ function App() {
     <BrowserRouter>
       <AppLayout user={user} onLogout={handleLogout}>
         <Routes>
-          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} />}</ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} />}</ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} progressUpdates={progressUpdates} setProgressUpdates={setProgressUpdates} API_BASE={API_BASE} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} progressUpdates={progressUpdates} />}</ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} progressUpdates={progressUpdates} setProgressUpdates={setProgressUpdates} API_BASE={API_BASE} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} progressUpdates={progressUpdates} />}</ProtectedRoute>} />
           <Route path="/employees" element={<ProtectedRoute user={user}><EmployeesPage employees={employees} attendance={attendance} API_BASE={API_BASE} triggerRefresh={loadData} user={user} /></ProtectedRoute>} />
           <Route path="/approvals" element={<ProtectedRoute user={user}><ApprovalsPage user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/attendance" element={<ProtectedRoute user={user}><AttendancePage attendance={attendance} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
@@ -6058,9 +6520,17 @@ function App() {
           <Route path="/recruitment" element={<ProtectedRoute user={user}><RecruitmentPage recruitment={recruitment} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/projects" element={<ProtectedRoute user={user}><ProjectsPage projects={projects} employees={employees} user={user} API_BASE={API_BASE} triggerRefresh={loadData} socket={socket} /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute user={user}><ChatPage notifications={notifications} user={user} API_BASE={API_BASE} socket={socket} activeUsers={activeUsers} /></ProtectedRoute>} />
-          <Route path="/tasks" element={<ProtectedRoute user={user}><TasksPage user={user} API_BASE={API_BASE} /></ProtectedRoute>} />
+          <Route path="/tasks" element={<ProtectedRoute user={user}><TasksPage user={user} API_BASE={API_BASE} socket={socket} /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute user={user}><NotificationsPage user={user} API_BASE={API_BASE} /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute user={user}><SettingsPage user={user} setUser={setUser} API_BASE={API_BASE} /></ProtectedRoute>} />
+
+          <Route path="/shifts" element={<ProtectedRoute user={user}><ShiftsPage user={user} API_BASE={API_BASE} socket={socket} employees={employees} /></ProtectedRoute>} />
+          <Route path="/reviews" element={<ProtectedRoute user={user}><PerformancePage user={user} API_BASE={API_BASE} socket={socket} employees={employees} /></ProtectedRoute>} />
+          <Route path="/expenses" element={<ProtectedRoute user={user}><ExpensesPage user={user} API_BASE={API_BASE} socket={socket} employees={employees} /></ProtectedRoute>} />
+          <Route path="/assets" element={<ProtectedRoute user={user}><AssetsPage user={user} API_BASE={API_BASE} socket={socket} employees={employees} /></ProtectedRoute>} />
+          <Route path="/announcements" element={<ProtectedRoute user={user}><AnnouncementsPage user={user} API_BASE={API_BASE} socket={socket} /></ProtectedRoute>} />
+          <Route path="/documents" element={<ProtectedRoute user={user}><DocumentsPage user={user} API_BASE={API_BASE} socket={socket} employees={employees} /></ProtectedRoute>} />
+
           {/* Redirect /login and any unknown route to dashboard after login */}
           <Route path="/login" element={<Navigate to="/dashboard" replace />} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
