@@ -386,7 +386,8 @@ function getStoredUser() {
       window.localStorage.removeItem('ems-token')
       return null
     }
-    return u
+    const token = window.localStorage.getItem('ems-token') || u.token || ''
+    return { ...u, token }
   } catch {
     window.localStorage.removeItem('ems-user')
     window.localStorage.removeItem('ems-token')
@@ -1869,6 +1870,126 @@ function DashboardPage({ user, dashboardData, liveActivity, socketConnected, emp
         </article>
       </section>
 
+      {/* Unified Work Process Dashboard */}
+      {unifiedWorkProcesses && (
+        <section className="content-grid" style={{ marginTop: '24px' }}>
+          <article className="panel-card" style={{ gridColumn: '1 / -1', background: 'linear-gradient(145deg, #ffffff, #f8fafc)', border: '1px solid #e2e8f0', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+            <div className="panel-header" style={{ borderBottom: '1px solid #e2e8f0', paddingBottom: '16px', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <h3 style={{ fontSize: '1.25rem', color: '#0f172a' }}>Unified Work Process Dashboard</h3>
+                <span style={{ fontSize: '0.85rem', color: '#64748b' }}>A holistic view of company operations, performance, and recruitment</span>
+              </div>
+              <span className="pill" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', boxShadow: '0 4px 10px rgba(99,102,241,0.3)' }}>Aggregated View</span>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+              
+              {/* Latest Tasks */}
+              <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.01)' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: '#1e293b', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px dashed #e2e8f0' }}>
+                  <span style={{ background: '#e0e7ff', color: '#4338ca', padding: '4px', borderRadius: '6px' }}>📝</span> Latest Tasks
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {unifiedWorkProcesses.tasks?.slice(0,4).map(task => (
+                    <div key={task._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: '#f8fafc', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: task.done ? '#94a3b8' : '#1e293b', textDecoration: task.done ? 'line-through' : 'none' }}>{task.title}</span>
+                        <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{task.employee?.name || 'Unknown'}</span>
+                      </div>
+                      <span style={{ fontSize: '0.65rem', padding: '3px 6px', borderRadius: '4px', background: task.done ? '#dcfce7' : '#fee2e2', color: task.done ? '#16a34a' : '#ef4444' }}>
+                        {task.done ? 'Done' : 'Pending'}
+                      </span>
+                    </div>
+                  ))}
+                  {(!unifiedWorkProcesses.tasks || unifiedWorkProcesses.tasks.length === 0) && <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>No tasks found.</span>}
+                </div>
+              </div>
+
+              {/* Active Shifts */}
+              <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.01)' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: '#1e293b', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px dashed #e2e8f0' }}>
+                  <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px', borderRadius: '6px' }}>⏰</span> Active Shifts
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {unifiedWorkProcesses.shifts?.slice(0,4).map(shift => (
+                    <div key={shift._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: '#f8fafc', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1e293b' }}>{shift.employeeId?.name || 'Unknown'}</span>
+                        <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{shift.startTime} - {shift.endTime}</span>
+                      </div>
+                      <span style={{ fontSize: '0.65rem', padding: '3px 6px', borderRadius: '4px', background: '#e0e7ff', color: '#4338ca' }}>
+                        {shift.department}
+                      </span>
+                    </div>
+                  ))}
+                  {(!unifiedWorkProcesses.shifts || unifiedWorkProcesses.shifts.length === 0) && <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>No shifts scheduled.</span>}
+                </div>
+              </div>
+
+              {/* Progress Updates */}
+              <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.01)' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: '#1e293b', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px dashed #e2e8f0' }}>
+                  <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px', borderRadius: '6px' }}>📈</span> Progress Updates
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {unifiedWorkProcesses.progressUpdates?.slice(0,3).map(update => (
+                    <div key={update._id} style={{ display: 'flex', flexDirection: 'column', gap: '4px', padding: '8px', background: '#f8fafc', borderRadius: '8px', borderLeft: `3px solid ${update.status === 'On Track' ? '#22c55e' : update.status === 'Delayed' ? '#f59e0b' : '#3b82f6'}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1e293b' }}>{update.employee?.name || update.userName}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#64748b' }}>{update.percentage}%</span>
+                      </div>
+                      <span style={{ fontSize: '0.75rem', color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{update.text}</span>
+                    </div>
+                  ))}
+                  {(!unifiedWorkProcesses.progressUpdates || unifiedWorkProcesses.progressUpdates.length === 0) && <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>No recent updates.</span>}
+                </div>
+              </div>
+
+              {/* Recruitment Pipeline */}
+              <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.01)' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: '#1e293b', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px dashed #e2e8f0' }}>
+                  <span style={{ background: '#fce7f3', color: '#be185d', padding: '4px', borderRadius: '6px' }}>🎯</span> Recruitment Pipeline
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {unifiedWorkProcesses.recruitmentRoles?.slice(0,4).map(role => (
+                    <div key={role._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: '#f8fafc', borderRadius: '8px' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1e293b' }}>{role.title}</span>
+                      <span style={{ fontSize: '0.65rem', padding: '3px 6px', borderRadius: '4px', background: '#f3f4f6', color: '#475569' }}>
+                        {role.stage}
+                      </span>
+                    </div>
+                  ))}
+                  {(!unifiedWorkProcesses.recruitmentRoles || unifiedWorkProcesses.recruitmentRoles.length === 0) && <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>No active roles.</span>}
+                </div>
+              </div>
+
+              {/* Performance Reviews */}
+              <div style={{ background: '#fff', borderRadius: '12px', padding: '16px', border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.01)' }}>
+                <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.95rem', color: '#1e293b', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px dashed #e2e8f0' }}>
+                  <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px', borderRadius: '6px' }}>⭐</span> Performance Reviews
+                </h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {unifiedWorkProcesses.performanceReviews?.slice(0,4).map(review => (
+                    <div key={review._id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px', background: '#f8fafc', borderRadius: '8px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1e293b' }}>{review.employeeId?.name || 'Unknown'}</span>
+                        <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{review.reviewPeriod}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                        <span style={{ fontSize: '0.8rem', color: '#f59e0b' }}>★</span>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#1e293b' }}>{review.rating}/5</span>
+                      </div>
+                    </div>
+                  ))}
+                  {(!unifiedWorkProcesses.performanceReviews || unifiedWorkProcesses.performanceReviews.length === 0) && <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>No recent reviews.</span>}
+                </div>
+              </div>
+
+            </div>
+          </article>
+        </section>
+      )}
+
       {/* Persisted HR Reminders Note-Pad */}
       <section className="content-grid" style={{ marginTop: '24px', marginBottom: '24px' }}>
         <article className="panel-card" style={{ gridColumn: '1 / -1' }}>
@@ -1955,6 +2076,35 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
   const [breakLoading, setBreakLoading] = useState(false)
   const [focusInput, setFocusInput] = useState('')
   const [focusLoading, setFocusLoading] = useState(false)
+
+  /* My Shift */
+  const [myShift, setMyShift] = useState(null)
+  const [myShiftLoading, setMyShiftLoading] = useState(true)
+
+  const fetchMyShift = useCallback(() => {
+    fetch(`${API_BASE}/api/shifts/my-shifts`, {
+      headers: { Authorization: `Bearer ${getStoredToken()}` }
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (Array.isArray(data) && data.length > 0) {
+        const upcoming = data.find(s => s.status === 'Scheduled') || data[0];
+        setMyShift(upcoming);
+      } else {
+        setMyShift(null);
+      }
+    })
+    .catch(console.error)
+    .finally(() => setMyShiftLoading(false));
+  }, [API_BASE]);
+
+  useEffect(() => {
+    fetchMyShift();
+    if (socket) {
+      socket.on('shift_updated', fetchMyShift);
+      return () => socket.off('shift_updated', fetchMyShift);
+    }
+  }, [fetchMyShift, socket]);
 
   /* Daily Progress Updates States */
   const [updateText, setUpdateText] = useState('')
@@ -2664,6 +2814,41 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
             </div>
           )}
         </article>
+
+        {/* My Shift */}
+        <article className="panel-card" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div className="panel-header" style={{ width: '100%' }}>
+            <h3>My Shift</h3>
+          </div>
+          {myShiftLoading ? (
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>Loading shift...</p>
+          ) : myShift ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '4px 0' }}>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>
+                {new Date(myShift.date).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-')}
+              </div>
+              <div style={{ fontSize: '0.95rem', color: '#475569', fontWeight: 600 }}>
+                {myShift.startTime} - {myShift.endTime}
+              </div>
+              <div style={{ fontSize: '0.85rem', color: '#64748b' }}>
+                {myShift.department}
+              </div>
+              <div style={{ marginTop: '4px' }}>
+                <span className="pill" style={{
+                  background: myShift.status === 'Scheduled' ? '#dbeafe' : myShift.status === 'Cancelled' ? '#fee2e2' : '#dcfce7',
+                  color: myShift.status === 'Scheduled' ? '#2563eb' : myShift.status === 'Cancelled' ? '#ef4444' : '#16a34a'
+                }}>
+                  {myShift.status}
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div style={{ color: '#94a3b8', fontSize: '0.85rem', margin: 0 }}>
+              No shift scheduled.
+            </div>
+          )}
+        </article>
+
       </div>
 
       {/* -- ROW 4: Quick Actions + Live Feed + Team Pulse -------- */}
@@ -2894,7 +3079,7 @@ function EmployeeDashboardPage({ user, leaveData, payroll, attendance, liveActiv
                           }}
                         />
                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <input type="range" min="0" max="100" step="5" value={editProgressPct} onChange={e => setEditProgressPct(Number(e.target.value))} style={{flex: 1, accentColor: '#6366f1'}} />
+                          <input type="range" min="0" max="100" step="5" value={editProgressPct} onChange={e => setEditProgressPct(Number(e.target.value))} style={{ flex: 1, accentColor: '#6366f1' }} />
                           <span style={{ fontSize: '0.78rem', width: '30px' }}>{editProgressPct}%</span>
                           <select value={editProgressStatus} onChange={e => setEditProgressStatus(e.target.value)} style={{ padding: '4px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '0.8rem' }}>
                             <option value="On Track">On Track</option>
@@ -6199,6 +6384,7 @@ function App() {
   const [progressUpdates, setProgressUpdates] = useState([])
   const [showGoogleModal, setShowGoogleModal] = useState(false)
   const [socket, setSocket] = useState(null)
+  const [unifiedWorkProcesses, setUnifiedWorkProcesses] = useState(null)
   const [pendingApproval, setPendingApproval] = useState(false)
   const [pendingMessage, setPendingMessage] = useState('')
 
@@ -6214,7 +6400,8 @@ function App() {
       fetch(`${API_BASE}/api/recruitment`, { headers }),
       fetch(`${API_BASE}/api/projects`, { headers }),
       fetch(`${API_BASE}/api/notifications`, { headers }),
-      fetch(`${API_BASE}/api/progress-updates`, { headers })
+      fetch(`${API_BASE}/api/progress-updates`, { headers }),
+      fetch(`${API_BASE}/api/work-processes/dashboard`, { headers })
     ])
       .then(async (responses) => {
         const unauthorized = responses.find(r => r.status === 401)
@@ -6228,7 +6415,7 @@ function App() {
         }
         return Promise.all(responses.map(r => r.json()))
       })
-      .then(([dashboard, employees, attendance, leave, payroll, recruitment, projects, notifications, progressUpdatesRes]) => {
+      .then(([dashboard, employees, attendance, leave, payroll, recruitment, projects, notifications, progressUpdatesRes, workProcesses]) => {
         if (dashboard?.[user.role]) {
           setDashboardData(dashboard[user.role])
         }
@@ -6242,6 +6429,9 @@ function App() {
         if (Array.isArray(progressUpdatesRes)) {
           setProgressUpdates(progressUpdatesRes)
         }
+        if (workProcesses) {
+          setUnifiedWorkProcesses(workProcesses)
+        }
       })
       .catch((err) => {
         console.error('Failed to load data:', err)
@@ -6254,6 +6444,7 @@ function App() {
         setProjects(fallbackProjects)
         setNotifications(fallbackNotifications)
         setProgressUpdates([])
+        setUnifiedWorkProcesses(null)
       })
   }
 
@@ -6307,6 +6498,14 @@ function App() {
     socketInstance.on('payroll_updated', (message) => handleRealtimeRefresh(message || 'Payroll updated'))
     socketInstance.on('leave_updated', () => handleRealtimeRefresh('Leave requests updated'))
     socketInstance.on('recruitment_updated', () => handleRealtimeRefresh('Recruitment list updated'))
+    socketInstance.on('shift_updated', () => handleRealtimeRefresh('Shift schedules updated'))
+    socketInstance.on('review_updated', () => handleRealtimeRefresh('Performance review updated'))
+    socketInstance.on('expense_updated', () => handleRealtimeRefresh('Expense claim updated'))
+    socketInstance.on('asset_updated', () => handleRealtimeRefresh('Asset inventory updated'))
+    socketInstance.on('asset_request_updated', () => handleRealtimeRefresh('Asset request updated'))
+    socketInstance.on('announcement_added', () => handleRealtimeRefresh('New announcement posted'))
+    socketInstance.on('document_added', () => handleRealtimeRefresh('New document uploaded'))
+    socketInstance.on('task_updated', () => handleRealtimeRefresh('Task list updated'))
     socketInstance.on('progress_updated', (newUpdate) => {
       setProgressUpdates((prev) => {
         if (prev.some(u => u._id === newUpdate._id || u.id === newUpdate.id)) return prev;
@@ -6371,6 +6570,7 @@ function App() {
         name: payload.user.name,
         email: payload.user.email,
         role: payload.user.role,
+        token: payload.user.token,
         isGoogle: true
       })
       setGoogleEmail(payload.user.email)
@@ -6408,7 +6608,7 @@ function App() {
         if (payload.user.token) {
           window.localStorage.setItem('ems-token', payload.user.token)
         }
-        setUser({ id: payload.user.id, name: payload.user.name, email: payload.user.email, role: payload.user.role })
+        setUser({ id: payload.user.id, name: payload.user.name, email: payload.user.email, role: payload.user.role, token: payload.user.token })
         return
       } catch (errorMessage) {
         if (errorMessage.message === 'Failed to fetch') {
@@ -6454,7 +6654,7 @@ function App() {
       if (payload.user.token) {
         window.localStorage.setItem('ems-token', payload.user.token)
       }
-      setUser({ id: payload.user.id, name: payload.user.name, email: payload.user.email, role: payload.user.role })
+      setUser({ id: payload.user.id, name: payload.user.name, email: payload.user.email, role: payload.user.role, token: payload.user.token })
     } catch (errorMessage) {
       if (errorMessage.message === 'Failed to fetch') {
         const newUser = {

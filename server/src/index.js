@@ -12,6 +12,10 @@ import cookieParser from 'cookie-parser';
 import { Server } from 'socket.io';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import fs from 'fs';
 import { connectDB } from './config/db.js';
 import { protect } from './middleware/auth.js';
 import { sendEmail } from './utils/mailer.js';
@@ -33,6 +37,7 @@ import Shift from './models/Shift.js';
 import PerformanceReview from './models/PerformanceReview.js';
 import ExpenseClaim from './models/ExpenseClaim.js';
 import Asset from './models/Asset.js';
+import AssetRequest from './models/AssetRequest.js';
 import Announcement from './models/Announcement.js';
 import Document from './models/Document.js';
 dotenv.config();
@@ -47,12 +52,31 @@ const port = process.env.PORT || 5000;
 // Connect to Database
 connectDB();
 
+// ES Module __dirname workaround
+const __filename_es = fileURLToPath(import.meta.url);
+const __dirname_es = path.dirname(__filename_es);
+const uploadsDir = path.join(__dirname_es, '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+
+// Multer storage config for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadsDir),
+  filename: (req, file, cb) => {
+    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E6) + path.extname(file.originalname);
+    cb(null, uniqueName);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB limit
+
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: true, credentials: true }));
 app.use(compression());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(cookieParser());
+
+// Serve uploaded files as static assets
+app.use('/uploads', express.static(uploadsDir));
 
 // Static Mock Data for parts not fully dynamic yet
 let attendanceStats = {
@@ -222,7 +246,7 @@ app.get('/api/dashboard', protect, async (req, res) => {
     const checkIns = await CheckIn.find();
     let totalPossibleDays = 0;
     let totalPresentDays = 0;
-    
+
     // Group check-in history entries by day of the week for Performance Pulse
     const dayCounts = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 0: 0 }; // 1=Mon, 2=Tue, ..., 0=Sun
     let maxCount = 0;
@@ -309,7 +333,7 @@ app.get('/api/dashboard', protect, async (req, res) => {
       const projectsCount = await Project.countDocuments({ employee: req.user.id });
       const completedTasks = await Task.countDocuments({ employee: req.user.id, done: true });
       const totalTasks = await Task.countDocuments({ employee: req.user.id });
-      
+
       let empAttendanceRate = '100%';
       if (attendanceRecord && attendanceRecord.history.length > 0) {
         const onTimeCount = attendanceRecord.history.filter(h => h.status === 'On Time').length;
@@ -338,6 +362,26 @@ app.get('/api/dashboard', protect, async (req, res) => {
     };
 
     res.json(payload[role] ? { [role]: payload[role] } : payload);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.get('/api/work-processes/dashboard', protect, async (req, res) => {
+  try {
+    const performanceReviews = await PerformanceReview.find().populate('employeeId', 'name email role department avatar').populate('reviewerId', 'name');
+    const progressUpdates = await ProgressUpdate.find().populate('employee', 'name email role department avatar').sort({ createdAt: -1 }).limit(15);
+    const shifts = await Shift.find().populate('employeeId', 'name email role department avatar').sort({ date: 1 }).limit(15);
+    const tasks = await Task.find().populate('employee', 'name email role department avatar').sort({ createdAt: -1 }).limit(15);
+    const recruitmentRoles = await RecruitmentRole.find();
+
+    res.json({
+      performanceReviews,
+      progressUpdates,
+      shifts,
+      tasks,
+      recruitmentRoles
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1013,7 +1057,7 @@ app.get('/api/payroll', protect, async (req, res) => {
       query = { employee: req.query.employeeId };
     }
     const records = await PayrollRecord.find(query).sort({ createdAt: 1 });
-    
+
     const items = records.filter(r => r.type === 'summary').map(r => ({ label: r.label, value: r.value, type: r.type, status: r.status }));
     const payslips = records.filter(r => r.type === 'payslip').map(r => ({ label: r.label, name: r.label, value: r.value, date: r.value, type: r.type, status: r.status }));
 
@@ -1417,8 +1461,8 @@ app.post('/api/auth/login', async (req, res) => {
 
         // Send login notification email (non-blocking)
         sendEmail(
-          matchedUser.email, 
-          'New Login Alert - HRMS', 
+          matchedUser.email,
+          'New Login Alert - HRMS',
           `<p>Hi ${matchedUser.name},</p><p>A new login was detected on your HRMS account.</p><p>If this wasn't you, please contact IT immediately.</p>`
         ).catch(err => console.error(err));
 
@@ -1553,7 +1597,7 @@ app.post('/api/auth/google', async (req, res) => {
         emp.name = matchedUser.name;
         await emp.save();
       }
-      
+
       if (matchedUser.role === 'employee') {
         if (emp && emp.status === 'Pending') {
           return res.status(403).json({ message: 'Your registration is pending HR/Admin approval.', status: 'Pending' });
@@ -1712,10 +1756,23 @@ app.delete('/api/progress-updates/:id', protect, async (req, res) => {
   }
 });
 
-// --- NEW FEATURES ROUTES ---
+// --- SHIFT SCHEDULING ROUTES ---
 
-// 1. Shifts
-app.get('/api/shifts', protect, async (req, res) => {
+// Middleware to restrict to Admin/HR
+const requireAdminOrHR = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.userId);
+    if (!user || (user.role !== 'admin' && user.role !== 'super_admin' && user.role !== 'hr')) {
+      return res.status(403).json({ message: 'Access denied. Admin or HR only.' });
+    }
+    next();
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 1. Get all shifts (Admin/HR only)
+app.get('/api/shifts', protect, requireAdminOrHR, async (req, res) => {
   try {
     const shifts = await Shift.find().populate('employeeId');
     res.json(shifts);
@@ -1723,8 +1780,31 @@ app.get('/api/shifts', protect, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-app.post('/api/shifts', protect, async (req, res) => {
+
+// 2. Get my shifts (Employee only)
+app.get('/api/shifts/my-shifts', protect, async (req, res) => {
   try {
+    const user = await User.findById(req.user.userId);
+    if (user.role !== 'employee') {
+      return res.status(403).json({ message: 'Only employees can access this route.' });
+    }
+    const emp = await Employee.findOne({ userId: user._id });
+    if (!emp) {
+      return res.json([]);
+    }
+    const shifts = await Shift.find({ employeeId: emp._id }).populate('employeeId');
+    res.json(shifts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 3. Create shift (Admin/HR only)
+app.post('/api/shifts', protect, requireAdminOrHR, async (req, res) => {
+  try {
+    if (!req.body.employeeId) {
+      return res.status(400).json({ message: 'Employee ID is required.' });
+    }
     const shift = new Shift(req.body);
     await shift.save();
     io.emit('shift_updated');
@@ -1734,12 +1814,25 @@ app.post('/api/shifts', protect, async (req, res) => {
   }
 });
 
-app.put('/api/shifts/:id', protect, async (req, res) => {
+// 4. Update shift (Admin/HR only)
+app.put('/api/shifts/:id', protect, requireAdminOrHR, async (req, res) => {
   try {
     const shift = await Shift.findByIdAndUpdate(req.params.id, req.body, { new: true });
     if (!shift) return res.status(404).json({ message: 'Shift not found' });
     io.emit('shift_updated');
     res.json(shift);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// 5. Delete shift (Admin/HR only)
+app.delete('/api/shifts/:id', protect, requireAdminOrHR, async (req, res) => {
+  try {
+    const shift = await Shift.findByIdAndDelete(req.params.id);
+    if (!shift) return res.status(404).json({ message: 'Shift not found' });
+    io.emit('shift_updated');
+    res.json({ message: 'Shift deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1798,28 +1891,274 @@ app.put('/api/expenses/:id', protect, async (req, res) => {
 // 4. Assets
 app.get('/api/assets', protect, async (req, res) => {
   try {
-    const assets = await Asset.find().populate('assignedTo');
+    const assets = await Asset.find().populate('assignedTo').sort({ createdAt: -1 });
     res.json(assets);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
 app.post('/api/assets', protect, async (req, res) => {
   try {
-    const asset = new Asset(req.body);
+    const data = { ...req.body };
+    if (!data.assetTag || !data.name || !data.category) {
+      return res.status(400).json({ message: 'Asset Tag, Name, and Category are required.' });
+    }
+
+    const cleanTag = data.assetTag.trim();
+    const existing = await Asset.findOne({ assetTag: cleanTag });
+    if (existing) {
+      return res.status(400).json({ message: `Asset Tag "${cleanTag}" already exists.` });
+    }
+
+    data.assetTag = cleanTag;
+    if (!data.purchaseDate || data.purchaseDate === '') delete data.purchaseDate;
+    if (data.purchaseCost === '' || isNaN(data.purchaseCost) || data.purchaseCost === null) {
+      delete data.purchaseCost;
+    } else {
+      data.purchaseCost = Number(data.purchaseCost);
+    }
+
+    if (!data.assignedTo || data.assignedTo === '') {
+      data.assignedTo = null;
+      data.status = data.status || 'Available';
+    } else {
+      data.status = 'Assigned';
+      data.assignmentDate = new Date();
+    }
+
+    const initialHistory = [{
+      action: 'Created',
+      employee: data.assignedTo || null,
+      employeeName: '',
+      date: new Date(),
+      condition: data.condition || 'Good',
+      notes: 'Initial asset registration'
+    }];
+
+    if (data.assignedTo) {
+      const emp = await Employee.findById(data.assignedTo);
+      if (emp) {
+        initialHistory[0].employeeName = emp.name;
+        initialHistory.push({
+          action: 'Check-Out',
+          employee: emp._id,
+          employeeName: emp.name,
+          date: new Date(),
+          condition: data.condition || 'Good',
+          notes: 'Assigned on registration'
+        });
+        await addNotification(`Asset ${data.name} (${data.assetTag}) was assigned to you.`, emp._id);
+      }
+    }
+    data.history = initialHistory;
+
+    const asset = new Asset(data);
     await asset.save();
+    await asset.populate('assignedTo');
     io.emit('asset_updated');
     res.status(201).json(asset);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
 app.put('/api/assets/:id', protect, async (req, res) => {
   try {
-    const asset = await Asset.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const data = { ...req.body };
+    if (!data.purchaseDate || data.purchaseDate === '') delete data.purchaseDate;
+    if (data.purchaseCost === '' || isNaN(data.purchaseCost) || data.purchaseCost === null) {
+      delete data.purchaseCost;
+    }
+    if (data.assignedTo === '') data.assignedTo = null;
+
+    const asset = await Asset.findByIdAndUpdate(req.params.id, data, { new: true }).populate('assignedTo');
     if (!asset) return res.status(404).json({ message: 'Asset not found' });
     io.emit('asset_updated');
     res.json(asset);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete('/api/assets/:id', protect, async (req, res) => {
+  try {
+    const asset = await Asset.findByIdAndDelete(req.params.id);
+    if (!asset) return res.status(404).json({ message: 'Asset not found' });
+    io.emit('asset_updated');
+    res.json({ message: 'Asset deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Check-Out Asset to Employee
+app.post('/api/assets/:id/checkout', protect, async (req, res) => {
+  try {
+    const { employeeId, expectedReturnDate, notes, condition } = req.body;
+    if (!employeeId) {
+      return res.status(400).json({ message: 'Please select an employee to check out this asset to.' });
+    }
+
+    const asset = await Asset.findById(req.params.id);
+    if (!asset) return res.status(404).json({ message: 'Asset not found' });
+    if (asset.status === 'Assigned') {
+      return res.status(400).json({ message: 'This asset is already checked out to another employee.' });
+    }
+
+    const employee = await Employee.findById(employeeId);
+    if (!employee) return res.status(404).json({ message: 'Employee not found' });
+
+    asset.assignedTo = employee._id;
+    asset.assignmentDate = new Date();
+    if (expectedReturnDate) asset.expectedReturnDate = new Date(expectedReturnDate);
+    asset.status = 'Assigned';
+    if (condition) asset.condition = condition;
+    if (notes) asset.notes = notes;
+
+    asset.history.unshift({
+      action: 'Check-Out',
+      employee: employee._id,
+      employeeName: employee.name,
+      date: new Date(),
+      condition: asset.condition || 'Good',
+      notes: notes || 'Checked out to employee'
+    });
+
+    await asset.save();
+    await asset.populate('assignedTo');
+
+    await addNotification(`Asset ${asset.name} (${asset.assetTag}) has been checked out to you.`, employee._id);
+    io.emit('asset_updated');
+    res.json(asset);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Check-In (Return) Asset from Employee
+app.post('/api/assets/:id/checkin', protect, async (req, res) => {
+  try {
+    const { condition, notes } = req.body;
+    const asset = await Asset.findById(req.params.id).populate('assignedTo');
+    if (!asset) return res.status(404).json({ message: 'Asset not found' });
+
+    const prevEmployee = asset.assignedTo;
+    const prevEmployeeName = prevEmployee ? prevEmployee.name : 'Unknown';
+    const prevEmployeeId = prevEmployee ? prevEmployee._id : null;
+
+    const returnCondition = condition || asset.condition || 'Good';
+    const newStatus = (returnCondition === 'Needs Repair' || returnCondition === 'Damaged') ? 'In Repair' : 'Available';
+
+    asset.assignedTo = null;
+    asset.assignmentDate = null;
+    asset.expectedReturnDate = null;
+    asset.status = newStatus;
+    asset.condition = returnCondition;
+    if (notes) asset.notes = notes;
+
+    asset.history.unshift({
+      action: 'Check-In',
+      employee: prevEmployeeId,
+      employeeName: prevEmployeeName,
+      date: new Date(),
+      condition: returnCondition,
+      notes: notes || `Returned by ${prevEmployeeName}`
+    });
+
+    await asset.save();
+
+    if (prevEmployeeId) {
+      await addNotification(`Asset ${asset.name} (${asset.assetTag}) return has been processed.`, prevEmployeeId);
+    }
+    io.emit('asset_updated');
+    res.json(asset);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Asset Requests Endpoints
+app.get('/api/asset-requests', protect, async (req, res) => {
+  try {
+    let query = {};
+    if (!['admin', 'super_admin', 'hr'].includes(req.user.role)) {
+      if (req.user.employeeId) {
+        query.employee = req.user.employeeId;
+      }
+    }
+    const requests = await AssetRequest.find(query).populate('employee').populate('allocatedAsset').sort({ requestedAt: -1 });
+    res.json(requests);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/asset-requests', protect, async (req, res) => {
+  try {
+    const { category, reason, urgency, employeeId, employeeName } = req.body;
+    let empId = employeeId || req.user.employeeId;
+    let empName = employeeName;
+
+    if (!empId) {
+      const foundEmp = await Employee.findOne({ userId: req.user.userId || req.user.id });
+      if (foundEmp) {
+        empId = foundEmp._id;
+        empName = foundEmp.name;
+      }
+    }
+
+    if (!empName && empId) {
+      const emp = await Employee.findById(empId);
+      if (emp) empName = emp.name;
+    }
+    if (!empName) empName = 'Employee';
+
+    if (!empId) {
+      return res.status(400).json({ message: 'Employee profile not found for current user.' });
+    }
+
+    const newReq = new AssetRequest({
+      employee: empId,
+      employeeName: empName,
+      category,
+      reason,
+      urgency: urgency || 'Medium',
+      status: 'Pending'
+    });
+    await newReq.save();
+    io.emit('asset_request_updated');
+    res.status(201).json(newReq);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.put('/api/asset-requests/:id', protect, async (req, res) => {
+  try {
+    const { status, adminComment, allocatedAsset } = req.body;
+    const assetReq = await AssetRequest.findByIdAndUpdate(
+      req.params.id, 
+      { status, adminComment, allocatedAsset },
+      { new: true }
+    ).populate('employee');
+    if (!assetReq) return res.status(404).json({ message: 'Request not found' });
+
+    if (assetReq.employee) {
+      await addNotification(`Your equipment request for ${assetReq.category} was ${status.toLowerCase()}.`, assetReq.employee._id);
+    }
+    io.emit('asset_request_updated');
+    res.json(assetReq);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.delete('/api/asset-requests/:id', protect, async (req, res) => {
+  try {
+    await AssetRequest.findByIdAndDelete(req.params.id);
+    io.emit('asset_request_updated');
+    res.json({ message: 'Request removed' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -1858,12 +2197,49 @@ app.delete('/api/announcements/:id', protect, async (req, res) => {
 // 6. Documents
 app.get('/api/documents', protect, async (req, res) => {
   try {
-    const documents = await Document.find().populate('uploadedBy employeeId');
+    const documents = await Document.find().populate('uploadedBy employeeId').sort({ createdAt: -1 });
     res.json(documents);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
+// Upload a file and create a document record
+app.post('/api/documents/upload', protect, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const { title, description, category, employeeId, isCompanyWide } = req.body;
+    if (!title || !category) {
+      return res.status(400).json({ message: 'Title and Category are required' });
+    }
+
+    const fileUrl = `/uploads/${req.file.filename}`;
+    const originalName = req.file.originalname;
+    const fileSize = req.file.size;
+
+    const document = new Document({
+      title,
+      description: description || '',
+      category,
+      fileUrl,
+      originalName,
+      fileSize,
+      uploadedBy: req.user.userId || req.user.id,
+      employeeId: isCompanyWide === 'true' ? null : (employeeId || null),
+      isCompanyWide: isCompanyWide === 'true'
+    });
+    await document.save();
+    io.emit('document_added');
+    res.status(201).json(document);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Create document with external URL (no file upload)
 app.post('/api/documents', protect, async (req, res) => {
   try {
     const document = new Document(req.body);
@@ -1874,10 +2250,20 @@ app.post('/api/documents', protect, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+
 app.delete('/api/documents/:id', protect, async (req, res) => {
   try {
     const document = await Document.findByIdAndDelete(req.params.id);
     if (!document) return res.status(404).json({ message: 'Document not found' });
+
+    // Delete the physical file if it was uploaded to our server
+    if (document.fileUrl && document.fileUrl.startsWith('/uploads/')) {
+      const filePath = path.join(uploadsDir, path.basename(document.fileUrl));
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
     io.emit('document_added');
     res.json({ message: 'Document deleted' });
   } catch (error) {

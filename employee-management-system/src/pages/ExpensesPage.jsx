@@ -12,10 +12,14 @@ export default function ExpensesPage({ API_BASE, user, socket, employees = [] })
   });
 
   const isAdmin = ['admin', 'super_admin', 'hr'].includes(user?.role);
+
+  const getAuthToken = () => {
+    return user?.token || (typeof window !== 'undefined' ? (window.localStorage.getItem('ems-token') || '') : '') || '';
+  };
   
   const fetchExpenses = () => {
     fetch(`${API_BASE}/api/expenses`, {
-      headers: { Authorization: `Bearer ${user.token}` }
+      headers: { Authorization: `Bearer ${getAuthToken()}` }
     })
     .then(res => res.json())
     .then(data => setExpenses(Array.isArray(data) ? data : []))
@@ -38,7 +42,7 @@ export default function ExpensesPage({ API_BASE, user, socket, employees = [] })
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.token}`
+        Authorization: `Bearer ${getAuthToken()}`
       },
       body: JSON.stringify({
         ...newExpenseForm,
@@ -59,7 +63,7 @@ export default function ExpensesPage({ API_BASE, user, socket, employees = [] })
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.token}`
+        Authorization: `Bearer ${getAuthToken()}`
       },
       body: JSON.stringify({ status: newStatus, approvedBy: user.id || user._id })
     })

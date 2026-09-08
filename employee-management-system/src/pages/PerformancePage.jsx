@@ -14,10 +14,14 @@ export default function PerformancePage({ API_BASE, user, socket, employees = []
   });
 
   const isAdmin = ['admin', 'super_admin', 'hr'].includes(user?.role);
+
+  const getAuthToken = () => {
+    return user?.token || (typeof window !== 'undefined' ? (window.localStorage.getItem('ems-token') || '') : '') || '';
+  };
   
   const fetchReviews = () => {
     fetch(`${API_BASE}/api/reviews`, {
-      headers: { Authorization: `Bearer ${user.token}` }
+      headers: { Authorization: `Bearer ${getAuthToken()}` }
     })
     .then(res => res.json())
     .then(data => setReviews(Array.isArray(data) ? data : []))
@@ -40,7 +44,7 @@ export default function PerformancePage({ API_BASE, user, socket, employees = []
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.token}`
+        Authorization: `Bearer ${getAuthToken()}`
       },
       body: JSON.stringify({ 
         ...newReviewForm, 

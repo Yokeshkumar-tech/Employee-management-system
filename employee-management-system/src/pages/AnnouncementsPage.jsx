@@ -13,10 +13,14 @@ export default function AnnouncementsPage({ API_BASE, user, socket }) {
   });
 
   const isAdmin = ['admin', 'super_admin', 'hr'].includes(user?.role);
+
+  const getAuthToken = () => {
+    return user?.token || (typeof window !== 'undefined' ? (window.localStorage.getItem('ems-token') || '') : '') || '';
+  };
   
   const fetchAnnouncements = () => {
     fetch(`${API_BASE}/api/announcements`, {
-      headers: { Authorization: `Bearer ${user.token}` }
+      headers: { Authorization: `Bearer ${getAuthToken()}` }
     })
     .then(res => res.json())
     .then(data => setAnnouncements(Array.isArray(data) ? data : []))
@@ -39,7 +43,7 @@ export default function AnnouncementsPage({ API_BASE, user, socket }) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.token}`
+        Authorization: `Bearer ${getAuthToken()}`
       },
       body: JSON.stringify({
         ...newAnnounceForm,
@@ -61,7 +65,7 @@ export default function AnnouncementsPage({ API_BASE, user, socket }) {
     fetch(`${API_BASE}/api/announcements/${id}`, {
       method: 'DELETE',
       headers: {
-        Authorization: `Bearer ${user.token}`
+        Authorization: `Bearer ${getAuthToken()}`
       }
     })
     .then(res => res.json())

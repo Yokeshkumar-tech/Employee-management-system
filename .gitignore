@@ -39,3 +39,9 @@ build/
 *.njsproj
 *.sln
 *.sw?
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+server/uploads/*
+!server/uploads/.gitkeep

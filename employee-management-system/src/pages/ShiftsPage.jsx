@@ -9,7 +9,11 @@ export default function ShiftsPage({ API_BASE, user, socket, employees = [] }) {
   const [newShiftForm, setNewShiftForm] = useState({ employeeId: '', date: '', startTime: '', endTime: '', department: '' });
 
   const isAdmin = ['admin', 'super_admin', 'hr'].includes(user?.role);
-  
+
+  const getAuthToken = () => {
+    return user?.token || (typeof window !== 'undefined' ? (window.localStorage.getItem('ems-token') || '') : '') || '';
+  };
+
   const startEdit = (shift) => {
     setEditingShift(shift._id);
     setEditForm({
@@ -29,43 +33,57 @@ export default function ShiftsPage({ API_BASE, user, socket, employees = [] }) {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.token}`
+        Authorization: `Bearer ${getAuthToken()}`
       },
       body: JSON.stringify(editForm)
     })
-    .then(res => res.json())
-    .then(() => {
-      setEditingShift(null);
-    })
-    .catch(console.error);
+      .then(res => res.json())
+      .then(() => {
+        setEditingShift(null);
+      })
+      .catch(console.error);
   };
-  
+
+  const handleDeleteShift = (id) => {
+    if (!window.confirm('Are you sure you want to delete this shift?')) return;
+    fetch(`${API_BASE}/api/shifts/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${getAuthToken()}` }
+    })
+      .then(res => res.json())
+      .then(() => {
+        fetchShifts();
+      })
+      .catch(console.error);
+  };
+
   const handleAddShift = (e) => {
     e.preventDefault();
     fetch(`${API_BASE}/api/shifts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${user.token}`
+        Authorization: `Bearer ${getAuthToken()}`
       },
       body: JSON.stringify({ ...newShiftForm, status: 'Scheduled' })
     })
-    .then(res => res.json())
-    .then(() => {
-      setShowAddForm(false);
-      setNewShiftForm({ employeeId: '', date: '', startTime: '', endTime: '', department: '' });
-      fetchShifts();
-    })
-    .catch(console.error);
+      .then(res => res.json())
+      .then(() => {
+        setShowAddForm(false);
+        setNewShiftForm({ employeeId: '', date: '', startTime: '', endTime: '', department: '' });
+        fetchShifts();
+      })
+      .catch(console.error);
   };
 
   const fetchShifts = () => {
-    fetch(`${API_BASE}/api/shifts`, {
-      headers: { Authorization: `Bearer ${user.token}` }
+    const endpoint = user.role === 'employee' ? '/api/shifts/my-shifts' : '/api/shifts';
+    fetch(`${API_BASE}${endpoint}`, {
+      headers: { Authorization: `Bearer ${getAuthToken()}` }
     })
-    .then(res => res.json())
-    .then(data => setShifts(Array.isArray(data) ? data : []))
-    .catch(console.error);
+      .then(res => res.json())
+      .then(data => setShifts(Array.isArray(data) ? data : []))
+      .catch(console.error);
   };
 
   useEffect(() => {
@@ -91,7 +109,7 @@ export default function ShiftsPage({ API_BASE, user, socket, employees = [] }) {
           </button>
         )}
       </header>
-      
+
       {isAdmin && showAddForm && (
         <form onSubmit={handleAddShift} className="panel-card" style={{ marginBottom: '24px', padding: '24px' }}>
           <div className="panel-header">
@@ -100,7 +118,7 @@ export default function ShiftsPage({ API_BASE, user, socket, employees = [] }) {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Employee</label>
-              <select required value={newShiftForm.employeeId} onChange={e => setNewShiftForm({...newShiftForm, employeeId: e.target.value})} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}>
+              <select required value={newShiftForm.employeeId} onChange={e => setNewShiftForm({ ...newShiftForm, employeeId: e.target.value })} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }}>
                 <option value="">Select Employee</option>
                 {employees.map(emp => (
                   <option key={emp._id} value={emp._id}>{emp.name}</option>
@@ -109,19 +127,19 @@ export default function ShiftsPage({ API_BASE, user, socket, employees = [] }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Date</label>
-              <input type="date" required value={newShiftForm.date} onChange={e => setNewShiftForm({...newShiftForm, date: e.target.value})} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }} />
+              <input type="date" required value={newShiftForm.date} onChange={e => setNewShiftForm({ ...newShiftForm, date: e.target.value })} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Start Time</label>
-              <input type="time" required value={newShiftForm.startTime} onChange={e => setNewShiftForm({...newShiftForm, startTime: e.target.value})} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }} />
+              <input type="time" required value={newShiftForm.startTime} onChange={e => setNewShiftForm({ ...newShiftForm, startTime: e.target.value })} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>End Time</label>
-              <input type="time" required value={newShiftForm.endTime} onChange={e => setNewShiftForm({...newShiftForm, endTime: e.target.value})} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }} />
+              <input type="time" required value={newShiftForm.endTime} onChange={e => setNewShiftForm({ ...newShiftForm, endTime: e.target.value })} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }} />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Department</label>
-              <input type="text" required placeholder="e.g. Engineering" value={newShiftForm.department} onChange={e => setNewShiftForm({...newShiftForm, department: e.target.value})} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }} />
+              <input type="text" required placeholder="e.g. Engineering" value={newShiftForm.department} onChange={e => setNewShiftForm({ ...newShiftForm, department: e.target.value })} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', outline: 'none' }} />
             </div>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -142,12 +160,12 @@ export default function ShiftsPage({ API_BASE, user, socket, employees = [] }) {
                 <th style={{ padding: '12px 16px', fontWeight: 600 }}>Time</th>
                 <th style={{ padding: '12px 16px', fontWeight: 600 }}>Department</th>
                 <th style={{ padding: '12px 16px', fontWeight: 600 }}>Status</th>
-                <th style={{ padding: '12px 16px', fontWeight: 600, textAlign: 'right' }}>Actions</th>
+                {isAdmin && <th style={{ padding: '12px 16px', fontWeight: 600, textAlign: 'right' }}>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {shifts.length === 0 ? (
-                <tr><td colSpan="6" className="py-8 text-center text-slate-400">No shifts scheduled yet.</td></tr>
+                <tr><td colSpan={isAdmin ? 6 : 5} className="py-8 text-center text-slate-400">No shifts scheduled yet.</td></tr>
               ) : (
                 shifts.map(shift => (
                   <tr key={shift._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
@@ -156,15 +174,15 @@ export default function ShiftsPage({ API_BASE, user, socket, employees = [] }) {
                         <td style={{ padding: '12px 16px', fontWeight: 500 }}>{shift.employeeId?.name || 'Unknown'}</td>
                         <td style={{ padding: '12px 16px' }}>{new Date(shift.date).toLocaleDateString()}</td>
                         <td style={{ padding: '12px 16px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <input type="time" value={editForm.startTime} onChange={e => setEditForm({...editForm, startTime: e.target.value})} style={{ padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                          <input type="time" value={editForm.startTime} onChange={e => setEditForm({ ...editForm, startTime: e.target.value })} style={{ padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
                           <span style={{ color: 'var(--text-muted)' }}>-</span>
-                          <input type="time" value={editForm.endTime} onChange={e => setEditForm({...editForm, endTime: e.target.value})} style={{ padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
+                          <input type="time" value={editForm.endTime} onChange={e => setEditForm({ ...editForm, endTime: e.target.value })} style={{ padding: '4px', borderRadius: '4px', border: '1px solid #cbd5e1' }} />
                         </td>
                         <td style={{ padding: '12px 16px' }}>
-                          <input type="text" value={editForm.department} onChange={e => setEditForm({...editForm, department: e.target.value})} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', width: '100%' }} />
+                          <input type="text" value={editForm.department} onChange={e => setEditForm({ ...editForm, department: e.target.value })} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1', width: '100%' }} />
                         </td>
                         <td style={{ padding: '12px 16px' }}>
-                          <select value={editForm.status} onChange={e => setEditForm({...editForm, status: e.target.value})} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
+                          <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}>
                             <option value="Scheduled">Scheduled</option>
                             <option value="Completed">Completed</option>
                             <option value="Cancelled">Cancelled</option>
@@ -189,15 +207,21 @@ export default function ShiftsPage({ API_BASE, user, socket, employees = [] }) {
                             {shift.status}
                           </span>
                         </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'right' }}>
-                          {isAdmin && (
-                            <button onClick={() => startEdit(shift)} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }} title="Edit Shift">
+                        {isAdmin && (
+                          <td style={{ padding: '12px 16px', textAlign: 'right' }}>
+                            <button onClick={() => startEdit(shift)} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', marginRight: '8px' }} title="Edit Shift">
                               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                               </svg>
                             </button>
-                          )}
-                        </td>
+                            <button onClick={() => handleDeleteShift(shift._id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }} title="Delete Shift">
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              </svg>
+                            </button>
+                          </td>
+                        )}
                       </>
                     )}
                   </tr>

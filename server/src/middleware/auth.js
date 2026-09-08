@@ -6,6 +6,9 @@ export const protect = (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       token = req.headers.authorization.split(' ')[1];
+      if (!token || token === 'undefined' || token === 'null') {
+        return res.status(401).json({ message: 'Not authorized, no token provided' });
+      }
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
       req.user = {
         id: decoded.employeeId,
