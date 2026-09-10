@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps */
+/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, react-hooks/set-state-in-effect */
 import React, { useState, useEffect } from 'react';
 
 export default function AssetsPage({ API_BASE, user, socket, employees = [] }) {
@@ -24,8 +24,8 @@ export default function AssetsPage({ API_BASE, user, socket, employees = [] }) {
 
   // New Asset Form State
   const generateRandomTag = () => `AST-${Math.floor(1000 + Math.random() * 9000)}`;
-  const [newAssetForm, setNewAssetForm] = useState({
-    assetTag: generateRandomTag(),
+  const [newAssetForm, setNewAssetForm] = useState(() => ({
+    assetTag: `AST-${Math.floor(1000 + Math.random() * 9000)}`,
     name: '',
     category: 'Laptop',
     condition: 'Good',
@@ -33,7 +33,7 @@ export default function AssetsPage({ API_BASE, user, socket, employees = [] }) {
     purchaseCost: '',
     assignedTo: '',
     notes: ''
-  });
+  }));
 
   // Check-out Form State
   const [checkoutForm, setCheckoutForm] = useState({

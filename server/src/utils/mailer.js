@@ -14,8 +14,8 @@ const transporter = nodemailer.createTransport({
 
 export const sendEmail = async (to, subject, htmlContent) => {
   try {
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-      console.warn('⚠️ SMTP credentials not found. Email not sent to:', to);
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS || process.env.SMTP_USER.includes('your_email') || process.env.SMTP_PASS.includes('your_app_password')) {
+      // Dummy / unconfigured SMTP credentials - skip without delaying
       return false;
     }
 

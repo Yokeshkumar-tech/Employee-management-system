@@ -788,7 +788,7 @@ function GoogleModal({ isOpen, onClose, onSelectAccount, demoUsers }) {
   )
 }
 
-function LoginPage({ form, setForm, authMode, setAuthMode, onSubmit, onGoogleLogin, error, googleEmail, pendingMessage }) {
+function LoginPage({ form, setForm, authMode, setAuthMode, onSubmit, onGoogleLogin, error, googleEmail, pendingMessage, authLoading = false }) {
   return (
     <div className="login-container">
       <div className="auth-card-new">
@@ -860,8 +860,8 @@ function LoginPage({ form, setForm, authMode, setAuthMode, onSubmit, onGoogleLog
           {error && <p className="error-text">{error}</p>}
           {pendingMessage && <p className="error-text" style={{ background: '#fef3c7', color: '#92400e', borderColor: '#fde68a' }}>{pendingMessage}</p>}
 
-          <button type="submit" className="submit-button">
-            {authMode === 'login' ? 'Sign in' : 'Create account'}
+          <button type="submit" className="submit-button" disabled={authLoading} style={{ opacity: authLoading ? 0.75 : 1, cursor: authLoading ? 'not-allowed' : 'pointer' }}>
+            {authLoading ? (authMode === 'login' ? 'Verifying & signing in...' : 'Creating account...') : (authMode === 'login' ? 'Sign in' : 'Create account')}
           </button>
         </form>
       </div>
@@ -882,7 +882,7 @@ function SectionHeading({ title, subtitle, action }) {
   )
 }
 
-function DashboardPage({ user, dashboardData, liveActivity, socketConnected, employees, attendance, API_BASE, notifications, activeUsers, progressUpdates }) {
+function DashboardPage({ user, dashboardData, liveActivity, socketConnected, employees, attendance, API_BASE, notifications, activeUsers, progressUpdates, unifiedWorkProcesses = null }) {
   const isAdmin = user.role === 'super_admin' || user.role === 'admin'
 
   /*  Shared state  */
@@ -6387,6 +6387,7 @@ function App() {
   const [unifiedWorkProcesses, setUnifiedWorkProcesses] = useState(null)
   const [pendingApproval, setPendingApproval] = useState(false)
   const [pendingMessage, setPendingMessage] = useState('')
+  const [authLoading, setAuthLoading] = useState(false)
 
   const loadData = () => {
     if (!user) return
@@ -6457,7 +6458,7 @@ function App() {
     loadData()
 
     const socketInstance = io(API_BASE, {
-      transports: ['websocket', 'polling'],
+      transports: ['polling', 'websocket'],
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
@@ -6586,6 +6587,7 @@ function App() {
     setError('')
     setPendingMessage('')
     setPendingApproval(false)
+    setAuthLoading(true)
 
     const normalizedEmail = form.email.trim().toLowerCase()
 
@@ -6675,6 +6677,8 @@ function App() {
         return
       }
       setError(errorMessage.message)
+    } finally {
+      setAuthLoading(false)
     }
   }
 
@@ -6693,7 +6697,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage form={form} setForm={setForm} authMode={authMode} setAuthMode={setAuthMode} onSubmit={handleSubmit} onGoogleLogin={handleGoogleLogin} error={error} googleEmail={googleEmail} pendingMessage={pendingMessage} />} />
+          <Route path="/login" element={<LoginPage form={form} setForm={setForm} authMode={authMode} setAuthMode={setAuthMode} onSubmit={handleSubmit} onGoogleLogin={handleGoogleLogin} error={error} googleEmail={googleEmail} pendingMessage={pendingMessage} authLoading={authLoading} />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <GoogleModal
@@ -6710,8 +6714,8 @@ function App() {
     <BrowserRouter>
       <AppLayout user={user} onLogout={handleLogout}>
         <Routes>
-          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} progressUpdates={progressUpdates} setProgressUpdates={setProgressUpdates} API_BASE={API_BASE} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} progressUpdates={progressUpdates} />}</ProtectedRoute>} />
-          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} progressUpdates={progressUpdates} setProgressUpdates={setProgressUpdates} API_BASE={API_BASE} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} progressUpdates={progressUpdates} />}</ProtectedRoute>} />
+          <Route path="/" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} progressUpdates={progressUpdates} setProgressUpdates={setProgressUpdates} API_BASE={API_BASE} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} progressUpdates={progressUpdates} unifiedWorkProcesses={unifiedWorkProcesses} />}</ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute user={user}>{user.role === 'employee' ? <EmployeeDashboardPage user={user} leaveData={leaveData} payroll={payroll} attendance={attendance} liveActivity={liveActivity} socketConnected={socketConnected} triggerRefresh={loadData} activeUsers={activeUsers} dashboardData={dashboardData} socket={socket} progressUpdates={progressUpdates} setProgressUpdates={setProgressUpdates} API_BASE={API_BASE} /> : <DashboardPage user={user} dashboardData={dashboardData} liveActivity={liveActivity} socketConnected={socketConnected} employees={employees} attendance={attendance} API_BASE={API_BASE} notifications={notifications} activeUsers={activeUsers} progressUpdates={progressUpdates} unifiedWorkProcesses={unifiedWorkProcesses} />}</ProtectedRoute>} />
           <Route path="/employees" element={<ProtectedRoute user={user}><EmployeesPage employees={employees} attendance={attendance} API_BASE={API_BASE} triggerRefresh={loadData} user={user} /></ProtectedRoute>} />
           <Route path="/approvals" element={<ProtectedRoute user={user}><ApprovalsPage user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/attendance" element={<ProtectedRoute user={user}><AttendancePage attendance={attendance} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
