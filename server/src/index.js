@@ -1375,13 +1375,33 @@ app.get('/api/meetings', async (_req, res) => {
 app.post('/api/meetings', protect, async (req, res) => {
   try {
     const user = await User.findById(req.user.userId);
+    const participants = Array.isArray(req.body.participants) ? req.body.participants : [];
     const newMeeting = new Meeting({
       title: req.body.title || 'Team Standup',
       organizer: user ? user.name : 'Unknown',
+      participants,
       status: 'Ongoing'
     });
     await newMeeting.save();
     io.emit('meeting_updated');
+
+    // If specific attendees were chosen, post an invite message in chat & emit invite event
+    if (participants.length > 0) {
+      const inviteMsg = {
+        sender: user ? user.name : 'System',
+        text: `📢 ${user ? user.name : 'Host'} invited ${participants.join(', ')} to the Group Standup Room: https://meet.jit.si/EMS-Team-Collaboration-Room`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+      await ChatMessage.create(inviteMsg);
+      io.emit('chat_message', inviteMsg);
+      io.emit('meeting_invite', {
+        meetingId: newMeeting._id,
+        organizer: user ? user.name : 'Host',
+        participants,
+        roomUrl: 'https://meet.jit.si/EMS-Team-Collaboration-Room'
+      });
+    }
+
     res.status(201).json(newMeeting);
   } catch (error) {
     res.status(500).json({ message: error.message });

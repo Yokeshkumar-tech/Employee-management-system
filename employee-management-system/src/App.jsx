@@ -5821,7 +5821,7 @@ function ProjectsPage({ projects, employees = [], user, API_BASE, triggerRefresh
   );
 }
 
-function ChatPage({ notifications, user, API_BASE, socket, activeUsers }) {
+function ChatPage({ notifications, user, API_BASE, socket, activeUsers, employees = [] }) {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [inCall, setInCall] = useState(false);
@@ -5830,6 +5830,9 @@ function ChatPage({ notifications, user, API_BASE, socket, activeUsers }) {
   const [typingUsers, setTypingUsers] = useState({});
   const [isTypingLocal, setIsTypingLocal] = useState(false);
   const typingTimeoutRef = useRef(null);
+  const [showParticipantPicker, setShowParticipantPicker] = useState(false);
+  const [selectedParticipants, setSelectedParticipants] = useState([]);
+  const [meetingInvite, setMeetingInvite] = useState(null); // { organizer, roomUrl }
 
   const fetchMeetings = useCallback(() => {
     fetch(`${API_BASE}/api/meetings`, { headers: authHeaders() })
@@ -5874,14 +5877,22 @@ function ChatPage({ notifications, user, API_BASE, socket, activeUsers }) {
       });
     };
 
+    const handleMeetingInvite = ({ organizer, participants, roomUrl }) => {
+      if (participants.includes(user.name)) {
+        setMeetingInvite({ organizer, roomUrl });
+      }
+    };
+
     socket.on('chat_message', handleChatMessage);
     socket.on('meeting_updated', handleMeetingUpdate);
     socket.on('typing_status', handleTypingStatus);
+    socket.on('meeting_invite', handleMeetingInvite);
 
     return () => {
       socket.off('chat_message', handleChatMessage);
       socket.off('meeting_updated', handleMeetingUpdate);
       socket.off('typing_status', handleTypingStatus);
+      socket.off('meeting_invite', handleMeetingInvite);
     };
   }, [socket, fetchMeetings, user.name]);
 
@@ -5931,18 +5942,29 @@ function ChatPage({ notifications, user, API_BASE, socket, activeUsers }) {
       const response = await fetch(`${API_BASE}/api/meetings`, {
         method: 'POST',
         headers: authHeaders(),
-        body: JSON.stringify({ title: 'Group Standup Room' })
+        body: JSON.stringify({ title: 'Group Standup Room', participants: selectedParticipants })
       });
       const data = await response.json();
       if (response.ok) {
         setCurrentMeetingId(data._id);
-        setInCall(true);
       }
     } catch (err) {
       console.error(err);
-      setInCall(true); // Still allow joining if API fails
+    } finally {
+      setShowParticipantPicker(false);
+      setSelectedParticipants([]);
+      setInCall(true);
     }
   };
+
+  const toggleParticipant = (name) => {
+    setSelectedParticipants(prev =>
+      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
+    );
+  };
+
+  // Employees other than the current user (for the invite picker)
+  const otherEmployees = employees.filter(e => e.name && e.name !== user.name && e.status === 'Active');
 
   const handleLeaveMeeting = async () => {
     setInCall(false);
@@ -6011,8 +6033,24 @@ function ChatPage({ notifications, user, API_BASE, socket, activeUsers }) {
             {inCall && <span className="pill" style={{ background: '#dcfce7', color: '#16a34a' }}>Ongoing</span>}
           </div>
 
+          {meetingInvite && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)', border: '1px solid #6ee7b7', borderRadius: '10px', marginTop: '10px' }}>
+              <span style={{ fontSize: '1.4rem' }}>📹</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, color: '#065f46', fontSize: '0.9rem' }}>{meetingInvite.organizer} invited you to the Group Standup Room!</div>
+                <div style={{ fontSize: '0.8rem', color: '#047857', marginTop: '2px' }}>Click Join to enter the video call.</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setInCall(true); setMeetingInvite(null); }}
+                style={{ padding: '7px 16px', background: '#10b981', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 700, fontSize: '0.85rem', whiteSpace: 'nowrap' }}
+              >Join Now</button>
+              <button type="button" onClick={() => setMeetingInvite(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280', fontSize: '1.1rem', lineHeight: 1 }}>✕</button>
+            </div>
+          )}
+
           {!inCall ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '30px 20px', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: '12px', marginTop: '10px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 20px', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: '12px', marginTop: '10px' }}>
               <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#eef2ff', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', color: '#6366f1' }}>
                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="23 7 16 12 23 17 23 7"></polygon>
@@ -6020,15 +6058,63 @@ function ChatPage({ notifications, user, API_BASE, socket, activeUsers }) {
                 </svg>
               </div>
               <h4 style={{ margin: '0 0 8px 0', color: '#1e293b' }}>Group Standup Room</h4>
-              <p style={{ margin: '0 0 20px 0', color: '#64748b', fontSize: '0.9rem' }}>Join the live team video call. No external software required.</p>
-              <button
-                type="button"
-                className="primary-button"
-                onClick={handleJoinMeeting}
-                style={{ borderRadius: '24px', padding: '10px 24px', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none' }}
-              >
-                Join Meeting Now
-              </button>
+              <p style={{ margin: '0 0 16px 0', color: '#64748b', fontSize: '0.9rem' }}>Join the live team video call. No external software required.</p>
+
+              {/* Participant picker toggle */}
+              {!showParticipantPicker ? (
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={handleJoinMeeting}
+                    style={{ borderRadius: '24px', padding: '10px 24px', background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none' }}
+                  >
+                    Join Meeting Now
+                  </button>
+                  {otherEmployees.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowParticipantPicker(true)}
+                      style={{ borderRadius: '24px', padding: '10px 20px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.9rem' }}
+                    >
+                      👥 Invite Employees
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div style={{ width: '100%', maxWidth: '340px', textAlign: 'left' }}>
+                  <div style={{ fontWeight: 700, color: '#1e293b', marginBottom: '10px', fontSize: '0.9rem' }}>Select employees to invite:</div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '180px', overflowY: 'auto', marginBottom: '14px', padding: '2px' }}>
+                    {otherEmployees.map(emp => (
+                      <label key={emp._id || emp.id} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', borderRadius: '8px', background: selectedParticipants.includes(emp.name) ? '#e0e7ff' : '#f1f5f9', cursor: 'pointer', border: selectedParticipants.includes(emp.name) ? '1.5px solid #6366f1' : '1.5px solid transparent', transition: 'all 0.15s' }}>
+                        <input
+                          type="checkbox"
+                          checked={selectedParticipants.includes(emp.name)}
+                          onChange={() => toggleParticipant(emp.name)}
+                          style={{ accentColor: '#6366f1', width: '15px', height: '15px' }}
+                        />
+                        <span style={{ fontWeight: 600, color: '#1e293b', fontSize: '0.88rem' }}>{emp.name}</span>
+                        <span style={{ fontSize: '0.75rem', color: '#64748b', marginLeft: 'auto' }}>{emp.department || emp.role}</span>
+                      </label>
+                    ))}
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={handleJoinMeeting}
+                      disabled={selectedParticipants.length === 0}
+                      style={{ flex: 1, padding: '9px 0', background: selectedParticipants.length > 0 ? 'linear-gradient(135deg, #10b981, #059669)' : '#cbd5e1', color: '#fff', border: 'none', borderRadius: '10px', cursor: selectedParticipants.length > 0 ? 'pointer' : 'not-allowed', fontWeight: 700, fontSize: '0.9rem' }}
+                    >
+                      {selectedParticipants.length > 0 ? `Invite & Join (${selectedParticipants.length})` : 'Select at least 1'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setShowParticipantPicker(false); setSelectedParticipants([]); }}
+                      style={{ padding: '9px 14px', background: '#f1f5f9', color: '#475569', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 600 }}
+                    >Cancel</button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', marginTop: '10px', borderRadius: '12px', overflow: 'hidden', border: '1px solid #e2e8f0' }}>
@@ -6723,7 +6809,7 @@ function App() {
           <Route path="/payroll" element={<ProtectedRoute user={user}><PayrollPage payroll={payroll} API_BASE={API_BASE} triggerRefresh={loadData} user={user} /></ProtectedRoute>} />
           <Route path="/recruitment" element={<ProtectedRoute user={user}><RecruitmentPage recruitment={recruitment} user={user} API_BASE={API_BASE} triggerRefresh={loadData} /></ProtectedRoute>} />
           <Route path="/projects" element={<ProtectedRoute user={user}><ProjectsPage projects={projects} employees={employees} user={user} API_BASE={API_BASE} triggerRefresh={loadData} socket={socket} /></ProtectedRoute>} />
-          <Route path="/chat" element={<ProtectedRoute user={user}><ChatPage notifications={notifications} user={user} API_BASE={API_BASE} socket={socket} activeUsers={activeUsers} /></ProtectedRoute>} />
+          <Route path="/chat" element={<ProtectedRoute user={user}><ChatPage notifications={notifications} user={user} API_BASE={API_BASE} socket={socket} activeUsers={activeUsers} employees={employees} /></ProtectedRoute>} />
           <Route path="/tasks" element={<ProtectedRoute user={user}><TasksPage user={user} API_BASE={API_BASE} socket={socket} /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute user={user}><NotificationsPage user={user} API_BASE={API_BASE} /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute user={user}><SettingsPage user={user} setUser={setUser} API_BASE={API_BASE} /></ProtectedRoute>} />

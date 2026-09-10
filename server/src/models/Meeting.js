@@ -14,6 +14,9 @@ const meetingSchema = new mongoose.Schema({
     enum: ['Ongoing', 'Completed'],
     default: 'Ongoing'
   },
+  participants: [{
+    type: String
+  }],
   startedAt: {
     type: Date,
     default: Date.now
